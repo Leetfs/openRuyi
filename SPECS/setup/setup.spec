@@ -45,7 +45,7 @@ BuildRequires:  systemd-sysusers
 #systemd-rpm-macros: required to use _sysusersdir and _tmpfilesdir macro
 BuildRequires:  systemd-rpm-macros
 #require system release for saner dependency order
-# Requires:     system-release
+Requires:     system-release
 
 %description
 The setup package contains a set of important system configuration and
