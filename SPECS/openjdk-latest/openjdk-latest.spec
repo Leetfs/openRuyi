@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Dingli Zhang <dingli@iscas.ac.cn>
+# SPDX-FileContributor: Jingkun Zheng <zhengjingkun@iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
@@ -25,6 +26,8 @@ Source0:        https://github.com/openjdk/jdk%{majorver}u/archive/refs/tags/jdk
 %if %{with bootstrap}
 #!RemoteAsset
 Source1:        https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25%2B36/OpenJDK25U-jdk_riscv64_linux_hotspot_25_36.tar.gz
+#!RemoteAsset
+Source2:        https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25%2B36/OpenJDK25U-jdk_x64_linux_hotspot_25_36.tar.gz
 %endif
 
 BuildRequires:  autoconf
@@ -63,8 +66,14 @@ The OpenJDK latest runtime environment.
 
 %build
 %if %{with bootstrap}
+%ifarch riscv64
 tar -xf %{SOURCE1} -C %{_tmppath}
 BOOTJDKPATH=%{_tmppath}/jdk-25+36
+%endif
+%ifarch x86_64
+tar -xf %{SOURCE2} -C %{_tmppath}
+BOOTJDKPATH=%{_tmppath}/jdk-25+36
+%endif
 %else
 BOOTJDKPATH=%{_jvmdir}/java-latest-openjdk
 %endif
