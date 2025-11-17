@@ -10,7 +10,7 @@ permissions:
   pull-requests: read
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     types: [opened, synchronize, closed]
     paths:
@@ -20,15 +20,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
     - name: setup osc repo
       run: |
         echo "deb http://download.opensuse.org/repositories/openSUSE:/Tools/xUbuntu_24.04/ /" | sudo tee /etc/apt/sources.list.d/obs.list
         wget -qO - http://download.opensuse.org/repositories/openSUSE:/Tools/xUbuntu_24.04/Release.key | sudo apt-key add -
     - name: install tools
       run:  sudo apt update && sudo apt install osc libwww-perl -y
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     - uses: actions/github-script@v7
       id: changed_files
       with:
