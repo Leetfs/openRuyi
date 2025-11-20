@@ -81,7 +81,7 @@ touch %{buildroot}%{_localstatedir}/lib/chrony/{drift,rtc}
 echo 'chronyd.service' > %{buildroot}%{_prefix}/lib/systemd/ntp-units.d/50-chronyd.list
 
 %pre
-%sysusers_create_compat %{SOURCE3}
+%sysusers_create_package chrony %{SOURCE3}
 
 %post
 # migrate from chrony-helper to sourcedir directive
