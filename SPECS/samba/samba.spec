@@ -269,7 +269,7 @@ install -m 0644 -Dp %{SOURCE3} %{buildroot}%{_sysusersdir}/samba-winbind.conf
 install -m 0644 -Dp %{SOURCE4} %{buildroot}%{_sysusersdir}/samba-usershares.conf
 
 install -d -m 0755 %{buildroot}%{_tmpfilesdir}
-echo %{SOURCE5} > %{buildroot}%{_tmpfilesdir}/samba.conf
+install -D %{SOURCE5} %{buildroot}%{_tmpfilesdir}/samba.conf
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
