@@ -73,7 +73,6 @@ rm -rf %{buildroot}%{_mandir}/tr.UTF-8/
 %{_datadir}/%{name}/%{vimdir}/pack
 %{_datadir}/%{name}/%{vimdir}/doc
 %{_datadir}/%{name}/%{vimdir}/*.vim
-%exclude %{_datadir}/%{name}/%{vimdir}/defaults.vim
 %{_datadir}/%{name}/%{vimdir}/ftplugin
 %{_datadir}/%{name}/%{vimdir}/import/dist/vimhelp.vim
 %{_datadir}/%{name}/%{vimdir}/import/dist/vimhighlight.vim
