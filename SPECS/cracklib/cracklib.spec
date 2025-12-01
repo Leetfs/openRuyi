@@ -79,6 +79,8 @@ sed -i 's,util/cracklib-check <,util/cracklib-check $(DESTDIR)/$(DEFAULT_CRACKLI
 make -C po update-gmo
 
 %install -a
+gunzip -c %{SOURCE1} | ./util/cracklib-format | \
+./util/cracklib-packer %{buildroot}%{dictpath}
 ./util/cracklib-format %{buildroot}%{dictdir}/cracklib-small | \
 ./util/cracklib-packer %{buildroot}%{dictdir}/cracklib-small
 rm -f %{buildroot}%{dictdir}/cracklib-small
@@ -121,6 +123,7 @@ fi
 %license COPYING.LIB
 %{_libdir}/libcrack.so.*
 %dir %{_datadir}/cracklib
+%{dictpath}.*
 %{_datadir}/cracklib/cracklib.magic
 %{_sbindir}/*cracklib*
 %{_mandir}/man8/*
