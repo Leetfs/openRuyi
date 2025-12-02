@@ -37,6 +37,7 @@ BuildOption(conf):  --enable-site-fndir=%{_datadir}/%{name}/site-functions
 BuildOption(conf):  --enable-scriptdir=%{_datadir}/%{name}/scripts
 BuildOption(conf):  --enable-function-subdirs
 BuildOption(conf):  --enable-multibyte
+BuildOption(conf):  --with-tcsetpgrp
 BuildOption(build):  all info html
 BuildOption(install):  install.info
 BuildOption(install):  fndir=%{_datadir}/%{name}/functions
@@ -56,8 +57,7 @@ Provides:       /bin/zsh
 
 %patchlist
 # Upstream commit ab4d62eb975a4c4c51dd35822665050e2ddc6918
-# TODO: our tty is broken - 251
-#0001-zsh-Use-int-main-in-test-c-codes.patch
+0001-zsh-Use-int-main-in-test-c-codes.patch
 # upstream commit a84fdd7c8f77935ecce99ff2b0bdba738821ed79
 0002-zsh-fix-module-loading-problem-with-full-RELRO.patch
 # upstream commit 1b421e4978440234fb73117c8505dad1ccc68d46
@@ -70,6 +70,8 @@ Provides:       /bin/zsh
 0006-zsh-configure-c99.patch
 # upstream commit d3edf318306e37d2d96c4e4ea442d10207722e94
 0007-zsh-deletefilelist-segfault.patch
+# avoid egrep warning break the tests
+0008-zsh-5.9-do-not-use-egrep-in-tests.patch
 
 %description
 The zsh shell is a command interpreter usable as an interactive login
@@ -94,6 +96,12 @@ mechanism, and more.
 This package contains the Zsh manual in html format.
 
 %conf -p
+# Fix bindir path in some scripts
+sed -i -e 's|%{_prefix}/local/bin|%{_bindir}|' \
+    Misc/globtests.ksh Misc/globtests \
+    Misc/lete2ctl Util/check_exports \
+    Util/reporter Functions/VCS_Info/test-repo-git-rebase-*
+
 autoreconf -fiv
 
 %install -a
@@ -135,8 +143,7 @@ fi
 %{_mandir}/*/*
 %{_infodir}/*
 %{_datadir}/zsh
-# We currently do not have this and I don't know why - 251
-#{_libdir}/zsh
+%{_libdir}/zsh
 %config(noreplace) %{_sysconfdir}/skel/.z*
 %config(noreplace) %{_sysconfdir}/z*
 
