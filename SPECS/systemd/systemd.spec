@@ -52,10 +52,11 @@ Release:        %autorelease
 Summary:        System and service manager
 License:        LGPL-2.1-or-later AND MIT AND GPL-2.0-or-later
 URL:            https://systemd.io
+VCS:            git:https://github.com/systemd/systemd
 #!RemoteAsset
 Source0:        https://github.com/systemd/systemd/archive/v%{version}/%{name}-%{version}.tar.gz
 # These are essential files
-Source1:        systemd-user
+Source1:        systemd-user.pam
 BuildSystem:    meson
 
 BuildOption(conf):  -Dmode=release
@@ -131,38 +132,37 @@ BuildOption(conf):  -Dsysupdate=enabled
 
 #BuildRequires:  clang
 BuildRequires:  coreutils
-BuildRequires:  libcap-devel
-BuildRequires:  util-linux-devel
-BuildRequires:  libpwquality-devel
-BuildRequires:  libxcrypt-devel
-BuildRequires:  pam-devel
-BuildRequires:  libselinux-devel
-BuildRequires:  audit-devel
+BuildRequires:  pkgconfig(libcap)
+BuildRequires:  pkgconfig(blkid)
+BuildRequires:  pkgconfig(pwquality)
+BuildRequires:  pkgconfig(libxcrypt)
+BuildRequires:  pkgconfig(pam)
+BuildRequires:  pkgconfig(libselinux)
+BuildRequires:  pkgconfig(audit)
 %if %{without bootstrap}
-BuildRequires:  cryptsetup-devel
+BuildRequires:  pkgconfig(libcryptsetup)
 %endif
-BuildRequires:  dbus-devel
-BuildRequires:  acl-devel
+BuildRequires:  pkgconfig(dbus-1)
+BuildRequires:  pkgconfig(libacl)
 BuildRequires:  libblkid
 BuildRequires:  xz
-BuildRequires:  xz-devel
-BuildRequires:  lz4-devel
-BuildRequires:  lz4
-BuildRequires:  bzip2-devel
-BuildRequires:  zstd-devel
-BuildRequires:  libidn2-devel
-BuildRequires:  libcurl-devel
-BuildRequires:  kmod-devel
-BuildRequires:  openssl-devel
-BuildRequires:  gnutls-devel
-BuildRequires:  p11-kit-devel
-BuildRequires:  libdw-devel
+BuildRequires:  pkgconfig(liblzma)
+BuildRequires:  pkgconfig(liblz4)
+BuildRequires:  pkgconfig(bzip2)
+BuildRequires:  pkgconfig(libzstd)
+BuildRequires:  pkgconfig(libidn2)
+BuildRequires:  pkgconfig(libcurl)
+BuildRequires:  pkgconfig(libkmod)
+BuildRequires:  pkgconfig(openssl)
+BuildRequires:  pkgconfig(gnutls)
+BuildRequires:  pkgconfig(p11-kit-1)
+BuildRequires:  pkgconfig(libdw)
 %if %{with journal_remote}
-BuildRequires:  libmicrohttpd-devel
+BuildRequires:  pkgconfig(libmicrohttpd)
 %endif
 %if %{with x}
 # Used by systemd-localed & systemd-firstboot
-BuildRequires:  libxkbcommon-devel
+BuildRequires:  pkgconfig(xkbcommon)
 %endif
 %if %{with network}
 BuildRequires:  iptables-legacy-devel
@@ -170,7 +170,7 @@ BuildRequires:  iptables-legacy-devel
 BuildRequires:  pkgconfig(bash-completion)
 BuildRequires:  pkgconfig(libarchive)
 %if %{with fido2}
-BuildRequires:  libfido2-devel
+BuildRequires:  pkgconfig(libfido2)
 %endif
 %if %{with tpm2}
 BuildRequires:  pkgconfig(tss2-esys)
@@ -181,7 +181,7 @@ BuildRequires:  python3
 BuildRequires:  python3dist(jinja2)
 BuildRequires:  python3dist(lxml)
 %if %{with docs}
-BuildRequires:  libxslt
+BuildRequires:  pkgconfig(libxslt)
 BuildRequires:  docbook-style-xsl
 %endif
 BuildRequires:  pkgconfig
@@ -192,16 +192,15 @@ BuildRequires:  python3dist(pefile)
 # BuildRequires:  python3dist(pillow)
 %endif
 BuildRequires:  python3dist(pyelftools)
-BuildRequires:  libseccomp-devel
+BuildRequires:  pkgconfig(libseccomp)
 BuildRequires:  meson
 %if %{with valgrind}
-BuildRequires:  valgrind-devel
+BuildRequires:  pkgconfig(valgrind)
 %endif
 %if %{with bpf}
 BuildRequires:  bpftool
 BuildRequires:  pkgconfig(libbpf)
 %endif
-
 BuildRequires:  system-release
 
 Requires:       dbus
@@ -284,8 +283,8 @@ This package contains the homed programs.
 Summary:        Development headers for systemd
 License:        LGPL-2.1-or-later AND MIT
 Requires:       %{name}-libs = %{version}-%{release}
-Requires:       kmod-devel
-Requires:       libidn2-devel
+Requires:       pkgconfig(libkmod)
+Requires:       pkgconfig(libidn2)
 Requires(meta): (%{name}-rpm-macros = %{version}-%{release} if rpm-build)
 Provides:       libudev-devel = %{version}
 
