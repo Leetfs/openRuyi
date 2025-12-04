@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
+# SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
+# SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+#
+# SPDX-License-Identifier: MulanPSL-2.0
+
+%global srcname linkify-it-py
+
+Name:           python-%{srcname}
+Version:        2.0.3
+Release:        %autorelease
+Summary:        Link recognition library with full Unicode support
+License:        MIT
+URL:            https://github.com/tsutsu3/linkify-it-py
+#!RemoteAsset
+Source:         https://files.pythonhosted.org/packages/source/l/%{srcname}/%{srcname}-%{version}.tar.gz
+BuildSystem:    pyproject
+
+BuildOption(install):  -l linkify_it
+
+BuildRequires:  pyproject-rpm-macros
+BuildRequires:  pkgconfig(python3)
+BuildRequires:  python3-pip
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-wheel
+BuildRequires:  python3-pytest
+BuildRequires:  python3-uc-micro-py
+
+Provides:       python3-%{srcname}
+%python_provide python3-%{srcname}
+
+%description
+This is a Python port of linkify-it, a link recognition library with FULL
+unicode support. It is focused on high quality link pattern detection in
+plain text.
+
+%generate_buildrequires
+%pyproject_buildrequires
+
+%check
+%pytest -v
+
+%files -f %{pyproject_files}
+%license LICENSE
+%doc CHANGELOG.md README.md
+
+%changelog
+%{?autochangelog}
