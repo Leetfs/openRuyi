@@ -12,12 +12,17 @@
 }
 
 Name:           dpdk
-Version:        25.07
+Version:        25.11
 Release:        %autorelease
 Summary:        Set of libraries and drivers for fast packet processing
 URL:            http://dpdk.org
 #!RemoteAsset
 Source:         https://fast.dpdk.org/rel/dpdk-%{version}.tar.xz
+
+# https://patches.dpdk.org/project/dpdk/patch/20251116155001.2809998-1-sunyuechi@iscas.ac.cn/
+Patch:          0001-node-lookup-with-RISC-V-vector-extension.patch
+# https://patches.dpdk.org/project/dpdk/patch/20251130200810.879556-1-sunyuechi@iscas.ac.cn/
+Patch:          0002-acl-add-RISC-V-vector-extension-implementation.patch
 
 BuildSystem:    meson
 
