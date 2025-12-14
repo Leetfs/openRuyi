@@ -6,7 +6,7 @@
 
 Summary:        GNU Core Utilities
 Name:           coreutils
-Version:        9.7
+Version:        9.9
 Release:        %autorelease
 License:        GPL-3.0-or-later
 URL:            https://www.gnu.org/software/coreutils/
