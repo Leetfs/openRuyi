@@ -1,0 +1,3 @@
+g pulse-access -
+g pulse-rt -
+u pulse 171 'PulseAudio System Daemon' /var/run/pulse -
