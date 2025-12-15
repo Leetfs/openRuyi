@@ -27,7 +27,7 @@ BuildRequires:  libxslt
 
 Requires:       docbook-utils
 Requires:       libxslt
-Requires:       docbook-style-xsl
+Requires:       docbook-xsl
 Requires:       python3-pygments
 Requires:       python3-lxml
 Requires:       cmake-filesystem
