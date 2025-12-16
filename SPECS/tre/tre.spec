@@ -15,6 +15,9 @@ URL:            https://laurikari.net/tre/
 Source:         https://github.com/laurikari/tre/releases/download/v%{version}/%{name}-%{version}.tar.gz
 BuildSystem:    autotools
 
+# Tests require locale en_US.ISO-8859-1.
+BuildRequires:  glibc-locale
+
 BuildOption(conf): --disable-static
 BuildOption(conf): --enable-shared
 
