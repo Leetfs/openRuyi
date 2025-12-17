@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
+%global _test_target test
+
 Name:           mksh
 Version:        59
 Release:        %autorelease
