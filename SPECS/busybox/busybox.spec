@@ -21,6 +21,13 @@ Patch1:         busybox-1.36.1-no-cbq.patch
 Patch2:         busybox-1.37.0-fix-conditional-for-sha1_process_block64_shaNI.patch
 BuildSystem:    autotools
 
+BuildOption(check):  SKIP_KNOWN_BUGS=1
+BuildOption(check):  SKIP_INTERNET_TESTS=1
+
+# Tests related
+BuildRequires:  zip
+BuildRequires:  hostname
+
 %description
 BusyBox combines tiny versions of many common UNIX utilities into a
 single executable. It provides minimalist replacements for utilities
