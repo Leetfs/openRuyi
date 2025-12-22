@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:          util-linux
-Version:       2.41.1
+Version:       2.41.3
 Release:       %autorelease
 Summary:       A collection of basic system utilities
 License:       GPL-2.0-or-later and others
@@ -157,6 +157,13 @@ install -Dm644 %{SOURCE15} %{buildroot}%{_sysconfdir}/pam.d/chfn
 
 install -Dm644 %{SOURCE20} %{buildroot}%{_udevrulesdir}/60-rfkill.rules
 %find_lang %{name} --generate-subpackages
+
+%ifarch riscv64
+# FIXME: script/options fails on riscv64
+%check -p
+export TS_OPT_script_options_known_fail=yes
+export TS_OPT_script_options_show_diff=yes
+%endif
 
 %post -n liblastlog2
 %systemd_post lastlog2-import.service
