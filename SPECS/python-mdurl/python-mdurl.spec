@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
-# SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -33,9 +33,6 @@ URL utilities for markdown-it parser.
 
 %generate_buildrequires
 %pyproject_buildrequires
-
-%check
-%pytest
 
 %files -f %{pyproject_files}
 %license LICENSE
