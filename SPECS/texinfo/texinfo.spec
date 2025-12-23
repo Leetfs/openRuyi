@@ -20,6 +20,9 @@ Source0:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz
 Source1:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz.sig
 BuildSystem:    autotools
 
+# Fix tests treat the extra stderr output as failures
+Patch0:         0001-texinfo-7.2-fix-perl-precedence-warnings.patch
+
 BuildRequires:  perl
 Requires:  perl
 BuildRequires:  ncurses-devel
