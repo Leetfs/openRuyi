@@ -1,0 +1,1310 @@
+From 3522bcc39b71b4142ebfe4e666fb711c3cb7a493 Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Thu, 11 Dec 2025 09:10:58 +0800
+Subject: [PATCH 1/7] zink: only warn about fillModeNonSolid when used
+
+The Vulkan feature fillModeNonSolid is used to implement OpenGL API
+glPolygonMode(), which does not exist in OpenGL ES and the hardware
+support is missing in many mobile GPUs.
+
+The use of this Vulkan feature is only triggered when glPolygonMode() is
+really called, and among current gallium drivers at least lima and
+panfrost do not properly handle polygon modes either.
+
+Only warn about this feature being missing when it's really needed,
+instead of warning at screen initialization time. This will prevent the
+warning from being raised when running OpenGL ES on Zink.
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/gallium/drivers/zink/zink_screen.c | 2 --
+ src/gallium/drivers/zink/zink_state.c  | 9 ++++++++-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/src/gallium/drivers/zink/zink_screen.c b/src/gallium/drivers/zink/zink_screen.c
+index dae8bb79875..62af6ca9edb 100644
+--- a/src/gallium/drivers/zink/zink_screen.c
++++ b/src/gallium/drivers/zink/zink_screen.c
+@@ -2815,7 +2815,6 @@ check_base_requirements(struct zink_screen *screen)
+       screen->info.have_EXT_scalar_block_layout = true;
+    }
+    if (!screen->info.feats.features.logicOp ||
+-       !screen->info.feats.features.fillModeNonSolid ||
+        !screen->info.feats.features.shaderClipDistance ||
+        !(screen->info.feats12.scalarBlockLayout ||
+          screen->info.have_EXT_scalar_block_layout) ||
+@@ -2829,7 +2828,6 @@ check_base_requirements(struct zink_screen *screen)
+       if (!screen->info.X) \
+          fprintf(stderr, "%s ", #X)
+       CHECK_OR_PRINT(feats.features.logicOp);
+-      CHECK_OR_PRINT(feats.features.fillModeNonSolid);
+       CHECK_OR_PRINT(feats.features.shaderClipDistance);
+       if (!screen->info.feats12.scalarBlockLayout && !screen->info.have_EXT_scalar_block_layout)
+          fprintf(stderr, "scalarBlockLayout OR EXT_scalar_block_layout ");
+diff --git a/src/gallium/drivers/zink/zink_state.c b/src/gallium/drivers/zink/zink_state.c
+index 24175aceeed..f81a0c5ceb0 100644
+--- a/src/gallium/drivers/zink/zink_state.c
++++ b/src/gallium/drivers/zink/zink_state.c
+@@ -558,7 +558,14 @@ zink_create_rasterizer_state(struct pipe_context *pctx,
+       state->hw_state.polygon_mode = VK_POLYGON_MODE_FILL;
+       state->cull_mode = VK_CULL_MODE_NONE;
+    } else {
+-      state->hw_state.polygon_mode = rs_state->fill_front; // same values
++      if (rs_state->fill_front != PIPE_POLYGON_MODE_FILL &&
++          !screen->info.feats.features.fillModeNonSolid) {
++         static bool warned = false;
++         warn_missing_feature(warned, "fillModeNonSolid");
++         state->hw_state.polygon_mode = VK_POLYGON_MODE_FILL;
++      } else {
++         state->hw_state.polygon_mode = rs_state->fill_front; // same values
++      }
+       state->cull_mode = rs_state->cull_face; // same bits
+    }
+ 
+-- 
+2.52.0
+
+From f8b4bdd4459ee87b76f9fdb7f61b3762283a4bd6 Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Mon, 1 Sep 2025 14:12:26 +0800
+Subject: [PATCH 2/7] zink: drop the requirement of nullDescriptor
+
+The nullDescriptor feature isn't present on the proprietary drivers for
+Imagination PowerVR GPUs with Rogue architecture (neither on the
+open-source driver).
+
+Re-add the fallback codepath of using dummy surfaces, and add a debug
+option to force this fallback codepath.
+
+This partially reverts commit 0a2c3953948 ("zink: require nullDescriptor
+feature").
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ docs/drivers/zink.rst                        |   2 +
+ src/gallium/drivers/zink/zink_context.c      | 170 ++++++++++++++++---
+ src/gallium/drivers/zink/zink_context.h      |   3 +
+ src/gallium/drivers/zink/zink_device_info.py |   2 +-
+ src/gallium/drivers/zink/zink_draw.cpp       |   2 +-
+ src/gallium/drivers/zink/zink_screen.c       |  14 +-
+ src/gallium/drivers/zink/zink_types.h        |   4 +
+ 7 files changed, 167 insertions(+), 30 deletions(-)
+
+diff --git a/docs/drivers/zink.rst b/docs/drivers/zink.rst
+index b870b78b394..294f49f282f 100644
+--- a/docs/drivers/zink.rst
++++ b/docs/drivers/zink.rst
+@@ -331,6 +331,8 @@ variable:
+     Zap renderpass loads for DONT_CARE
+   ``nogeneral``
+     Disable GENERAL layout usage for supported hardware
++  ``dummydes``
++    Always use dummy descriptors even if nullDescriptor feature is available
+ 
+ Vulkan Validation Layers
+ ^^^^^^^^^^^^^^^^^^^^^^^^
+diff --git a/src/gallium/drivers/zink/zink_context.c b/src/gallium/drivers/zink/zink_context.c
+index 0ba5a0408bc..70a20b59d40 100644
+--- a/src/gallium/drivers/zink/zink_context.c
++++ b/src/gallium/drivers/zink/zink_context.c
+@@ -165,8 +165,12 @@ zink_context_destroy(struct pipe_context *pctx)
+    if (ctx->blitter)
+       util_blitter_destroy(ctx->blitter);
+ 
++   pipe_resource_reference(&ctx->dummy_vertex_buffer, NULL);
+    pipe_resource_reference(&ctx->dummy_xfb_buffer, NULL);
+ 
++   for (unsigned i = 0; i < ARRAY_SIZE(ctx->dummy_fb_buffers); i++)
++      pipe_resource_reference(&ctx->dummy_fb_buffers[i], NULL);
++
+    zink_descriptors_deinit_bindless(ctx);
+ 
+    u_upload_destroy(pctx->stream_uploader);
+@@ -724,7 +728,9 @@ update_descriptor_state_ubo_lazy(struct zink_context *ctx, mesa_shader_stage sha
+       }
+ #endif
+    } else {
+-      ctx->di.t.ubos[shader][slot].buffer = VK_NULL_HANDLE;
++      bool have_null_descriptors = screen->info.rb2_feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES);
++      VkBuffer null_buffer = zink_resource(ctx->dummy_vertex_buffer)->obj->buffer;
++      ctx->di.t.ubos[shader][slot].buffer = have_null_descriptors ? VK_NULL_HANDLE : null_buffer;
+       ctx->di.t.ubos[shader][slot].range = VK_WHOLE_SIZE;
+    }
+    return res;
+@@ -747,13 +753,16 @@ update_descriptor_state_ssbo_db(struct zink_context *ctx, mesa_shader_stage shad
+ ALWAYS_INLINE static struct zink_resource *
+ update_descriptor_state_ssbo_lazy(struct zink_context *ctx, mesa_shader_stage shader, unsigned slot, struct zink_resource *res)
+ {
++   struct zink_screen *screen = zink_screen(ctx->base.screen);
+    ctx->di.t.ssbos[shader][slot].offset = ctx->ssbos[shader][slot].buffer_offset;
+    ctx->di.descriptor_res[ZINK_DESCRIPTOR_TYPE_SSBO][shader][slot] = res;
+    if (res) {
+       ctx->di.t.ssbos[shader][slot].buffer = res->obj->buffer;
+       ctx->di.t.ssbos[shader][slot].range = ctx->ssbos[shader][slot].buffer_size;
+    } else {
+-      ctx->di.t.ssbos[shader][slot].buffer = VK_NULL_HANDLE;
++      bool have_null_descriptors = screen->info.rb2_feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES);
++      VkBuffer null_buffer = zink_resource(ctx->dummy_vertex_buffer)->obj->buffer;
++      ctx->di.t.ssbos[shader][slot].buffer = have_null_descriptors ? VK_NULL_HANDLE : null_buffer;
+       ctx->di.t.ssbos[shader][slot].range = VK_WHOLE_SIZE;
+    }
+    return res;
+@@ -770,6 +779,7 @@ ALWAYS_INLINE static struct zink_resource *
+ update_descriptor_state_sampler(struct zink_context *ctx, mesa_shader_stage shader, unsigned slot, struct zink_resource *res)
+ {
+    struct zink_screen *screen = zink_screen(ctx->base.screen);
++   bool have_null_descriptors = screen->info.rb2_feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES);
+    const enum zink_descriptor_type type = ZINK_DESCRIPTOR_TYPE_SAMPLER_VIEW;
+    ctx->di.descriptor_res[type][shader][slot] = res;
+    if (res) {
+@@ -800,13 +810,22 @@ update_descriptor_state_sampler(struct zink_context *ctx, mesa_shader_stage shad
+          }
+       }
+    } else {
+-      ctx->di.textures[shader][slot].imageView = VK_NULL_HANDLE;
+-      ctx->di.textures[shader][slot].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+-      if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
+-         ctx->di.db.tbos[shader][slot].address = 0;
+-         ctx->di.db.tbos[shader][slot].range = VK_WHOLE_SIZE;
++      if (likely(have_null_descriptors)) {
++         ctx->di.textures[shader][slot].imageView = VK_NULL_HANDLE;
++         ctx->di.textures[shader][slot].imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
++         if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
++            ctx->di.db.tbos[shader][slot].address = 0;
++            ctx->di.db.tbos[shader][slot].range = VK_WHOLE_SIZE;
++         } else {
++            ctx->di.t.tbos[shader][slot] = VK_NULL_HANDLE;
++         }
+       } else {
+-         ctx->di.t.tbos[shader][slot] = VK_NULL_HANDLE;
++         assert(zink_descriptor_mode != ZINK_DESCRIPTOR_MODE_DB);
++         struct zink_surface *null_surface = zink_get_dummy_surface(ctx, 0);
++         struct zink_buffer_view *null_bufferview = ctx->dummy_bufferview;
++         ctx->di.textures[shader][slot].imageView = null_surface->image_view;
++         ctx->di.textures[shader][slot].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
++         ctx->di.t.tbos[shader][slot] = null_bufferview->buffer_view;
+       }
+    }
+    return res;
+@@ -823,6 +842,7 @@ ALWAYS_INLINE static struct zink_resource *
+ update_descriptor_state_image(struct zink_context *ctx, mesa_shader_stage shader, unsigned slot, struct zink_resource *res)
+ {
+    struct zink_screen *screen = zink_screen(ctx->base.screen);
++   bool have_null_descriptors = screen->info.rb2_feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES);
+    const enum zink_descriptor_type type = ZINK_DESCRIPTOR_TYPE_IMAGE;
+    ctx->di.descriptor_res[type][shader][slot] = res;
+    if (res) {
+@@ -842,12 +862,21 @@ update_descriptor_state_image(struct zink_context *ctx, mesa_shader_stage shader
+          ctx->di.images[shader][slot].imageView = surface->image_view;
+       }
+    } else {
+-      memset(&ctx->di.images[shader][slot], 0, sizeof(ctx->di.images[shader][slot]));
+-      if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
+-         ctx->di.db.texel_images[shader][slot].address = 0;
+-         ctx->di.db.texel_images[shader][slot].range = VK_WHOLE_SIZE;
++      if (likely(have_null_descriptors)) {
++         memset(&ctx->di.images[shader][slot], 0, sizeof(ctx->di.images[shader][slot]));
++         if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
++            ctx->di.db.texel_images[shader][slot].address = 0;
++            ctx->di.db.texel_images[shader][slot].range = VK_WHOLE_SIZE;
++         } else {
++            ctx->di.t.texel_images[shader][slot] = VK_NULL_HANDLE;
++         }
+       } else {
+-         ctx->di.t.texel_images[shader][slot] = VK_NULL_HANDLE;
++         assert(zink_descriptor_mode != ZINK_DESCRIPTOR_MODE_DB);
++         struct zink_surface *null_surface = zink_get_dummy_surface(ctx, 0);
++         struct zink_buffer_view *null_bufferview = ctx->dummy_bufferview;
++         ctx->di.images[shader][slot].imageView = null_surface->image_view;
++         ctx->di.images[shader][slot].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
++         ctx->di.t.texel_images[shader][slot] = null_bufferview->buffer_view;
+       }
+    }
+    return res;
+@@ -2515,17 +2544,36 @@ zink_delete_texture_handle(struct pipe_context *pctx, uint64_t handle)
+ static void
+ zero_bindless_descriptor(struct zink_context *ctx, uint32_t handle, bool is_buffer, bool is_image)
+ {
+-   if (is_buffer) {
+-      if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
+-         ctx->di.bindless[is_image].db.buffer_infos[handle].address = 0;
+-         ctx->di.bindless[is_image].db.buffer_infos[handle].range = 0;
++   if (likely(zink_screen(ctx->base.screen)->info.rb2_feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES))) {
++      if (is_buffer) {
++         if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
++            ctx->di.bindless[is_image].db.buffer_infos[handle].address = 0;
++            ctx->di.bindless[is_image].db.buffer_infos[handle].range = 0;
++         } else {
++            VkBufferView *bv = &ctx->di.bindless[is_image].t.buffer_infos[handle];
++            *bv = VK_NULL_HANDLE;
++         }
+       } else {
+-         VkBufferView *bv = &ctx->di.bindless[is_image].t.buffer_infos[handle];
+-         *bv = VK_NULL_HANDLE;
++         VkDescriptorImageInfo *ii = &ctx->di.bindless[is_image].img_infos[handle];
++         memset(ii, 0, sizeof(*ii));
+       }
+    } else {
+-      VkDescriptorImageInfo *ii = &ctx->di.bindless[is_image].img_infos[handle];
+-      memset(ii, 0, sizeof(*ii));
++      if (is_buffer) {
++         if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
++            ctx->di.bindless[is_image].db.buffer_infos[handle].address = zink_resource(ctx->dummy_bufferview->pres)->obj->bda;
++            ctx->di.bindless[is_image].db.buffer_infos[handle].range = 1;
++         } else {
++            VkBufferView *bv = &ctx->di.bindless[is_image].t.buffer_infos[handle];
++            struct zink_buffer_view *null_bufferview = ctx->dummy_bufferview;
++            *bv = null_bufferview->buffer_view;
++         }
++      } else {
++         struct zink_surface *null_surface = zink_get_dummy_surface(ctx, 0);
++         VkDescriptorImageInfo *ii = &ctx->di.bindless[is_image].img_infos[handle];
++         ii->sampler = VK_NULL_HANDLE;
++         ii->imageView = null_surface->image_view;
++         ii->imageLayout = VK_IMAGE_LAYOUT_GENERAL;
++      }
+    }
+ }
+ 
+@@ -2845,13 +2893,15 @@ bool
+ zink_update_fbfetch(struct zink_context *ctx)
+ {
+    const bool had_fbfetch = ctx->di.fbfetch.imageLayout == VK_IMAGE_LAYOUT_GENERAL;
++   bool have_null_descriptors = zink_screen(ctx->base.screen)->info.rb2_feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES);
+    if (!ctx->gfx_stages[MESA_SHADER_FRAGMENT] ||
+        !ctx->gfx_stages[MESA_SHADER_FRAGMENT]->info.fs.uses_fbfetch_output) {
+       if (!had_fbfetch)
+          return false;
+       zink_batch_no_rp(ctx);
+       ctx->di.fbfetch.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+-      ctx->di.fbfetch.imageView = VK_NULL_HANDLE;
++      ctx->di.fbfetch.imageView = have_null_descriptors ? VK_NULL_HANDLE :
++                                  zink_get_dummy_surface(ctx, 0)->image_view;
+       ctx->invalidate_descriptor_state(ctx, MESA_SHADER_FRAGMENT, ZINK_DESCRIPTOR_TYPE_UBO, 0, 1);
+       return true;
+    }
+@@ -2870,7 +2920,8 @@ zink_update_fbfetch(struct zink_context *ctx)
+       if (zink_get_fs_base_key(ctx)->fbfetch_ms != fbfetch_ms)
+          zink_set_fs_base_key(ctx)->fbfetch_ms = fbfetch_ms;
+    } else {
+-      ctx->di.fbfetch.imageView = VK_NULL_HANDLE;
++      ctx->di.fbfetch.imageView = have_null_descriptors ? VK_NULL_HANDLE :
++                                  zink_get_dummy_surface(ctx, 0)->image_view;
+    }
+    bool ret = false;
+    ctx->di.fbfetch.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+@@ -5489,6 +5540,70 @@ zink_emit_string_marker(struct pipe_context *pctx,
+    free(temp);
+ }
+ 
++static struct pipe_resource *
++zink_create_dummy_fbbuf(struct zink_context *ctx, enum pipe_texture_target target, unsigned width, unsigned height, unsigned samples)
++{
++   struct pipe_resource *pres;
++   struct pipe_resource templ = {0};
++   templ.width0 = width;
++   templ.height0 = height;
++   templ.depth0 = 1;
++   templ.format = PIPE_FORMAT_R8G8B8A8_UNORM;
++   templ.target = target;
++   templ.bind = PIPE_BIND_RENDER_TARGET | PIPE_BIND_SAMPLER_VIEW;
++   if (samples < 2)
++      templ.bind |= PIPE_BIND_SHADER_IMAGE;
++   templ.nr_samples = samples;
++
++   pres = ctx->base.screen->resource_create(ctx->base.screen, &templ);
++   if (!pres)
++      return NULL;
++
++   return pres;
++}
++
++static struct pipe_resource *
++zink_get_dummy_fbbuf(struct zink_context *ctx, int samples_index)
++{
++   unsigned size = calc_max_dummy_fbo_size(ctx);
++   bool needs_null_init = false;
++   if (ctx->dummy_fb_buffers[samples_index]) {
++      /* delete old surface if ETOOSMALL */
++      struct zink_resource *res = zink_resource(ctx->dummy_fb_buffers[samples_index]);
++      if (res->base.b.width0 < size || res->base.b.height0 < size) {
++         pipe_resource_reference(&ctx->dummy_fb_buffers[samples_index], NULL);
++         needs_null_init = !samples_index && ctx->di.null_fbfetch_init;
++         if (!samples_index)
++            ctx->di.null_fbfetch_init = false;
++      }
++   }
++   if (!ctx->dummy_fb_buffers[samples_index]) {
++      ctx->dummy_fb_buffers[samples_index] = zink_create_dummy_fbbuf(ctx, PIPE_TEXTURE_2D, size, size, BITFIELD_BIT(samples_index));
++      assert(ctx->dummy_fb_buffers[samples_index]);
++      /* This is possibly used with imageLoad which according to GL spec must return 0 */
++      if (!samples_index) {
++         union pipe_color_union color = {0};
++         struct pipe_box box;
++         u_box_2d(0, 0, size, size, &box);
++         ctx->base.clear_texture(&ctx->base, ctx->dummy_fb_buffers[samples_index], 0, &box, &color);
++      }
++   }
++   if (needs_null_init)
++      init_null_fbfetch(ctx);
++   return ctx->dummy_fb_buffers[samples_index];
++}
++
++struct zink_surface *
++zink_get_dummy_surface(struct zink_context *ctx, int samples_index)
++{
++   struct pipe_surface templ = {0};
++
++   templ.format = PIPE_FORMAT_R8G8B8A8_UNORM;
++   templ.nr_samples = 0;
++   templ.texture = zink_get_dummy_fbbuf(ctx, samples_index);
++   return zink_create_fb_surface(&ctx->base, &templ);
++}
++
+ static void
+ zink_tc_parse_dsa(void *state, struct tc_renderpass_info *info)
+ {
+@@ -5713,12 +5828,20 @@ zink_context_create(struct pipe_screen *pscreen, void *priv, unsigned flags)
+ 
+    const uint32_t data[] = {0};
+    if (!is_copy_only) {
++      ctx->dummy_vertex_buffer = pipe_buffer_create(&screen->base,
++         PIPE_BIND_VERTEX_BUFFER | PIPE_BIND_SHADER_IMAGE, PIPE_USAGE_IMMUTABLE, sizeof(data));
++      if (!ctx->dummy_vertex_buffer)
++         goto fail;
+       ctx->dummy_xfb_buffer = pipe_buffer_create(&screen->base,
+          PIPE_BIND_STREAM_OUTPUT, PIPE_USAGE_IMMUTABLE, sizeof(data));
+       if (!ctx->dummy_xfb_buffer)
+          goto fail;
+    }
+    if (!is_copy_only) {
++      ctx->dummy_bufferview = get_buffer_view(ctx, zink_resource(ctx->dummy_vertex_buffer), PIPE_FORMAT_R8G8B8A8_UNORM, 0, sizeof(data));
++      if (!ctx->dummy_bufferview)
++         goto fail;
++
+       if (!zink_descriptors_init(ctx))
+          goto fail;
+    }
+@@ -5775,6 +5898,7 @@ zink_context_create(struct pipe_screen *pscreen, void *priv, unsigned flags)
+    else
+       ctx->invalidate_descriptor_state = zink_context_invalidate_descriptor_state;
+    if (!is_copy_only && !is_compute_only) {
++      pipe_buffer_write_nooverlap(&ctx->base, ctx->dummy_vertex_buffer, 0, sizeof(data), data);
+       pipe_buffer_write_nooverlap(&ctx->base, ctx->dummy_xfb_buffer, 0, sizeof(data), data);
+       if (screen->info.have_EXT_color_write_enable)
+          reapply_color_write(ctx);
+diff --git a/src/gallium/drivers/zink/zink_context.h b/src/gallium/drivers/zink/zink_context.h
+index 814077e6144..97bd90ae964 100644
+--- a/src/gallium/drivers/zink/zink_context.h
++++ b/src/gallium/drivers/zink/zink_context.h
+@@ -301,6 +301,9 @@ zink_clamp_void_swizzle(const struct util_format_description *desc, enum pipe_sw
+ bool
+ zink_resource_rebind(struct zink_context *ctx, struct zink_resource *res);
+ 
++struct zink_surface *
++zink_get_dummy_surface(struct zink_context *ctx, int samples_index);
++
+ void
+ zink_set_null_fs(struct zink_context *ctx);
+ 
+diff --git a/src/gallium/drivers/zink/zink_device_info.py b/src/gallium/drivers/zink/zink_device_info.py
+index cbd3fefb764..06462868d52 100644
+--- a/src/gallium/drivers/zink/zink_device_info.py
++++ b/src/gallium/drivers/zink/zink_device_info.py
+@@ -185,7 +185,7 @@ EXTENSIONS = [
+               alias="rb2",
+               properties=True,
+               features=True,
+-              conditions=["$feats.nullDescriptor"]),
++              conditions=["($feats.nullDescriptor && !(zink_debug & ZINK_DEBUG_DUMMYDES))"]),
+     Extension("VK_EXT_image_robustness",
+               alias="rb_image",
+               features=True),
+diff --git a/src/gallium/drivers/zink/zink_draw.cpp b/src/gallium/drivers/zink/zink_draw.cpp
+index 090b48a823a..23686b4ce4a 100644
+--- a/src/gallium/drivers/zink/zink_draw.cpp
++++ b/src/gallium/drivers/zink/zink_draw.cpp
+@@ -130,7 +130,7 @@ zink_bind_vertex_buffers(struct zink_context *ctx)
+          buffers[i] = res->obj->buffer;
+          buffer_offsets[i] = vb->buffer_offset;
+       } else {
+-         buffers[i] = VK_NULL_HANDLE;
++         buffers[i] = zink_resource(ctx->dummy_vertex_buffer)->obj->buffer;
+          buffer_offsets[i] = 0;
+       }
+    }
+diff --git a/src/gallium/drivers/zink/zink_screen.c b/src/gallium/drivers/zink/zink_screen.c
+index 62af6ca9edb..199d6f1de46 100644
+--- a/src/gallium/drivers/zink/zink_screen.c
++++ b/src/gallium/drivers/zink/zink_screen.c
+@@ -119,6 +119,7 @@ zink_debug_options[] = {
+    { "msaaopt", ZINK_DEBUG_MSAAOPT, "Optimize out loads/stores of MSAA attachments" },
+    { "rploads", ZINK_DEBUG_RPLOADS, "Zap renderpass loads for DONT_CARE" },
+    { "nogeneral", ZINK_DEBUG_NOGENERAL, "Disable GENERAL layout usage for supported hardware" },
++   { "dummydes", ZINK_DEBUG_DUMMYDES, "Use dummy descriptors even if nullDescriptor is available" },
+    DEBUG_NAMED_VALUE_END
+ };
+ 
+@@ -3435,11 +3436,6 @@ zink_internal_create_screen(const struct pipe_screen_config *config, int64_t dev
+       goto fail;
+    }
+ 
+-   if (!screen->info.rb2_feats.nullDescriptor) {
+-      mesa_loge("Zink requires the nullDescriptor feature of KHR/EXT robustness2.");
+-      goto fail;
+-   }
+-
+    if (zink_set_driver_strings(screen)) {
+       mesa_loge("ZINK: failed to set driver strings\n");
+       goto fail;
+@@ -3676,6 +3672,14 @@ zink_internal_create_screen(const struct pipe_screen_config *config, int64_t dev
+          }
+          can_db = false;
+       }
++      if (!screen->info.rb2_feats.nullDescriptor || (zink_debug & ZINK_DEBUG_DUMMYDES)) {
++         if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
++            if (!screen->driver_name_is_inferred)
++               mesa_loge("Cannot use db descriptor mode without robustness2.nullDescriptor");
++            goto fail;
++         }
++         can_db = false;
++      }
+       if (ZINK_FBFETCH_DESCRIPTOR_SIZE < screen->info.db_props.inputAttachmentDescriptorSize) {
+          if (zink_descriptor_mode == ZINK_DESCRIPTOR_MODE_DB) {
+             if (!screen->driver_name_is_inferred)
+diff --git a/src/gallium/drivers/zink/zink_types.h b/src/gallium/drivers/zink/zink_types.h
+index 48a2340f653..44aa1d5f861 100644
+--- a/src/gallium/drivers/zink/zink_types.h
++++ b/src/gallium/drivers/zink/zink_types.h
+@@ -253,6 +253,7 @@ enum zink_debug {
+    ZINK_DEBUG_MSAAOPT = (1<<20),
+    ZINK_DEBUG_RPLOADS = (1<<21),
+    ZINK_DEBUG_NOGENERAL = (1<<22),
++   ZINK_DEBUG_DUMMYDES = (1<<23),
+ };
+ 
+ enum zink_pv_emulation_primitive {
+@@ -1884,7 +1885,10 @@ struct zink_context {
+       uint64_t render_passes;
+    } hud;
+ 
++   struct pipe_resource *dummy_vertex_buffer;
+    struct pipe_resource *dummy_xfb_buffer;
++   struct pipe_resource *dummy_fb_buffers[7];
++   struct zink_buffer_view *dummy_bufferview;
+ 
+    unsigned buffer_rebind_counter;
+    unsigned image_rebind_counter;
+-- 
+2.52.0
+
+From 3a299b2e5ba23b6e9cd2a6db8c997fb08e735d9a Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Sun, 30 Nov 2025 23:25:01 +0800
+Subject: [PATCH 3/7] zink: add Mesa powervr to explicit sync /
+ invalid<->linear allowlists
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/gallium/drivers/zink/zink_screen.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/gallium/drivers/zink/zink_screen.c b/src/gallium/drivers/zink/zink_screen.c
+index 199d6f1de46..5b95f5e2c68 100644
+--- a/src/gallium/drivers/zink/zink_screen.c
++++ b/src/gallium/drivers/zink/zink_screen.c
+@@ -2860,6 +2860,7 @@ init_driver_workarounds(struct zink_screen *screen)
+    /* enable implicit sync for all non-mesa drivers */
+    screen->driver_workarounds.implicit_sync = !zink_driver_is_venus(screen);
+    switch (zink_driverid(screen)) {
++   case VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA:
+    case VK_DRIVER_ID_MESA_RADV:
+    case VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA:
+    case VK_DRIVER_ID_MESA_LLVMPIPE:
+@@ -3056,6 +3057,7 @@ init_driver_workarounds(struct zink_screen *screen)
+ 
+    /* these drivers can successfully do INVALID <-> LINEAR dri3 modifier swap */
+    switch (zink_driverid(screen)) {
++   case VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA:
+    case VK_DRIVER_ID_MESA_TURNIP:
+    case VK_DRIVER_ID_MESA_NVK:
+    case VK_DRIVER_ID_MESA_LLVMPIPE:
+-- 
+2.52.0
+
+From 3786a3fdf4861fe00591ad4b5bac53807015491d Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Wed, 17 Dec 2025 22:37:06 +0800
+Subject: [PATCH 4/7] zink: add IMG proprietary vulkan driver to
+ INVALID<->LINEAR list
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/gallium/drivers/zink/zink_screen.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/gallium/drivers/zink/zink_screen.c b/src/gallium/drivers/zink/zink_screen.c
+index 5b95f5e2c68..39d9eaec265 100644
+--- a/src/gallium/drivers/zink/zink_screen.c
++++ b/src/gallium/drivers/zink/zink_screen.c
+@@ -3057,6 +3057,7 @@ init_driver_workarounds(struct zink_screen *screen)
+ 
+    /* these drivers can successfully do INVALID <-> LINEAR dri3 modifier swap */
+    switch (zink_driverid(screen)) {
++   case VK_DRIVER_ID_IMAGINATION_PROPRIETARY:
+    case VK_DRIVER_ID_IMAGINATION_OPEN_SOURCE_MESA:
+    case VK_DRIVER_ID_MESA_TURNIP:
+    case VK_DRIVER_ID_MESA_NVK:
+-- 
+2.52.0
+
+From 7af95c7c2d2a9a8e1fd17c27713fe975f2254c99 Mon Sep 17 00:00:00 2001
+From: Frank Binns <frank.binns@imgtec.com>
+Date: Tue, 21 Nov 2023 09:47:37 +0000
+Subject: [PATCH 5/7] zink: add kmsro support to Zink
+
+Signed-off-by: Frank Binns <frank.binns@imgtec.com>
+[Icenowy: forward port, de-hardcode "powervr", require modifier]
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/gallium/auxiliary/pipe-loader/meson.build |  3 +
+ .../auxiliary/pipe-loader/pipe_loader_drm.c   |  3 +
+ .../auxiliary/target-helpers/drm_helper.h     |  5 +-
+ src/gallium/drivers/zink/meson.build          |  2 +-
+ src/gallium/drivers/zink/zink_public.h        |  3 +-
+ src/gallium/drivers/zink/zink_resource.c      | 68 ++++++++++++++++---
+ src/gallium/drivers/zink/zink_screen.c        | 45 +++++++++---
+ src/gallium/drivers/zink/zink_types.h         |  6 ++
+ src/gallium/meson.build                       |  1 +
+ .../winsys/kmsro/drm/kmsro_drm_winsys.c       | 22 +++---
+ src/gallium/winsys/zink/drm/meson.build       | 12 ++++
+ src/gallium/winsys/zink/drm/zink_drm_public.h | 18 +++++
+ src/gallium/winsys/zink/drm/zink_drm_winsys.c | 18 +++++
+ src/loader/loader.c                           |  4 +-
+ 14 files changed, 181 insertions(+), 29 deletions(-)
+ create mode 100644 src/gallium/winsys/zink/drm/meson.build
+ create mode 100644 src/gallium/winsys/zink/drm/zink_drm_public.h
+ create mode 100644 src/gallium/winsys/zink/drm/zink_drm_winsys.c
+
+diff --git a/src/gallium/auxiliary/pipe-loader/meson.build b/src/gallium/auxiliary/pipe-loader/meson.build
+index 2bda1d28872..a4a13c002a6 100644
+--- a/src/gallium/auxiliary/pipe-loader/meson.build
++++ b/src/gallium/auxiliary/pipe-loader/meson.build
+@@ -45,6 +45,9 @@ endif
+ if with_gallium_ethosu
+   renderonly_drivers_c_args += '-DGALLIUM_ETHOSU'
+ endif
++if with_gallium_zink
++  renderonly_drivers_c_args += '-DGALLIUM_ZINK'
++endif
+ 
+ libpipe_loader_static = static_library(
+   'pipe_loader_static',
+diff --git a/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c b/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+index ee6500e9e3c..bb2d051c6aa 100644
+--- a/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
++++ b/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+@@ -388,6 +388,9 @@ pipe_loader_get_compatible_render_capable_device_fds(int kms_only_fd, unsigned i
+ #endif
+ #if defined GALLIUM_VC4
+       "vc4",
++#endif
++#if defined GALLIUM_ZINK
++      "",
+ #endif
+    };
+ 
+diff --git a/src/gallium/auxiliary/target-helpers/drm_helper.h b/src/gallium/auxiliary/target-helpers/drm_helper.h
+index 236b68f8c0e..e7be79a5407 100644
+--- a/src/gallium/auxiliary/target-helpers/drm_helper.h
++++ b/src/gallium/auxiliary/target-helpers/drm_helper.h
+@@ -419,7 +419,7 @@ static struct pipe_screen *
+ pipe_zink_create_screen(int fd, const struct pipe_screen_config *config)
+ {
+    struct pipe_screen *screen;
+-   screen = zink_drm_create_screen(fd, config);
++   screen = zink_drm_create_screen(fd, config, NULL);
+    return screen ? debug_screen_wrap(screen) : NULL;
+ }
+ 
+@@ -507,6 +507,9 @@ const driOptionDescription kmsro_driconf[] = {
+ #ifdef GALLIUM_LIMA
+       #include "lima/driinfo_lima.h"
+ #endif
++#ifdef GALLIUM_ZINK
++      #include "zink/driinfo_zink.h"
++#endif
+ };
+ DRM_DRIVER_DESCRIPTOR(kmsro, kmsro_driconf, ARRAY_SIZE(kmsro_driconf))
+ 
+diff --git a/src/gallium/drivers/zink/meson.build b/src/gallium/drivers/zink/meson.build
+index 97adf9ddc5a..d922fcf16b1 100644
+--- a/src/gallium/drivers/zink/meson.build
++++ b/src/gallium/drivers/zink/meson.build
+@@ -101,7 +101,7 @@ libzink = static_library(
+ 
+ driver_zink = declare_dependency(
+   compile_args : '-DGALLIUM_ZINK',
+-  link_with : [libzink],
++  link_with : [libzinkwinsys, libzink],
+ )
+ 
+ if with_tests
+diff --git a/src/gallium/drivers/zink/zink_public.h b/src/gallium/drivers/zink/zink_public.h
+index 235769688c5..c2fe87325ed 100644
+--- a/src/gallium/drivers/zink/zink_public.h
++++ b/src/gallium/drivers/zink/zink_public.h
+@@ -25,6 +25,7 @@
+ #define ZINK_PUBLIC_H
+ 
+ struct pipe_screen;
++struct renderonly;
+ struct sw_winsys;
+ struct pipe_screen_config;
+ 
+@@ -32,7 +33,7 @@ struct pipe_screen *
+ zink_create_screen(struct sw_winsys *winsys, const struct pipe_screen_config *config);
+ 
+ struct pipe_screen *
+-zink_drm_create_screen(int fd, const struct pipe_screen_config *config);
++zink_drm_create_screen(int fd, const struct pipe_screen_config *config, struct renderonly *ro);
+ struct pipe_screen *
+ zink_win32_create_screen(uint64_t adapter_luid);
+ #endif
+diff --git a/src/gallium/drivers/zink/zink_resource.c b/src/gallium/drivers/zink/zink_resource.c
+index bd5d6b981aa..20f2cc87bed 100644
+--- a/src/gallium/drivers/zink/zink_resource.c
++++ b/src/gallium/drivers/zink/zink_resource.c
+@@ -256,6 +256,10 @@ zink_resource_destroy(struct pipe_screen *pscreen,
+    struct zink_resource *res = zink_resource(pres);
+    /* prevent double-free when unrefing internal surfaces */
+    res->base.b.reference.count = 999;
++
++   if (res->scanout)
++      renderonly_scanout_destroy(res->scanout, screen->ro);
++
+    if (pres->target == PIPE_BUFFER) {
+       util_range_destroy(&res->valid_buffer_range);
+       util_idalloc_mt_free(&screen->buffer_ids, res->base.buffer_id_unique);
+@@ -792,7 +796,7 @@ init_ici(struct zink_screen *screen, VkImageCreateInfo *ici, const struct pipe_r
+ 
+    if (screen->info.have_EXT_image_drm_format_modifier && modifiers_count)
+       ici->tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
+-   else if (bind & (PIPE_BIND_LINEAR | ZINK_BIND_DMABUF))
++   else if (bind & (PIPE_BIND_LINEAR | PIPE_BIND_SCANOUT | ZINK_BIND_DMABUF))
+       ici->tiling = VK_IMAGE_TILING_LINEAR;
+    else
+       ici->tiling = VK_IMAGE_TILING_OPTIMAL;
+@@ -1612,8 +1616,26 @@ resource_create(struct pipe_screen *pscreen,
+    if (templ2.flags & PIPE_RESOURCE_FLAG_SPARSE &&
+        (util_res_sample_count(templ) == 1 || screen->info.feats.features.shaderStorageImageMultisample))
+       templ2.bind |= PIPE_BIND_SHADER_IMAGE;
++
++   if (!whandle && screen->ro && (templ2.bind & PIPE_BIND_SCANOUT)) {
++      struct winsys_handle handle;
++
++      res->scanout =
++         renderonly_scanout_for_resource(&templ2, screen->ro, &handle);
++
++      if (!res->scanout) {
++         free(res->modifiers);
++         FREE_CL(res);
++	 return NULL;
++      }
++      assert(handle.type == WINSYS_HANDLE_TYPE_FD);
++      whandle = &handle;
++   }
++
+    res->obj = resource_object_create(screen, &templ2, whandle, &linear, res->modifiers, res->modifiers_count, loader_private, user_mem);
+    if (!res->obj) {
++      if (res->scanout)
++         renderonly_scanout_destroy(res->scanout, screen->ro);
+       free(res->modifiers);
+       FREE_CL(res);
+       return NULL;
+@@ -1854,18 +1876,25 @@ zink_resource_get_param(struct pipe_screen *pscreen, struct pipe_context *pctx,
+       break;
+ 
+    case PIPE_RESOURCE_PARAM_STRIDE: {
+-      VkImageSubresource sub_res = {0};
+-      VkSubresourceLayout sub_res_layout = {0};
++      if (res->scanout) {
++         *value = res->scanout->stride;
++      } else {
++         VkImageSubresource sub_res = {0};
++         VkSubresourceLayout sub_res_layout = {0};
+ 
+-      sub_res.aspectMask = aspect;
++         sub_res.aspectMask = aspect;
+ 
+-      VKSCR(GetImageSubresourceLayout)(screen->dev, obj->image, &sub_res, &sub_res_layout);
++         VKSCR(GetImageSubresourceLayout)(screen->dev, obj->image, &sub_res, &sub_res_layout);
+ 
+-      *value = sub_res_layout.rowPitch;
++         *value = sub_res_layout.rowPitch;
++      }
+       break;
+    }
+ 
+    case PIPE_RESOURCE_PARAM_OFFSET: {
++      if (res->scanout) {
++         *value = 0;
++      } else {
+          VkImageSubresource isr = {
+             aspect,
+             level,
+@@ -1874,7 +1903,9 @@ zink_resource_get_param(struct pipe_screen *pscreen, struct pipe_context *pctx,
+          VkSubresourceLayout srl;
+          VKSCR(GetImageSubresourceLayout)(screen->dev, obj->image, &isr, &srl);
+          *value = srl.offset;
+-         break;
++      }
++
++      break;
+    }
+ 
+    case PIPE_RESOURCE_PARAM_MODIFIER: {
+@@ -1941,9 +1972,15 @@ zink_resource_get_handle(struct pipe_screen *pscreen,
+                          struct winsys_handle *whandle,
+                          unsigned usage)
+ {
++   struct zink_screen *screen = zink_screen(pscreen);
++   struct zink_resource *res = zink_resource(tex);
++
+    if (tex->target == PIPE_BUFFER)
+       tc_buffer_disable_cpu_storage(tex);
+-   if (whandle->type == WINSYS_HANDLE_TYPE_FD || whandle->type == WINSYS_HANDLE_TYPE_KMS) {
++   if (whandle->type == WINSYS_HANDLE_TYPE_KMS && screen->ro) {
++      return renderonly_get_handle(res->scanout, whandle);
++   } else if (whandle->type == WINSYS_HANDLE_TYPE_FD ||
++              whandle->type == WINSYS_HANDLE_TYPE_KMS) {
+ #ifdef ZINK_USE_DMABUF
+       while (whandle->plane && tex->next && !zink_resource_is_aux_plane(tex->next)) {
+          tex = tex->next;
+@@ -2038,8 +2075,10 @@ zink_resource_from_handle(struct pipe_screen *pscreen,
+                  unsigned usage)
+ {
+ #ifdef ZINK_USE_DMABUF
++   struct zink_screen *screen = zink_screen(pscreen);
++
+    if (whandle->modifier != DRM_FORMAT_MOD_INVALID &&
+-       !zink_screen(pscreen)->info.have_EXT_image_drm_format_modifier)
++       !screen->info.have_EXT_image_drm_format_modifier)
+       return NULL;
+ 
+    struct pipe_resource templ2 = *templ;
+@@ -2071,6 +2110,17 @@ zink_resource_from_handle(struct pipe_screen *pscreen,
+          tc_buffer_disable_cpu_storage(pres);
+       res->internal_format = whandle->format;
+    }
++
++   if (screen->ro) {
++      struct zink_resource *res = zink_resource(pres);
++
++      /* Make sure that renderonly has a handle to our buffer in the display's
++       * fd, so that a later renderonly_get_handle() returns correct handles
++       * or GEM names.
++       */
++      res->scanout = renderonly_create_gpu_import_for_resource(pres, screen->ro, NULL);
++   }
++
+    return pres;
+ #else
+    return NULL;
+diff --git a/src/gallium/drivers/zink/zink_screen.c b/src/gallium/drivers/zink/zink_screen.c
+index 39d9eaec265..d53f28355f4 100644
+--- a/src/gallium/drivers/zink/zink_screen.c
++++ b/src/gallium/drivers/zink/zink_screen.c
+@@ -168,6 +168,14 @@ zink_get_device_vendor(struct pipe_screen *pscreen)
+    return zink_screen(pscreen)->vendor_name;
+ }
+ 
++static int
++zink_get_screen_fd(struct pipe_screen *pscreen)
++{
++   struct zink_screen *screen = zink_screen(pscreen);
++
++   return screen->drm_fd;
++}
++
+ static const char *
+ zink_get_name(struct pipe_screen *pscreen)
+ {
+@@ -1638,6 +1646,9 @@ zink_destroy_screen(struct pipe_screen *pscreen)
+    if (screen->loader_lib)
+       util_dl_close(screen->loader_lib);
+ 
++   if (screen->ro)
++      screen->ro->destroy(screen->ro);
++
+    if (screen->drm_fd != -1)
+       close(screen->drm_fd);
+ 
+@@ -3568,6 +3579,7 @@ zink_internal_create_screen(const struct pipe_screen_config *config, int64_t dev
+    for (unsigned i = 0; i < ARRAY_SIZE(screen->base.nir_options); i++)
+       screen->base.nir_options[i] = &screen->nir_options;
+ 
++   screen->base.get_screen_fd = zink_get_screen_fd;
+    screen->base.get_name = zink_get_name;
+    if (screen->instance_info->have_KHR_external_memory_capabilities) {
+       screen->base.get_device_uuid = zink_get_device_uuid;
+@@ -3830,25 +3842,42 @@ free_device:
+ }
+ 
+ struct pipe_screen *
+-zink_drm_create_screen(int fd, const struct pipe_screen_config *config)
++zink_drm_create_screen(int fd, const struct pipe_screen_config *config, struct renderonly *ro)
+ {
+    int64_t dev_major, dev_minor;
+-   struct zink_screen *ret;
++   struct zink_screen *ret = NULL;
+ 
+    if (zink_render_rdev(fd, &dev_major, &dev_minor))
+-      return NULL;
++      goto fail;
+ 
+    ret = zink_internal_create_screen(config, dev_major, dev_minor, 0);
++   if (!ret)
++      goto fail;
+ 
+-   if (ret)
+-      ret->drm_fd = os_dupfd_cloexec(fd);
+-   if (ret && !ret->info.have_KHR_external_memory_fd) {
++   ret->drm_fd = fd;
++   ret->ro = ro;
++
++   if (!ret->info.have_KHR_external_memory_fd) {
+       debug_printf("ZINK: KHR_external_memory_fd required!\n");
+-      zink_destroy_screen(&ret->base);
+-      return NULL;
++      goto fail;
++   }
++
++   /*
++    * Renderonly device may allocate buffers with arbitrary stride that
++    * can only be supported with EXT_image_drm_format_modifier.
++    */
++   if (ro && !ret->info.have_EXT_image_drm_format_modifier) {
++      debug_printf("ZINK: EXT_image_drm_format_modifier required for renderonly GPUs!\n");
++      goto fail;
+    }
+ 
+    return &ret->base;
++
++fail:
++   if (ret)
++      zink_destroy_screen(&ret->base);
++   close(fd);
++   return NULL;
+ }
+ 
+ struct pipe_screen *
+diff --git a/src/gallium/drivers/zink/zink_types.h b/src/gallium/drivers/zink/zink_types.h
+index 44aa1d5f861..4c7f4f2597e 100644
+--- a/src/gallium/drivers/zink/zink_types.h
++++ b/src/gallium/drivers/zink/zink_types.h
+@@ -40,6 +40,9 @@
+ #include "util/pb_slab.h"
+ 
+ #include "util/blob.h"
++
++#include "renderonly/renderonly.h"
++
+ #include "util/disk_cache.h"
+ #include "util/hash_table.h"
+ #include "util/list.h"
+@@ -1331,6 +1334,8 @@ struct zink_resource {
+ 
+    uint8_t modifiers_count;
+    uint64_t *modifiers;
++
++   struct renderonly_scanout *scanout;
+ };
+ 
+ static inline struct zink_resource *
+@@ -1406,6 +1411,7 @@ struct zink_screen {
+ 
+    bool device_lost;
+    int drm_fd;
++   struct renderonly *ro;
+ 
+    struct slab_parent_pool transfer_pool;
+    struct disk_cache *disk_cache;
+diff --git a/src/gallium/meson.build b/src/gallium/meson.build
+index 9b02fd1189a..1a10e6667db 100644
+--- a/src/gallium/meson.build
++++ b/src/gallium/meson.build
+@@ -197,6 +197,7 @@ else
+   driver_ethosu = declare_dependency()
+ endif
+ if with_gallium_zink
++  subdir('winsys/zink/drm')
+   subdir('drivers/zink')
+ else
+   driver_zink = declare_dependency()
+diff --git a/src/gallium/winsys/kmsro/drm/kmsro_drm_winsys.c b/src/gallium/winsys/kmsro/drm/kmsro_drm_winsys.c
+index deb847d994e..b4cd44cc104 100644
+--- a/src/gallium/winsys/kmsro/drm/kmsro_drm_winsys.c
++++ b/src/gallium/winsys/kmsro/drm/kmsro_drm_winsys.c
+@@ -33,6 +33,7 @@
+ #include "panfrost/drm/panfrost_drm_public.h"
+ #include "lima/drm/lima_drm_public.h"
+ #include "asahi/drm/asahi_drm_public.h"
++#include "zink/drm/zink_drm_public.h"
+ #include "xf86drm.h"
+ 
+ #include "pipe/p_screen.h"
+@@ -85,46 +86,51 @@ struct pipe_screen *kmsro_drm_screen_create(int kms_fd,
+       util_sparse_array_init(&ro->bo_map, sizeof(struct renderonly_scanout), 64);
+       simple_mtx_init(&ro->bo_map_lock, mtx_plain);
+ 
+-      if (strcmp(render_dev_name, "asahi") == 0) {
++      if (false) {
+ #if defined(GALLIUM_ASAHI)
++      } else if (strcmp(render_dev_name, "asahi") == 0) {
+          ro->create_for_resource = renderonly_create_gpu_import_for_resource;
+          screen = asahi_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
+ #endif
+-      }
+-      else if (strcmp(render_dev_name, "etnaviv") == 0) {
+ #if defined(GALLIUM_ETNAVIV)
++      } else if (strcmp(render_dev_name, "etnaviv") == 0) {
+          ro->create_for_resource = renderonly_create_kms_dumb_buffer_for_resource;
+          screen = etna_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
+ #endif
+-      } else if (strcmp(render_dev_name, "msm") == 0) {
+ #if defined(GALLIUM_FREEDRENO)
++      } else if (strcmp(render_dev_name, "msm") == 0) {
+          ro->create_for_resource = renderonly_create_kms_dumb_buffer_for_resource;
+          screen = fd_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
+ #endif
+-      } else if (strcmp(render_dev_name, "lima") == 0) {
+ #if defined(GALLIUM_LIMA)
++      } else if (strcmp(render_dev_name, "lima") == 0) {
+          ro->create_for_resource = renderonly_create_kms_dumb_buffer_for_resource;
+          screen = lima_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
+ #endif
++#if defined(GALLIUM_PANFROST)
+       } else if (strcmp(render_dev_name, "panfrost") == 0 ||
+                strcmp(render_dev_name, "panthor") == 0) {
+-#if defined(GALLIUM_PANFROST)
+          ro->create_for_resource = panfrost_create_kms_dumb_buffer_for_resource;
+          screen = panfrost_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
+ #endif
+-      } else if (strcmp(render_dev_name, "v3d") == 0) {
+ #if defined(GALLIUM_V3D)
++      } else if (strcmp(render_dev_name, "v3d") == 0) {
+          ro->create_for_resource = renderonly_create_kms_dumb_buffer_for_resource;
+          screen = v3d_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
+ #endif
+-      } else if (strcmp(render_dev_name, "vc4") == 0) {
+ #if defined(GALLIUM_VC4)
++      } else if (strcmp(render_dev_name, "vc4") == 0) {
+          /* Passes the vc4-allocated BO through to the KMS-only DRM device using
+          * PRIME buffer sharing.  The VC4 BO must be linear, which the SCANOUT
+          * flag on allocation will have ensured.
+          */
+          ro->create_for_resource = renderonly_create_gpu_import_for_resource;
+          screen = vc4_drm_screen_create_renderonly(ro->gpu_fd, ro, config);
++#endif
++#if defined(GALLIUM_ZINK)
++      } else {
++         ro->create_for_resource = renderonly_create_kms_dumb_buffer_for_resource;
++         screen = zink_drm_create_screen_renderonly(ro->gpu_fd, ro, config);
+ #endif
+       }
+ 
+diff --git a/src/gallium/winsys/zink/drm/meson.build b/src/gallium/winsys/zink/drm/meson.build
+new file mode 100644
+index 00000000000..40501ef8b77
+--- /dev/null
++++ b/src/gallium/winsys/zink/drm/meson.build
+@@ -0,0 +1,12 @@
++# Copyright © 2022 Imagination Technologies Ltd.
++# SPDX-License-Identifier: MIT
++
++libzinkwinsys = static_library(
++  'zinkwinsys',
++  files('zink_drm_winsys.c'),
++  include_directories : [
++    inc_gallium_aux, inc_gallium_drivers,
++  ],
++  dependencies : idep_mesautil,
++  gnu_symbol_visibility : 'hidden',
++)
+diff --git a/src/gallium/winsys/zink/drm/zink_drm_public.h b/src/gallium/winsys/zink/drm/zink_drm_public.h
+new file mode 100644
+index 00000000000..fddfe132158
+--- /dev/null
++++ b/src/gallium/winsys/zink/drm/zink_drm_public.h
+@@ -0,0 +1,18 @@
++/*
++ * Copyright © 2023 Imagination Technologies Ltd.
++ * SPDX-License-Identifier: MIT
++ */
++
++#ifndef __ZINK_DRM_PUBLIC_H__
++#define __ZINK_DRM_PUBLIC_H__
++
++struct pipe_screen_config;
++struct pipe_screen;
++struct renderonly;
++
++struct pipe_screen *
++zink_drm_create_screen_renderonly(int fd,
++                                  struct renderonly *ro,
++                                  const struct pipe_screen_config *config);
++
++#endif
+diff --git a/src/gallium/winsys/zink/drm/zink_drm_winsys.c b/src/gallium/winsys/zink/drm/zink_drm_winsys.c
+new file mode 100644
+index 00000000000..2d02e07a5b8
+--- /dev/null
++++ b/src/gallium/winsys/zink/drm/zink_drm_winsys.c
+@@ -0,0 +1,18 @@
++/*
++ * Copyright © 2023 Imagination Technologies Ltd.
++ * SPDX-License-Identifier: MIT
++ */
++
++#include "util/os_file.h"
++#include "util/u_screen.h"
++
++#include "zink_drm_public.h"
++#include "zink/zink_public.h"
++
++struct pipe_screen *
++zink_drm_create_screen_renderonly(int fd,
++                                  struct renderonly *ro,
++                                  const struct pipe_screen_config *config)
++{
++   return u_pipe_screen_lookup_or_create(os_dupfd_cloexec(fd), config, ro, zink_drm_create_screen);
++}
+diff --git a/src/loader/loader.c b/src/loader/loader.c
+index 15bdcbfff07..b8840243d14 100644
+--- a/src/loader/loader.c
++++ b/src/loader/loader.c
+@@ -260,7 +260,9 @@ loader_open_render_node_platform_devices(const char * const drivers[],
+          }
+ 
+          for (j = 0; j < n_drivers; j++) {
+-            if (strcmp(version->name, drivers[j]) == 0) {
++            /* Always match empty driver name for falling back with Zink */
++            if (strlen(drivers[j]) == 0 ||
++                strcmp(version->name, drivers[j]) == 0) {
+                found = true;
+                break;
+             }
+-- 
+2.52.0
+
+From 4d0293775d19c8d0255465ff43a57792f4ccd16d Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Wed, 17 Dec 2025 22:04:50 +0800
+Subject: [PATCH 6/7] pipe-loader: make get_driver_descriptor() return NULL for
+ unknown driver
+
+Currently for unknown drivers names, get_driver_descriptor() will never
+return NULL, but the driver descriptor of kmsro will be returned.
+However, kmsro is meaningless when the input FD isn't a KMS-capable one.
+
+Add the kmsro descriptor to the descriptor list, and stop to return it
+for unknown names (it will still be returned for "kmsro", which the
+fallback codepath in pipe_loader_drm_probe_fd_nodup() will use).
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c b/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+index bb2d051c6aa..559d49bb402 100644
+--- a/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
++++ b/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+@@ -89,6 +89,7 @@ static const struct drm_driver_descriptor *driver_descriptors[] = {
+    &tegra_driver_descriptor,
+    &lima_driver_descriptor,
+    &zink_driver_descriptor,
++   &kmsro_driver_descriptor,
+ };
+ 
+ static const struct drm_driver_descriptor *
+@@ -98,7 +99,7 @@ get_driver_descriptor(const char *driver_name)
+       if (strcmp(driver_descriptors[i]->driver_name, driver_name) == 0)
+          return driver_descriptors[i];
+    }
+-   return &kmsro_driver_descriptor;
++   return NULL;
+ }
+ 
+ static int
+-- 
+2.52.0
+
+From 3a878b5db37460db4419b85a3f8819504b88ea78 Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Wed, 17 Dec 2025 22:08:27 +0800
+Subject: [PATCH 7/7] pipe-loader: fallback to zink instead of kmsro for render
+ nodes
+
+In the case that a Wayland compositor is ran with kmsro, the render
+driver node will be passed to the client instead of the display node.
+With Zink being able to use with KMSRO, now we cannot expect the render
+driver node to from be a known driver name.
+
+Fallback render nodes with unknown driver names to Zink instead of
+KMSRO, because KMSRO on non-KMS FD is meaningless.
+
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c b/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+index 559d49bb402..e3b8c45ce03 100644
+--- a/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
++++ b/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+@@ -172,10 +172,14 @@ pipe_loader_drm_probe_fd_nodup(struct pipe_loader_device **dev, int fd, bool zin
+    if (strcmp(ddev->base.driver_name, "vgem") == 0)
+       goto fail;
+ 
+-   /* kmsro supports lots of drivers, try as a fallback */
+-   if (!ddev->dd && !zink)
++   /* kmsro supports lots of drivers, try as a fallback for primary nodes */
++   if (!ddev->dd && !zink && drmGetNodeTypeFromFd(fd) == DRM_NODE_PRIMARY)
+       ddev->dd = get_driver_descriptor("kmsro");
+ 
++   /* Try zink for unknown render nodes */
++   if (!ddev->dd && drmGetNodeTypeFromFd(fd) == DRM_NODE_RENDER)
++      ddev->dd = get_driver_descriptor("zink");
++
+    if (!ddev->dd)
+       goto fail;
+ 
+-- 
+2.52.0
+
+From ca5fdc1f255b7b821e3d794d787ac0729a3ff33f Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Sat, 27 Dec 2025 09:06:41 +0800
+Subject: [PATCH 1/3] mesa: workaround GL_INVALID_OPERATION in GLES 2.0 draws
+
+Mesa internally converts some draw calls to DrawArraysInstancedBaseInstance
+or DrawElementsInstancedBaseVertexBaseInstance, which are only available
+in GLES contexts via GL_EXT_base_instance, a GLES3-only extension.
+
+Export these two functions into the internal namespace for GLES 2.0
+contexts too.
+
+This fixes black screen for `glmark2 -b build:use-vbo=false` (which is
+the first test item for glmark2 auto test sequence) on GLES 2 HW / GLES
+3 HW with MESA_GLES_VERSION_OVERRIDE=2.0 .
+
+Fixes: 7c1f8b63ad5a ("glthread: work around GL_INVALID_OPERATION with OpenGL ES 1.x draws")
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/mesa/glapi/glapi/gen/gl_API.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/mesa/glapi/glapi/gen/gl_API.xml b/src/mesa/glapi/glapi/gen/gl_API.xml
+index 533c5205fa5..7f90cbd9ea9 100644
+--- a/src/mesa/glapi/glapi/gen/gl_API.xml
++++ b/src/mesa/glapi/glapi/gen/gl_API.xml
+@@ -10989,7 +10989,7 @@
+     <!-- These functions exist because glthread converts all draws to these
+          and then calls them through the dispatch table, so this is a workaround
+          for the GL_INVALID_OPERATION errors with OpenGL ES 1.x. -->
+-    <function name="InternalDrawArraysInstancedBaseInstance" es1="1.0"
++    <function name="InternalDrawArraysInstancedBaseInstance" es1="1.0" es2="2.0"
+               alias="DrawArraysInstancedBaseInstance">
+         <param name="mode" type="GLenum"/>
+         <param name="first" type="GLint"/>
+@@ -10998,7 +10998,7 @@
+         <param name="baseinstance" type="GLuint"/>
+     </function>
+ 
+-    <function name="InternalDrawElementsInstancedBaseVertexBaseInstance" es1="1.0"
++    <function name="InternalDrawElementsInstancedBaseVertexBaseInstance" es1="1.0" es2="2.0"
+               alias="DrawElementsInstancedBaseVertexBaseInstance">
+         <param name="mode" type="GLenum"/>
+         <param name="count" type="GLsizei"/>
+-- 
+2.52.0
+
+From 09917ae99d4040b028df55a116252b1f418f59df Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Sat, 27 Dec 2025 09:33:31 +0800
+Subject: [PATCH 2/3] mesa: fix GL_INVALID_OPERATION with GLES1/2 + Kopper
+
+Kopper draw codepath calls an internal helper called
+InternalInvalidateFramebufferAncillaryMESA, which is currently only
+exported for GLES3 contexts.
+
+This leads to a warning when the underlying Vulkan driver capability
+isn't enough for GLES3 or GLES version number is forced to 2.0 or the
+program is a GLES1 one.
+
+Export this internal helper for GLES1/2 too.
+
+Fixes: 0c7994bb2ddb ("mapi: add InternalInvalidateFramebufferAncillaryMESA")
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/mesa/glapi/glapi/gen/gl_API.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/mesa/glapi/glapi/gen/gl_API.xml b/src/mesa/glapi/glapi/gen/gl_API.xml
+index 7f90cbd9ea9..5bc64198d84 100644
+--- a/src/mesa/glapi/glapi/gen/gl_API.xml
++++ b/src/mesa/glapi/glapi/gen/gl_API.xml
+@@ -11095,7 +11095,7 @@
+     </function>
+ 
+     <!-- Internal function for glthread to implement ancillary buffer invalidation. -->
+-    <function name="InternalInvalidateFramebufferAncillaryMESA" es2="3.0">
++    <function name="InternalInvalidateFramebufferAncillaryMESA" es1="1.0" es2="2.0">
+     </function>
+ 
+     <!-- Internal function for glthread to defer buffer release. -->
+-- 
+2.52.0
+
+From 1a17784820cd43992a342ba261ffeaa266ea8aad Mon Sep 17 00:00:00 2001
+From: Icenowy Zheng <uwu@icenowy.me>
+Date: Sat, 27 Dec 2025 09:10:51 +0800
+Subject: [PATCH 3/3] mesa: fix GL_INVALID_OPERATION when releasing buffer in
+ GLES1/2 ctx
+
+The Function glInternalReleaseBufferMESA is called whenever a
+intermediate buffer is used by MESA internal and being released, however
+it's only exported for GLES3, which leads to drawing w/o VBO not
+operational for GLES1/2.
+
+Fixes invalid operation warning in `glmark2 -b build:use-vbo=false` for
+GLES2 HW / any HW with MESA_GLES_VERSION_OVERRIDE=2.0 .
+
+VBO-less drawing is possible for GLES 1.0 too, so this function is also
+exported with GLES1. Tested on GLES1 with mesa-demos gears demo with
+VBO allocation commented out.
+
+Fixes: ae75b59cb526 ("glthread, tc: Fix buffer release with glthread and tc")
+Signed-off-by: Icenowy Zheng <uwu@icenowy.me>
+---
+ src/mesa/glapi/glapi/gen/gl_API.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/mesa/glapi/glapi/gen/gl_API.xml b/src/mesa/glapi/glapi/gen/gl_API.xml
+index 5bc64198d84..dcce9353819 100644
+--- a/src/mesa/glapi/glapi/gen/gl_API.xml
++++ b/src/mesa/glapi/glapi/gen/gl_API.xml
+@@ -11099,7 +11099,7 @@
+     </function>
+ 
+     <!-- Internal function for glthread to defer buffer release. -->
+-    <function name="InternalReleaseBufferMESA" es2="3.0" marshal="async">
++    <function name="InternalReleaseBufferMESA" es1="1.0" es2="2.0" marshal="async">
+         <param name="buffer" type="GLvoid *"/>
+     </function>
+ </category>
+-- 
+2.52.0
+

@@ -20,6 +20,10 @@ BuildSystem:    meson
 
 # Fixes etnaviv disasm unit test failure of excepting "-nan"
 Patch1:         0001-isaspec-deocde-try-to-preserve-NaN-sign-when-printin.patch
+# Patches to allow Zink running on libVK_IMG w/o IMG GLES driver
+# See FD.o gitlab mesa/mesa MRs: !38810 !38813 !38897 !39092
+# The IMG blob related part isn't submitted yet
+Patch2:         mesa-25.3.0-zink-kmsro-for-img-blob.patch
 
 # nvk is blocked by Rust packaging
 BuildOption(conf):  -Dgallium-drivers=llvmpipe,softpipe,r300,r600,radeonsi,nouveau,virgl,iris,etnaviv,zink
