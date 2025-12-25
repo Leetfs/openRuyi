@@ -5,15 +5,14 @@
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-# This package should be renamed into perl-Locale-gettext
 %global tarname Locale-gettext
 
-Name:           perl-gettext
+Name:           perl-%{tarname}
 Version:        1.07
 Release:        %autorelease
 Summary:        Interface to gettext family of functions
 License:        GPL-1.0-or-later OR Artistic-1.0-Perl
-URL:            https://metacpan.org/release/gettext
+URL:            https://metacpan.org/release/Locale-gettext
 #!RemoteAsset
 Source0:        https://cpan.metacpan.org/authors/id/P/PV/PVANDRY/%{tarname}-%{version}.tar.gz
 BuildSystem:    autotools
@@ -31,8 +30,7 @@ BuildRequires:  perl(POSIX)
 BuildRequires:  perl(Encode)
 # Tests:
 BuildRequires:  perl(Test)
-
-# Need to allow LANG=en_US.UTF-8
+# Tests
 BuildRequires:  glibc-locale-base
 
 %description
@@ -50,6 +48,10 @@ internationalize software.
 %perl_make_install
 %perl_process_packlist
 %perl_gen_filelist
+
+%check
+# Testsuite fails with LANG=C.UTF-8 and glibc >=2.42
+LANG=en_US.UTF-8 %{__make} test
 
 %files -f %{name}.files
 %defattr(-,root,root,755)
