@@ -5,6 +5,7 @@
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
+%global _test_target test
 %global tar_name libintl-perl
 
 Name:           perl-libintl-perl
