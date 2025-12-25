@@ -71,6 +71,7 @@ browsers. Note that gd is not a paint program.
 
 %package        devel
 Summary:        The development libraries and header files for gd
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 This package contains the development libraries and header files
