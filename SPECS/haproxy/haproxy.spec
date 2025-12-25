@@ -84,6 +84,9 @@ install -p -D -m 0644 %{SOURCE4} %{buildroot}%{_unitdir}/%{name}.service
 install -d -m 0755 %{buildroot}%{_datadir}/haproxy
 install -p -m 0644 examples/errorfiles/* %{buildroot}%{_datadir}/haproxy/
 
+# No check
+%check
+
 %pre
 getent group haproxy >/dev/null || groupadd -r haproxy
 getent passwd haproxy >/dev/null || useradd -r -g haproxy -d \
