@@ -22,7 +22,6 @@ Source0:        https://github.com/cloud-hypervisor/obs-packaging/raw/%{obs_pack
 Source1:        https://github.com/cloud-hypervisor/obs-packaging/raw/%{obs_packaging_commit}/cloud-hypervisor/src/%{name}-%{version}-vendor.tar.gz
 #!RemoteAsset
 Source2:        https://github.com/cloud-hypervisor/obs-packaging/raw/%{obs_packaging_commit}/cloud-hypervisor/src/config.toml
-ExclusiveArch:  riscv64
 
 BuildRequires:  gcc
 BuildRequires:  glibc-devel
@@ -38,7 +37,7 @@ Requires: libcap
 
 # TODO: Use rva23 rust toolchain to compile
 %define rust_def_target riscv64gc-unknown-linux-gnu
-%define cargo_pkg_feature_opts --no-default-features --features "kvm"
+%define cargo_pkg_feature_opts --no-default-features --features "kvm" -p cloud-hypervisor
 %define cargo_offline --offline
 
 %description
