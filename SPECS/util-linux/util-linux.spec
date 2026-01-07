@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
-# SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
+# SPDX-FileCopyrightText: (C) 2025, 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
+# SPDX-FileCopyrightText: (C) 2025, 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Jingwiw <wangjingwei@iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 #
@@ -147,8 +147,17 @@ symlinks for the libraries included in util-linux.
 # Regenerate autotools files in case patches touched them.
 autoreconf -fiv
 
-%install -a
+%install -p
+%if "%{_sbindir}" == "%{_bindir}"
+mkdir -p %{buildroot}%{_sbindir}
+ln -s %{buildroot}%{_sbindir} %{buildroot}/%{_prefix}/sbin
+%endif
 
+
+%install -a
+%if "%{_sbindir}" == "%{_bindir}"
+unlink %{buildroot}/%{_prefix}/sbin
+%endif
 install -Dm644 %{SOURCE10} %{buildroot}%{_sysconfdir}/pam.d/login
 install -Dm644 %{SOURCE12} %{buildroot}%{_sysconfdir}/pam.d/su-l
 install -Dm644 %{SOURCE13} %{buildroot}%{_sysconfdir}/pam.d/runuser
