@@ -1,5 +1,6 @@
-# SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
-# SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
+# SPDX-FileCopyrightText: (C) 2025, 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
+# SPDX-FileCopyrightText: (C) 2025, 2026 openRuyi Project Contributors
+# SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
@@ -45,6 +46,12 @@ Header files and libraries for developing with libhd library.
 
 # No configure.
 %conf
+
+%install -a
+%if "%{_sbindir}" == "%{_bindir}"
+# Makefile hardcodes sbin paths. Fix the install locations here.
+mv %{buildroot}/usr/sbin  %{buildroot}%{_sbindir}
+%endif
 
 # No tests
 %check
