@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,6 +12,7 @@ Release:        %autorelease
 Summary:        GNU diff Utilities
 License:        GFDL-1.2-only AND GPL-3.0-or-later
 URL:            https://www.gnu.org/software/diffutils/
+VCS:            git:https://https.git.savannah.gnu.org/git/diffutils.git
 #!RemoteAsset
 Source0:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz
 #!RemoteAsset
