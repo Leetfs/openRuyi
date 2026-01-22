@@ -2,41 +2,44 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-Name:               console-setup
-Version:            1.244
-Release:            %autorelease
-Summary:            Tools for configuring the console font and keyboard
-License:            GPL-2.0-or-later AND MIT AND LicenseRef-openRuyi-Public-Domain
-URL:                https://packages.debian.org/sid/console-setup
+Name:           console-setup
+Version:        1.244
+Release:        %autorelease
+Summary:        Tools for configuring the console font and keyboard
+License:        GPL-2.0-or-later AND MIT AND LicenseRef-openRuyi-Public-Domain
+URL:            https://packages.debian.org/sid/console-setup
+VCS:            git:https://salsa.debian.org/installer-team/console-setup.git
 #!RemoteAsset
-Source:             https://salsa.debian.org/installer-team/console-setup/-/archive/%{version}/console-setup-%{version}.tar.bz2
-BuildSystem:        autotools
-Patch:              0001-fix-makefile.patch
+Source:         https://salsa.debian.org/installer-team/console-setup/-/archive/%{version}/console-setup-%{version}.tar.bz2
+BuildSystem:    autotools
 
-BuildOption(install): prefix=%{_prefix}
-BuildOption(install): exec_prefix=%{_exec_prefix}
-BuildOption(install): bindir=%{_bindir}
-BuildOption(install): sbindir=%{_sbindir}
-BuildOption(install): sysconfdir=%{_sysconfdir}
-BuildOption(install): datarootdir=%{_datadir}
-BuildOption(install): mandir=%{_mandir}
+Patch0:         0001-fix-makefile.patch
 
-BuildRequires:      perl
-BuildRequires:      make
-BuildRequires:      bdfresize
-BuildRequires:      otf2bdf
-BuildRequires:      unifont
-BuildRequires:      fonts-dejavu
+BuildOption(install):  prefix=%{_prefix}
+BuildOption(install):  exec_prefix=%{_exec_prefix}
+BuildOption(install):  bindir=%{_bindir}
+BuildOption(install):  sbindir=%{_sbindir}
+BuildOption(install):  sysconfdir=%{_sysconfdir}
+BuildOption(install):  datarootdir=%{_datadir}
+BuildOption(install):  mandir=%{_mandir}
+
+BuildRequires:  perl
+BuildRequires:  make
+BuildRequires:  bdfresize
+BuildRequires:  otf2bdf
+BuildRequires:  unifont
+BuildRequires:  fonts-dejavu
 Requires:       kbd
 
 %description
 This package provides tools to configure the console's font and keyboard layout,
 often using settings derived from the X Window System.
 
-%package -n     bdf2psf
+%package     -n bdf2psf
 Summary:    Generate console fonts from BDF source fonts
 
 %description -n bdf2psf
