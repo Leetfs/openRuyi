@@ -3,6 +3,7 @@
 # SPDX-FileContributor: Xuhai Chang <xuhai.oerv@isrc.iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: jchzhou <zhoujiacheng@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -12,15 +13,18 @@ Release:        %autorelease
 Summary:        Cross-platform make system
 License:        BSD and MIT and zlib
 URL:            http://www.cmake.org
+VCS:            git:https://gitlab.kitware.com/cmake/cmake
 #!RemoteAsset
 Source0:        https://www.cmake.org/files/v4.1/cmake-%{version}.tar.gz
 Source1:        macros.cmake
 Source2:        macros.buildsystem.cmake
 Source3:        cmake.attr
+BuildSystem:    autotools
 
 # Patch for ruby to unconditionally check for vendordir
 Patch0:         0001-cmake-findruby.patch
-BuildSystem:    autotools
+
+BuildOption(conf): --no-system-libs
 
 # qt-gui and emacs-lisp features are removed to make cmake usable ASAP
 BuildRequires:  coreutils
@@ -29,11 +33,9 @@ BuildRequires:  gcc-c++
 # For tests
 BuildRequires:  git
 
-Requires:       cmake-data = %{version}-%{release} cmake-rpm-macros = %{version}-%{release}
+Requires:       cmake-data = %{version}-%{release}
+Requires:       cmake-rpm-macros = %{version}-%{release}
 Requires:       cmake-filesystem = %{version}-%{release}
-Provides:       bundled(md5-deutsch) bundled(kwsys) bundled(cppdap)
-
-BuildOption(conf): --no-system-libs
 
 %description
 CMake is used to control the software compilation process using simple
