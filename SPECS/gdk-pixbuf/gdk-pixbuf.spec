@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Yafen Fang <yafen@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
+
 %global glib_version 2.56.0
 
 Name:           gdk-pixbuf
@@ -13,13 +15,13 @@ License:        LGPL-2.1-or-later
 URL:            https://gitlab.gnome.org/GNOME/gdk-pixbuf
 #!RemoteAsset
 Source0:        https://download.gnome.org/sources/gdk-pixbuf/2.44/gdk-pixbuf-%{version}.tar.xz
-
 BuildSystem:    meson
-BuildOption(conf): -Dgtk_doc=true
-BuildOption(conf): -Dman=true
-BuildOption(conf): -Dothers=enabled
-BuildOption(conf): -Dandroid=disabled
-BuildOption(conf): -Dglycin=disabled
+
+BuildOption(conf):  -Dgtk_doc=true
+BuildOption(conf):  -Dman=true
+BuildOption(conf):  -Dothers=enabled
+BuildOption(conf):  -Dandroid=disabled
+BuildOption(conf):  -Dglycin=disabled
 
 BuildRequires:  docbook-xsl
 BuildRequires:  gettext
@@ -30,7 +32,7 @@ BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(libtiff-4)
 BuildRequires:  libxslt
-BuildRequires:  meson >= 0.55.3
+BuildRequires:  meson
 BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  shared-mime-info
 BuildRequires:  python3-docutils
