@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: sunyuechi <sunyuechi@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -10,6 +11,7 @@ Release:        %autorelease
 Summary:        Aggregating distributed file system
 License:        GPL-2.0-only OR LGPL-3.0-or-later
 URL:            https://www.gluster.org/
+VCS:            git:https://github.com/gluster/glusterfs
 #!RemoteAsset
 Source:         https://download.gluster.org/pub/gluster/glusterfs/11/%{version}/glusterfs-%{version}.tar.gz
 BuildSystem:    autotools
@@ -19,7 +21,7 @@ BuildOption(conf):  --disable-linux-io_uring
 BuildOption(conf):  --with-mountutildir=%{_bindir}
 BuildOption(conf):  --disable-static
 BuildOption(conf):  --with-ipv6-default
-BuildOption(install): docdir=%{_docdir}/%{name}
+BuildOption(install):  docdir=%{_docdir}/%{name}
 
 BuildRequires:  pkgconfig(libacl)
 BuildRequires:  autoconf
@@ -54,11 +56,13 @@ features and extensibility. It borrows a powerful concept called
 Translators from GNU Hurd kernel. Much of the code in GlusterFS is in
 user space and easily manageable.
 
-%package        -n python3-gluster
+%package     -n python-gluster
 Summary:        Python bindings for GlusterFS
-Requires:       %{name} = %{version}-%{release}
+Provides:       python3-gluster
+%python_provide python3-gluster
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description    -n python3-gluster
+%description -n python-gluster
 GlusterFS is a clustered file-system capable of scaling to several
 petabytes.
 
@@ -143,7 +147,7 @@ rm -f "%{buildroot}/etc/bash_completion.d/gluster.bash"
 # glusterfs runtime libs (libglusterfs)
 %{_libdir}/libglusterfs.so.0*
 
-%files -n python3-gluster
+%files -n python-gluster
 %{python3_sitelib}/gluster/
 
 %files devel
