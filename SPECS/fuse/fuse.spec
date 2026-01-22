@@ -3,6 +3,7 @@
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: laokz <zhangkai@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -25,15 +26,16 @@ BuildOption(conf):  --with-pkgconfigdir=%{_libdir}/pkgconfig
 BuildOption(conf):  --enable-lib
 BuildOption(conf):  --enable-util
 BuildOption(conf):  --enable-example
-
 BuildOption(build):  CFLAGS="%{optflags} -g -fno-strict-aliasing"
 
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
+
 Requires(pre):  group(trusted)
-Requires:       util-linux >= 2.18
+Requires:       util-linux
+
 Supplements:    filesystem(fuse)
 
 %description
@@ -43,13 +45,12 @@ This package contains helper programs and runtime libraries for using FUSE mount
 
 %package        devel
 Summary:        Development files for FUSE (userspace filesystem)
-Requires:       %{name} = %{version}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       glibc-devel
 
 %description    devel
 This package contains all include files, libraries, and configuration
 files needed to develop programs that use the FUSE library.
-
 
 %conf -p
 export MOUNT_FUSE_PATH=%{_sbindir}
