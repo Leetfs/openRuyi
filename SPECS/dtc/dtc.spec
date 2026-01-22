@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Yafen Fang <yafen@iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -16,27 +17,28 @@ VCS:            git:https://github.com/dgibson/dtc
 Source0:        https://www.kernel.org/pub/software/utils/%{name}/%{name}-%{version}.tar.xz
 #!RemoteAsset
 Source1:        https://www.kernel.org/pub/software/utils/%{name}/%{name}-%{version}.tar.sign
+BuildSystem:    autotools
 
 # https://github.com/dgibson/dtc/issues/163
 Patch0:         0001-Test-failure-with-newer-glibc.patch
 # https://qemu.googlesource.com/dtc/+/9a969f3b70b07bbf1c9df44a38d7f8d1d3a6e2a5
 Patch1000:      1000-backport-pylibfdt-libfdt.i-fix-backwards-compatibility-of-return-values.patch
 
+BuildOption(install): V=1 DESTDIR=%{buildroot} PREFIX=%{buildroot}/%{_prefix}
+BuildOption(install): LIBDIR=%{_libdir} BINDIR=%{_bindir} INCLUDEDIR=%{_includedir}
+
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  flex
 BuildRequires:  bison
 BuildRequires:  swig
-BuildRequires:  python3-devel
+BuildRequires:  pkgconfig(python3)
 BuildRequires:  python3-pip
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-setuptools_scm
 BuildRequires:  python3-wheel
-Provides:       libfdt = %{version}-%{release}
-Obsoletes:      libfdt < %{version}-%{release}
-BuildSystem:    autotools
-BuildOption(install): V=1 DESTDIR=%{buildroot} PREFIX=%{buildroot}/%{_prefix}
-BuildOption(install): LIBDIR=%{_libdir} BINDIR=%{_bindir} INCLUDEDIR=%{_includedir}
+Provides:       libfdt%{?_isa} = %{version}-%{release}
+Obsoletes:      libfdt%{?_isa} < %{version}-%{release}
 
 %description
 The devicetree is a data structure for describing hardware. Rather than hard coding
@@ -48,22 +50,22 @@ Tree (FDT) form.
 
 %package        devel
 Summary:        Development headers for device tree library
-Requires:       libfdt = %{version}-%{release}
-Provides:       libfdt-static = %{version}-%{release}
-Provides:       libfdt-devel = %{version}-%{release}
-Obsoletes:      libfdt-static < %{version}-%{release}
-Obsoletes:      libfdt-devel < %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Provides:       libfdt-static%{?_isa} = %{version}-%{release}
+Provides:       libfdt-devel%{?_isa} = %{version}-%{release}
+Obsoletes:      libfdt-static%{?_isa} < %{version}-%{release}
+Obsoletes:      libfdt-devel%{?_isa} < %{version}-%{release}
 
 %description    devel
 This package provides development files for dtc.
 
-%package        -n python3-libfdt
-Summary:        Python 3 bindings for device tree library
+%package     -n python-libfdt
+Summary:        Python bindings for device tree library
 %{?python_provide:%python_provide python3-libfdt}
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description    -n python3-libfdt
-This package provides python3 bindings for libfdt
+%description -n python-libfdt
+This package provides python bindings for libfdt
 
 # no configure
 %conf
@@ -89,7 +91,7 @@ export SETUPTOOLS_SCM_PRETEND_VERSION=%{version}
 %{_includedir}/*
 %{_libdir}/libfdt.a
 
-%files -n python3-libfdt
+%files -n python-libfdt
 %{python3_sitearch}/*
 
 %changelog
