@@ -55,6 +55,7 @@ Source1:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz.
 #!CreateArchive
 Source2:        gnulib.tar.gz
 Source3:        grub.default
+
 Patch0001:      0001-UPSTREAM-configure-Defer-check-for-mcmodel-large-unt.patch
 
 BuildRequires:  autoconf
@@ -68,7 +69,7 @@ BuildRequires:  pkgconfig(freetype2)
 BuildRequires:  pkgconfig(fuse3)
 BuildRequires:  pkgconfig(libtasn1)
 BuildRequires:  python3
-BuildRequires:  xz-devel
+BuildRequires:  pkgconfig(liblzma)
 BuildRequires:  fonts-unifont
 BuildRequires:  squashfs-tools
 BuildRequires:  bash-completion
