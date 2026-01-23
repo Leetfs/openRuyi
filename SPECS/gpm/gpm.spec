@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -16,6 +17,8 @@ URL:            https://github.com/telmich/gpm
 #!RemoteAsset
 Source:         https://github.com/telmich/gpm/archive/refs/tags/%{version}.tar.gz
 Source1:        gpm.service
+BuildSystem:    autotools
+
 Patch0:         0001-some-headers.patch
 Patch1:         0002-gpm-1.20.6-multilib.patch
 Patch2:         0003-gpm-1.20.1-lib-silent.patch
@@ -25,22 +28,30 @@ Patch5:         0006-gpm-1.20.7-rhbz-668480-gpm-types-7-manpage-fixes.patch
 Patch6:         0007-src-daemon-remove-obvious-use-of-unitialized-data.patch
 Patch7:         0008-src-daemon-reindent-switch-statement-to-avoid-compil.patch
 Patch8:         0009-configure-drop-broken-configure-code.patch
-BuildSystem:    autotools
 
-BuildOption(build): CFLAGS="%{optflags} -std=gnu17 -Wno-unused-result -Wno-sign-compare -Wno-pointer-sign"
+BuildOption(build):  CFLAGS="%{optflags} -std=gnu17 -Wno-unused-result -Wno-sign-compare -Wno-pointer-sign"
 
-BuildRequires:  autoconf automake libtool sed gawk texinfo bison
-BuildRequires:  ncurses-devel libcap-ng-devel systemd-rpm-macros make gcc
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
+BuildRequires:  sed
+BuildRequires:  gawk
+BuildRequires:  texinfo
+BuildRequires:  bison
+BuildRequires:  pkgconfig(ncurses)
+BuildRequires:  pkgconfig(libcap-ng)
+BuildRequires:  systemd-rpm-macros
+BuildRequires:  make
+BuildRequires:  gcc
 
 %description
 Gpm provides mouse support to text-based Linux applications. It provides
 console cut-and-paste operations using the mouse and allows pop-up menus
 to appear at the click of a mouse button.
 
-
 %package        devel
 Summary:        Development files for the GPM library
-Requires:       %{name} = %{version}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 This package contains the header files and symbolic links needed to
