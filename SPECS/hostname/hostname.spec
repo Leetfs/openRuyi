@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,6 +12,7 @@ Release:        %autorelease
 Summary:        Utility to Set/Show the Host Name or Domain Name
 License:        GPL-2.0-or-later
 URL:            https://tracker.debian.org/pkg/hostname
+VCS:            git:https://salsa.debian.org/meskes/hostname.git
 #!RemoteAsset
 Source0:        http://http.debian.net/debian/pool/main/h/hostname/hostname_%{version}.tar.xz#/hostname-%{version}.tar.xz
 Source1:        nis-domainname
@@ -18,7 +20,6 @@ Source2:        nis-domainname.service.in
 BuildSystem:    autotools
 
 BuildOption(build):  CFLAGS="%{optflags} -D_GNU_SOURCE"
-
 BuildOption(install):  prefix=%{_prefix}
 BuildOption(install):  exec_prefix=%{_exec_prefix}
 BuildOption(install):  bindir=%{_bindir}
