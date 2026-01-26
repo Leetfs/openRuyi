@@ -2,26 +2,28 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global _test_target test
+
 Name:           lua-lpeg
 Version:        1.1.0
 Release:        %autorelease
 Summary:        Parsing Expression Grammars for Lua
 License:        MIT
 URL:            http://www.inf.puc-rio.br/~roberto/lpeg/
+VCS:            git:https://github.com/roberto-ieru/LPeg.git
 #!RemoteAsset
 Source0:        http://www.inf.puc-rio.br/~roberto/lpeg/lpeg-%{version}.tar.gz
 BuildSystem:    autotools
 
-BuildOption(build): COPT="%{optflags}"
-BuildOption(build): LDFLAGS="%{build_ldflags}"
+BuildOption(build):  COPT="%{optflags}"
+BuildOption(build):  LDFLAGS="%{build_ldflags}"
 
 BuildRequires:  gcc
-BuildRequires:  lua-devel
-
+BuildRequires:  pkgconfig(lua)
 
 %description
 LPeg is a new pattern-matching library for Lua, based on Parsing Expression
