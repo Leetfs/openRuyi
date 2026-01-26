@@ -2,26 +2,29 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global _test_target test
+
 Name:           libtommath
 Version:        1.3.0
 Release:        %autorelease
 Summary:        A portable number theoretic multiple-precision integer library
 License:        Unlicense
 URL:            http://www.libtom.net/
+VCS:            git:https://github.com/libtom/libtommath
 #!RemoteAsset
 Source:         https://github.com/libtom/libtommath/archive/refs/tags/v%{version}.tar.gz
 
 BuildSystem:    autotools
 
-BuildOption(build): CFLAGS="%{optflags} -I./"
-BuildOption(build): -f makefile.shared
-BuildOption(install): PREFIX=%{_prefix}
-BuildOption(install): LIBPATH=%{_libdir}
-BuildOption(install): -f makefile.shared
+BuildOption(build):  CFLAGS="%{optflags} -I./"
+BuildOption(build):  -f makefile.shared
+BuildOption(install):  PREFIX=%{_prefix}
+BuildOption(install):  LIBPATH=%{_libdir}
+BuildOption(install):  -f makefile.shared
 
 BuildRequires:  make
 BuildRequires:  libtool
@@ -32,7 +35,7 @@ written entirely in C, designed with a simple API and efficient routines.
 
 %package        devel
 Summary:        Development files for %{name}
-Requires:       %{name} = %{version}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 The %{name}-devel package contains libraries and header files for developing
