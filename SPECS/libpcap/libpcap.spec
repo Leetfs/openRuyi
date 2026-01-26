@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,9 +12,9 @@ Release:        %autorelease
 Summary:        A system-independent interface for user-level packet capture
 License:        BSD-3-Clause
 URL:            https://www.tcpdump.org
+VCS:            git:https://github.com/the-tcpdump-group/libpcap
 #!RemoteAsset
-Source:     https://www.tcpdump.org/release/%{name}-%{version}.tar.xz
-
+Source:         https://www.tcpdump.org/release/%{name}-%{version}.tar.xz
 BuildSystem:    autotools
 
 BuildRequires:  make
@@ -28,7 +29,7 @@ network debugging, etc.
 
 %package        devel
 Summary:        Header files for libpcap development
-Requires:       %{name} = %{version}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 This package contains the header files, static libraries and documentation
