@@ -2,40 +2,46 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-Name:               libnfs
-Version:            6.0.2
-Release:            %autorelease
-Summary:            Client library for accessing NFS shares over a network
-License:            LGPL-2.1-or-later AND BSD-2-Clause AND GPL-3.0-or-later
-URL:                https://github.com/sahlberg/libnfs
+Name:           libnfs
+Version:        6.0.2
+Release:        %autorelease
+Summary:        Client library for accessing NFS shares over a network
+License:        LGPL-2.1-or-later AND BSD-2-Clause AND GPL-3.0-or-later
+URL:            https://github.com/sahlberg/libnfs
 #!RemoteAsset
-Source:           https://github.com/sahlberg/libnfs/archive/refs/tags/libnfs-%{version}.tar.gz
+Source:         https://github.com/sahlberg/libnfs/archive/refs/tags/libnfs-%{version}.tar.gz
+BuildSystem:    autotools
+
 # https://github.com/sahlberg/libnfs/pull/518
 Patch0:         0001-libnfs-6.0.2-fix_gnutls_undefined_symbols.patch
 # https://github.com/sahlberg/libnfs/commit/2cdfedaba379cbb512d3c203a1b9eae795f4fb23
 Patch1:         0002-libnfs-6.0.2-fix_missing_include.patch
-BuildSystem:    autotools
 
-BuildOption(conf): --disable-static
-BuildOption(conf): --disable-examples
-BuildOption(conf): --disable-werror
-BuildOption(conf): --enable-pthread
+BuildOption(conf):  --disable-static
+BuildOption(conf):  --disable-examples
+BuildOption(conf):  --disable-werror
+BuildOption(conf):  --enable-pthread
 
-BuildRequires:    automake gcc gnutls-devel krb5-devel libtool make
+BuildRequires:  automake
+BuildRequires:  gcc
+BuildRequires:  pkgconfig(gnutls)
+BuildRequires:  pkgconfig(krb5)
+BuildRequires:  libtool
+BuildRequires:  make
 
 %description
 The libnfs package contains a library of functions for accessing NFSv2,
 NFSv3, and NFSv4 servers from user space.
 
-%package devel
-Summary:  Development files for libnfs
-License:  LGPL-2.1-or-later AND BSD-2-Clause AND GPL-3.0-or-later
-Requires: %{name} = %{version}
+%package        devel
+Summary:        Development files for libnfs
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description devel
+%description    devel
 The libnfs-devel package contains libraries, header files, and examples
 for developing applications that use libnfs.
 
