@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Dingli Zhang <dingli@iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,13 +12,12 @@ Release:        %autorelease
 Summary:        A C binding to the X11 protocol
 License:        X11
 URL:            https://xcb.freedesktop.org/
+VCS:            git:https://gitlab.freedesktop.org/xorg/lib/libxcb.git
 #!RemoteAsset
 Source0:        https://xcb.freedesktop.org/dist/%{name}-%{version}.tar.xz
-
 # This is stolen straight from the pthread-stubs source:
 # http://cgit.freedesktop.org/xcb/pthread-stubs/blob/?id=6900598192bacf5fd9a34619b11328f746a5956d
-# we don't need the library because glibc has working pthreads, but we need
-# the pkgconfig file so libs that link against libxcb know this...
+# We need the pkgconfig file so
 Source1:        pthread-stubs.pc.in
 BuildSystem:    autotools
 
@@ -36,7 +36,7 @@ BuildRequires:  pkgconfig(xorg-macros) >= 1.18
 BuildRequires:  pkgconfig(xau) >= 0.99.2
 BuildRequires:  pkgconfig(xcb-proto) >= 1.17.0
 BuildRequires:  doxygen
-BuildRequires:  python3-devel
+BuildRequires:  pkgconfig(python3)
 
 %description
 The X protocol C-language Binding (XCB) is a replacement for Xlib featuring a
@@ -45,15 +45,15 @@ threading support, and extensibility.
 
 %package        devel
 Summary:        Development files for %{name}
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 The %{name}-devel package contains development files for %{name}.
 
-%package doc
-Summary:    Documentation for %{name}
+%package        doc
+Summary:        Documentation for %{name}
 
-%description doc
+%description    doc
 The %{name}-doc package contains documentation for the %{name} library.
 
 %prep -a
