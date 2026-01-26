@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,12 +12,13 @@ Release:        %autorelease
 Summary:        A minimalistic user-space library oriented to netlink developers
 License:        LGPL-2.1-or-later
 URL:            https://netfilter.org/projects/libmnl
+VCS:            git:https://git.netfilter.org/libmnl
 #!RemoteAsset
 Source0:        https://netfilter.org/projects/libmnl/files/%{name}-%{version}.tar.bz2
 BuildSystem:    autotools
 
-BuildOption(conf): --disable-static
-BuildOption(conf): --with-doxygen=no
+BuildOption(conf):  --disable-static
+BuildOption(conf):  --with-doxygen=no
 
 BuildRequires:  gcc
 
@@ -25,11 +27,11 @@ libmnl is a minimalistic user-space library oriented to Netlink developers.
 It aims to provide simple helpers to avoid re-inventing the wheel when
 dealing with Netlink headers and TLVs.
 
-%package devel
+%package        devel
 Summary:        Development files for libmnl
-Requires:       %{name} = %{version}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description devel
+%description    devel
 This package contains the header files, libraries, and examples for
 developing applications that use libmnl.
 
