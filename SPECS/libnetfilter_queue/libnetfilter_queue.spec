@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,14 +12,20 @@ Release:        %autorelease
 Summary:        Netfilter queue userspace library
 License:        GPL-2.0-only
 URL:            http://netfilter.org
+VCS:            git:https://git.netfilter.org/libnetfilter_queue
 #!RemoteAsset
 Source0:        https://netfilter.org/projects/%{name}/files/%{name}-%{version}.tar.bz2
 BuildSystem:    autotools
 
-BuildOption(conf): --disable-static
+BuildOption(conf):  --disable-static
 
-BuildRequires:  autoconf automake libtool pkgconfig linux-headers
-BuildRequires:  libnfnetlink-devel libmnl-devel
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
+BuildRequires:  pkgconfig
+BuildRequires:  linux-headers
+BuildRequires:  pkgconfig(libnfnetlink)
+BuildRequires:  pkgconfig(libmnl)
 BuildRequires:  make
 
 %description
@@ -28,8 +35,8 @@ old ip_queue / libipq mechanism.
 
 %package        devel
 Summary:        Development files for the libnetfilter_queue library
-Requires:       %{name} = %{version}
-Requires:       libnfnetlink-devel
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+Requires:       pkgconfig(libnfnetlink)
 Requires:       linux-headers
 Requires:       pkgconfig
 
