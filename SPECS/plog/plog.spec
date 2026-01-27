@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -15,8 +16,8 @@ URL:            https://github.com/SergiusTheBest/plog
 Source:         https://github.com/SergiusTheBest/plog/archive/refs/tags/%{version}.tar.gz
 BuildSystem:    cmake
 
-BuildOption(conf): -DPLOG_BUILD_TESTS:BOOL=OFF
-BuildOption(conf): -DPLOG_BUILD_SAMPLES:BOOL=OFF
+BuildOption(conf):  -DPLOG_BUILD_TESTS:BOOL=OFF
+BuildOption(conf):  -DPLOG_BUILD_SAMPLES:BOOL=OFF
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
