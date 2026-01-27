@@ -11,6 +11,7 @@ Release:        %autorelease
 Summary:        Practical Extraction and Report Language
 License:        GPL-1.0-or-later OR Artistic-1.0-Perl
 URL:            https://www.perl.org/
+VCS:            git:https://github.com/Perl/perl5.git
 #!RemoteAsset
 Source0:        https://www.cpan.org/src/5.0/%{name}-%{version}.tar.xz
 # Use config.over to make build of perl reproducible
@@ -39,17 +40,18 @@ Patch0:         0001-remove-errno-check.patch
 %global perl_vendorarch %{archlib}/vendor_perl
 
 BuildRequires:  bash
-BuildRequires:  bzip2-devel
+BuildRequires:  pkgconfig(bzip2)
 BuildRequires:  coreutils
 BuildRequires:  findutils
 BuildRequires:  glibc
 BuildRequires:  make
 BuildRequires:  sed
 BuildRequires:  tar
-BuildRequires:  zlib-devel
+BuildRequires:  pkgconfig(zlib)
 
 Provides:       perl(:MODULE_COMPAT_%{version})
 Provides:       /bin/perl
+
 %description
 Perl is a high-level programming language with roots in C, sed, awk and shell
 scripting. Perl is good at handling processes and files, and is especially
@@ -71,7 +73,7 @@ License:        (GPL-1.0-or-later OR Artistic-1.0-Perl) AND Unicode-3.0
 Requires:       perl(ExtUtils::ParseXS)
 Requires:       perl
 Requires:       perl(Devel::PPPort)
-Requires:       libxcrypt-devel
+Requires:       pkgconfig(libxcrypt)
 
 %description    devel
 This package contains header files and development modules.
