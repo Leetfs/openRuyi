@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -16,10 +17,26 @@ Release:        %autorelease
 Summary:        In-memory caching service
 License:        BSD-3-Clause
 URL:            https://memcached.org/
+VCS:            git:https://github.com/memcached/memcached.git
 #!RemoteAsset
 Source:         https://memcached.org/files/memcached-%{version}.tar.gz
-
 BuildSystem:    autotools
+
+%if %{with extstore}
+BuildOption(conf):  --enable-extstore
+%endif
+%if %{with seccomp}
+BuildOption(conf):  --enable-seccomp
+%endif
+%if %{with sasl}
+BuildOption(conf):  --enable-sasl
+%endif
+%if %{with sasl_pwdb}
+BuildOption(conf):  --enable-pwdb
+%endif
+%if %{with dtrace}
+BuildOption(conf):  --enable-dtrace
+%endif
 
 BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(libevent)
@@ -29,22 +46,6 @@ BuildRequires:  automake
 %if %{with sasl}
 BuildRequires:  cyrus-sasl-devel
 %endif
-%if %{with extstore}
-BuildOption(conf): --enable-extstore
-%endif
-%if %{with seccomp}
-BuildOption(conf): --enable-seccomp
-%endif
-%if %{with sasl}
-BuildOption(conf): --enable-sasl
-%endif
-%if %{with sasl_pwdb}
-BuildOption(conf): --enable-pwdb
-%endif
-%if %{with dtrace}
-BuildOption(conf): --enable-dtrace
-%endif
-
 
 %description
 Memcached is an in-memory key-value store.  It has a small
