@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -30,6 +31,7 @@ Release:        %autorelease
 Summary:        Package compiler and linker metadata toolkit
 License:        ISC
 URL:            https://pkgconf.org/
+VCS:            git:https://github.com/pkgconf/pkgconf.git
 #!RemoteAsset
 Source0:        https://distfiles.dereferenced.org/%{name}/%{name}-%{version}.tar.xz
 # Simple wrapper script to offer platform versions of pkgconfig from Fedora
@@ -43,13 +45,13 @@ BuildOption(conf):  --with-system-libdir=%{_libdir}
 
 BuildRequires:  gcc
 BuildRequires:  make
-
 # for tests.
 BuildRequires:  kyua
 BuildRequires:  atf-tests
 
 # pkgconf uses libpkgconf internally
 Requires:       %{libname}%{?_isa} = %{version}-%{release}
+
 # This is defined within pkgconf code as a virtual pc (just like in pkgconfig)
 Provides:       pkgconfig(pkgconf) = %{version}
 
@@ -110,7 +112,6 @@ Requires:       %{name}-m4 = %{version}-%{release}
 This package provides the shim links for pkgconf to be automatically
 used in place of pkgconfig. This ensures that pkgconf is used as
 the system provider of pkg-config.
-
 %endif
 
 %install -a
