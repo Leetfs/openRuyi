@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -32,7 +33,7 @@ BuildRequires:  pkgconfig(Qt6Widgets)
 BuildRequires:  pkgconfig(Qt6OpenGLWidgets)
 BuildRequires:  pkgconfig(Qt6OpenGL)
 BuildRequires:  qt6-base-private-devel
-BuildRequires:  qt6-declarative-devel >= %{version}
+BuildRequires:  pkgconfig(Qt6Quick) >= %{version}
 BuildRequires:  pkgconfig(xkbcommon)
 BuildRequires:  pkgconfig(openssl)
 
@@ -41,16 +42,16 @@ The Qt SCXML module provides functionality to create state machines from SCXML f
 
 %package        devel
 Summary:        Development files for %{name}
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       pkgconfig(Qt6Core)
-Requires:       qt6-declarative-devel
+Requires:       pkgconfig(Qt6Quick)
 
 %description    devel
 Development files for %{name}.
 
 %package        examples
 Summary:        Programming examples for %{name}
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    examples
 Programming examples for %{name}.
