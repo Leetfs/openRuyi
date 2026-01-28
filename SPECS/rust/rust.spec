@@ -3,6 +3,7 @@
 # SPDX-FileContributor: YunQiang Su <yunqiang@isrc.iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -19,6 +20,7 @@ Release:        %autorelease
 Summary:        Rust systems programming language
 License:        MIT AND Apache-2.0
 URL:            http://www.rust-lang.org/
+VCS:            git:https://github.com/rust-lang/rust.git
 #!RemoteAsset
 Source0:        https://static.rust-lang.org/dist/rustc-%{version}-src.tar.xz
 Source1:        rust-openruyi.toml
@@ -30,7 +32,7 @@ Patch1:         rustc-miri-use-system-libffi.patch
 
 BuildRequires:  clang
 BuildRequires:  gcc-c++
-BuildRequires:  libxml2-devel
+BuildRequires:  pkgconfig(libxml-2.0)
 BuildRequires:  llvm-devel
 BuildRequires:  pkgconfig
 BuildRequires:  pkgconfig(dbus-1)
@@ -49,7 +51,9 @@ BuildRequires:  findutils
 BuildRequires:  rust
 
 Conflicts:      rust-bin
-Provides:       cargo = %{version}
+
+Provides:       cargo = %{version}-%{release}
+Provides:       cargo%{?_isa} = %{version}-%{release}
 
 %description
 A language empowering everyone to build reliable and efficient software.
@@ -83,14 +87,14 @@ export RUSTONIG_SYSTEM_LIBONIG=1
 export LIBSQLITE3_SYS_USE_PKG_CONFIG=1
 export LIBSSH2_SYS_USE_PKG_CONFIG=1
 export RUST_BACKTRACE=1
-./x build --stage 2 --config %{SOURCE1} --target %rust_arch
+./x build --stage 2 --config %{SOURCE1} --target %{rust_arch}
 
 %install
 export RUSTONIG_SYSTEM_LIBONIG=1
 export LIBSQLITE3_SYS_USE_PKG_CONFIG=1
 export LIBSSH2_SYS_USE_PKG_CONFIG=1
 export RUST_BACKTRACE=1
-DESTDIR=%{buildroot} ./x.py install --config %{SOURCE1} --target %rust_arch
+DESTDIR=%{buildroot} ./x.py install --config %{SOURCE1} --target %{rust_arch}
 rm -rf %{buildroot}/usr/share/doc/docs
 
 %files
