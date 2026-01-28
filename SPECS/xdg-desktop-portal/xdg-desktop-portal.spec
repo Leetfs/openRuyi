@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -13,7 +14,7 @@ Version:        1.20.3
 Release:        %autorelease
 Summary:        Portal frontend service to flatpak
 License:        LGPL-2.1-or-later
-URL:            https://github.com/flatpak/xdg-desktop-portal/
+URL:            https://github.com/flatpak/xdg-desktop-portal
 #!RemoteAsset
 Source0:        https://github.com/flatpak/xdg-desktop-portal/releases/download/%{version}/xdg-desktop-portal-%{version}.tar.xz
 BuildSystem:    meson
