@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -98,7 +99,6 @@ BuildOption(conf):  --enable-stroke
 BuildOption(conf):  --enable-kernel-libipsec
 BuildOption(conf):  --with-capabilities=libcap
 BuildOption(conf):  CPPFLAGS="-DSTARTER_ALLOW_NON_ROOT"
-
 %ifarch x86_64
 BuildOption(conf):  --enable-aesni
 %endif
@@ -112,21 +112,21 @@ BuildRequires:  pkgconfig(systemd)
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  pkgconfig(gmp)
 BuildRequires:  pkgconfig(libcurl)
-BuildRequires:  openldap-devel
+BuildRequires:  pkgconfig(ldap)
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  gettext-devel
 BuildRequires:  pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(pam)
-BuildRequires:  json-c-devel
+BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(libgcrypt)
 BuildRequires:  pkgconfig(xtables)
 BuildRequires:  pkgconfig(libcap)
-BuildRequires:  tpm2-tss-devel
+BuildRequires:  pkgconfig(tss2-sys)
 
-Requires(post):   systemd
+Requires(post):  systemd
 Requires(preun):  systemd
-Requires(postun): systemd
+Requires(postun):  systemd
 
 %description
 The strongSwan IPsec implementation supports both the IKEv1 and IKEv2 key
@@ -135,9 +135,9 @@ Linux kernel.
 
 %package        tnc-imcvs
 Summary:        Trusted network connect (TNC)'s IMC/IMV functionality
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description   tnc-imcvs
+%description    tnc-imcvs
 This package provides Trusted Network Connect's (TNC) architecture support.
 
 %conf -p
