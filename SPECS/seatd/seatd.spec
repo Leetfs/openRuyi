@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -20,7 +21,6 @@ BuildSystem:    meson
 
 BuildOption(conf):  -Dlibseat-logind=systemd
 BuildOption(conf):  -Dserver=enabled
-
 %if %{with doc}
 BuildOption(conf):  -Dman-pages=enabled
 %else
@@ -31,7 +31,6 @@ BuildRequires:  meson
 BuildRequires:  gcc
 BuildRequires:  pkgconfig(libsystemd)
 BuildRequires:  systemd-rpm-macros
-
 %if %{with doc}
 BuildRequires:  pkgconfig(scdoc)
 %endif
@@ -40,20 +39,23 @@ BuildRequires:  pkgconfig(scdoc)
 A seat management daemon, that does everything it needs to do.
 Nothing more, nothing less. Depends only on libc.
 
+%package        devel
+Summary:        Development files for libseat
+# Compatibility, pkgconfig(libseat) is enough
+Provides:       libseat-devel = %{version}-%{release}
+Provides:       libseat-devel%{?_isa} = %{version}-%{release}
+Requires:       libseat%{?_isa} = %{version}-%{release}
+
+%description    devel
+The libseat-devel package contains libraries and header files for
+developing applications that use libseat.
+
 %package     -n libseat
 Summary:        Universal seat management library
 
 %description -n libseat
 A seat management library allowing applications to use whatever seat
 management is available.
-
-%package     -n libseat-devel
-Summary:        Development files for libseat
-Requires:       libseat = %{version}-%{release}
-
-%description -n libseat-devel
-The libseat-devel package contains libraries and header files for
-developing applications that use libseat.
 
 %install -a
 
@@ -75,16 +77,6 @@ install -D -m 0644 -pv %{SOURCE1} \
 %postun
 %systemd_postun %{name}.service
 
-%files -n libseat
-%license LICENSE
-%doc README.md
-%{_libdir}/libseat.so.*
-
-%files -n libseat-devel
-%{_includedir}/libseat.h
-%{_libdir}/libseat.so
-%{_libdir}/pkgconfig/libseat.pc
-
 %files
 %license LICENSE
 %doc README.md
@@ -96,6 +88,16 @@ install -D -m 0644 -pv %{SOURCE1} \
 %endif
 %{_sysusersdir}/seatd.conf
 %{_unitdir}/seatd.service
+
+%files devel
+%{_includedir}/libseat.h
+%{_libdir}/libseat.so
+%{_libdir}/pkgconfig/libseat.pc
+
+%files -n libseat
+%license LICENSE
+%doc README.md
+%{_libdir}/libseat.so.*
 
 %changelog
 %{?autochangelog}
