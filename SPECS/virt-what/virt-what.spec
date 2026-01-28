@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -10,15 +11,19 @@ Version:        1.27
 Release:        %autorelease
 Summary:        Detect if running in a virtual machine
 License:        GPL-2.0-or-later
-#!RemoteAsset
-URL:            https://people.redhat.com/~rjones/%{name}/
+URL:            https://people.redhat.com/~rjones/virt-what/
+VCS:            git:git://git.annexia.org/virt-what.git
 #!RemoteAsset
 Source:         https://people.redhat.com/~rjones/%{name}/files/%{name}-%{version}.tar.gz
 BuildSystem:    autotools
 
-BuildRequires:  gcc util-linux
+BuildRequires:  gcc
+BuildRequires:  util-linux
 BuildRequires:  perl
-Requires:       dmidecode util-linux which
+
+Requires:       dmidecode
+Requires:       util-linux
+Requires:       which
 
 %description
 virt-what is a shell script which can be used to detect if the program
