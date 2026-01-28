@@ -11,6 +11,7 @@ Release:        %autorelease
 Summary:        A library for editing typed command lines
 License:        GPL-3.0-or-later AND GPL-2.0-or-later AND GFDL-1.3-no-invariants-or-later
 URL:            https://tiswww.case.edu/php/chet/readline/rltop.html
+VCS:            git:https://https.git.savannah.gnu.org/git/readline.git
 #!RemoteAsset
 Source0:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.gz
 #!RemoteAsset
@@ -20,7 +21,6 @@ BuildSystem:    autotools
 # Official upstream patches
 # Patches are converted to apply with '-p1'
 Patch0:         0001-readline-8.3-patch-1.patch
-
 # Other patches
 # symbol lookup error: /usr/lib64/libreadline.so.8: undefined symbol: UP
 Patch1:         0010-readline-link-ncurses.patch
@@ -29,7 +29,7 @@ BuildOption(conf):  --with-curses
 BuildOption(conf):  --disable-install-examples
 
 BuildRequires:  make
-BuildRequires:  ncurses-devel
+BuildRequires:  pkgconfig(ncurses)
 
 %description
 The Readline library provides a set of functions that allow users to
