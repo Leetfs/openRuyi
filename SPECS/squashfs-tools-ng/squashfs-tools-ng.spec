@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: ayostl <yao_xp@yeah.net>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -18,13 +19,13 @@ BuildOption(conf):  --disable-static
 
 BuildRequires:  make
 BuildRequires:  gcc
-BuildRequires:  zlib-devel
-BuildRequires:  xz-devel
-BuildRequires:  lzo-devel
-BuildRequires:  libattr-devel
-BuildRequires:  lz4-devel
-BuildRequires:  libzstd-devel
-BuildRequires:  libselinux-devel
+BuildRequires:  pkgconfig(zlib)
+BuildRequires:  pkgconfig(liblzma)
+BuildRequires:  pkgconfig(lzo2)
+BuildRequires:  pkgconfig(libattr)
+BuildRequires:  pkgconfig(liblz4)
+BuildRequires:  pkgconfig(libzstd)
+BuildRequires:  pkgconfig(libselinux)
 BuildRequires:  help2man
 
 %description
