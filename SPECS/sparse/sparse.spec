@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025, 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025, 2026 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -13,14 +14,15 @@ URL:            https://sparse.wiki.kernel.org/
 VCS:            git:https://git.kernel.org/pub/scm/devel/sparse/sparse.git
 #!RemoteAsset
 Source:         https://www.kernel.org/pub/software/devel/sparse/dist/sparse-%{version}.tar.xz
+BuildSystem:    autotools
+
 # https://git.kernel.org/pub/scm/devel/sparse/sparse.git/commit/?id=adceff0ab6e3d8bf43de52e2c2fbebf27db30deb
 Patch1:         0001-linearize.c-fix-buffer-overrun-warning-from-fortify.patch
-BuildSystem:    autotools
+
 
 BuildOption(build):  CFLAGS="%{optflags}"
 BuildOption(build):  HAVE_LLVM=no
 BuildOption(build):  HAVE_GTK=no
-
 BuildOption(install):  PREFIX="%{_prefix}"
 BuildOption(install):  BINDIR="%{_bindir}"
 BuildOption(install):  LIBDIR="%{_libdir}"
@@ -28,7 +30,6 @@ BuildOption(install):  INCLUDEDIR="%{_includedir}"
 BuildOption(install):  PKGCONFIGDIR="%{_libdir}/pkgconfig"
 BuildOption(install):  HAVE_LLVM=no
 BuildOption(install):  HAVE_GTK=no
-
 BuildOption(check):  HAVE_LLVM=no
 BuildOption(check):  HAVE_GTK=no
 
