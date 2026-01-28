@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Mahno <bestwow2014@gmail.com>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -10,26 +11,33 @@ Version:        4.4.1
 Release:        %autorelease
 Summary:        Connects C/C++/Objective C to some high-level programming languages
 License:        GPL-3.0-or-later AND BSD-3-Clause
+URL:            https://www.swig.org/
+VCS:            git:https://github.com/swig/swig.git
 #!RemoteAsset
 Source0:        http://downloads.sourceforge.net/project/swig/swig/swig-%{version}/swig-%{version}.tar.gz
 Source1:        ccache-swig.sh
 Source2:        ccache-swig.csh
 BuildSystem:    autotools
+
 # disable OCaml,php,tcl,java,octave
-BuildOption(conf): --without-ocaml
-BuildOption(conf): --with-python3=python3
-BuildOption(conf): --without-php
-BuildOption(conf): --with-perl5
-BuildOption(conf): --without-tcl
-BuildOption(conf): --without-java
-BuildOption(conf): --without-guile
+BuildOption(conf):  --without-ocaml
+BuildOption(conf):  --with-python3=python3
+BuildOption(conf):  --without-php
+BuildOption(conf):  --with-perl5
+BuildOption(conf):  --without-tcl
+BuildOption(conf):  --without-java
+BuildOption(conf):  --without-guile
 
 BuildRequires:  coreutils
 BuildRequires:  findutils
 BuildRequires:  make
-BuildRequires:  perl pcre2-devel
+BuildRequires:  perl
+BuildRequires:  pkgconfig(libpcre2-posix)
 BuildRequires:  python3-devel
-BuildRequires:  autoconf automake gawk dos2unix
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  gawk
+BuildRequires:  dos2unix
 BuildRequires:  gcc-c++
 BuildRequires:  help2man
 BuildRequires:  sed
@@ -47,7 +55,7 @@ BuildRequires:  perl(warnings)
 BuildRequires:  boost-devel
 # Need when Source/CParse/parser.y is patched
 BuildRequires:  bison
-BuildRequires:  lua-devel
+BuildRequires:  pkgconfig(lua)
 
 %description
 Simplified Wrapper and Interface Generator (SWIG) is a software
@@ -62,10 +70,10 @@ are supported. SWIG is most commonly used to create high-level interpreted
 or compiled programming environments, user interfaces, and as a tool for
 testing and prototyping C/C++ software.
 
-%package -n ccache-swig
-Summary:   Fast compiler cache
-License:   GPL-2.0-or-later
-Requires:  swig
+%package     -n ccache-swig
+Summary:        Fast compiler cache
+License:        GPL-2.0-or-later
+Requires:       swig
 
 %description -n ccache-swig
 ccache-swig is a compiler cache. It speeds up re-compilation of C/C++/SWIG
