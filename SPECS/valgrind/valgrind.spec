@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025, 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025, 2026 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -11,6 +12,14 @@
 %global build_cflags %nil
 %endif
 %global build_ldflags %nil
+
+%ifarch x86_64
+%define valarch amd64
+%endif
+
+%ifarch riscv64
+%define valarch riscv64
+%endif
 
 Name:           valgrind
 Version:        3.26.0
@@ -29,14 +38,6 @@ BuildOption(conf):  GDB=%{_bindir}/gdb
 BuildOption(conf):  --with-gdbscripts-dir=%{_datadir}/gdb/auto-load
 BuildOption(conf):  --without-mpicc
 
-%ifarch x86_64
-%define valarch amd64
-%endif
-
-%ifarch riscv64
-%define valarch riscv64
-%endif
-
 BuildRequires:  make
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -53,7 +54,7 @@ and threading bugs, and profile your programs in detail.
 
 %package        devel
 Summary:        Development files for valgrind aware programs
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 Header files and libraries for development of valgrind aware programs.
@@ -67,7 +68,7 @@ Documentation for valgrind tools and scripts.
 
 %package        gdb
 Summary:        Tools for integrating valgrind and gdb
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 Recommends:     gdb
 
 %description    gdb
@@ -75,7 +76,7 @@ Tools and support files for integrating valgrind and gdb.
 
 %package        tools-devel
 Summary:        Development files for building valgrind tools
-Requires:       %{name}-devel = %{version}-%{release}
+Requires:       %{name}-devel%{?_isa} = %{version}-%{release}
 
 %description    tools-devel
 Header files and libraries for development of valgrind tools.
