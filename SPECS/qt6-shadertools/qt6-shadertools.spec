@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -25,7 +26,7 @@ BuildRequires:  qt6-macros
 BuildRequires:  pkgconfig(Qt6Core)
 BuildRequires:  pkgconfig(Qt6Gui)
 BuildRequires:  qt6-base-private-devel
-BuildRequires:  spirv-tools-devel
+BuildRequires:  pkgconfig(SPIRV-Tools)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.4.1
 
 %description
@@ -33,7 +34,7 @@ Qt Shader Tools module builds on the SPIR-V Open Source Ecosystem.
 
 %package        devel
 Summary:        Development files for %{name}
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 Requires:       spirv-tools
 
 %description    devel
