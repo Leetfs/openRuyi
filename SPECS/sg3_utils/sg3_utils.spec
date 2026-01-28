@@ -40,7 +40,7 @@ and the incorrect usage of them may render your system inoperable.
 
 %package        devel
 Summary:        Development library and header files for the sg3_utils library
-Requires:       %{name} = %{version}-%{release}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 This package contains the %{name} library and its header files for
