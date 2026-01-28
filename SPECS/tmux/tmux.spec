@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025, 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: ayostl <yao_xp@yeah.net>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -12,6 +13,7 @@ Summary:        A terminal multiplexer
 # SOURCE0 licensed under ISC AND BSD, SOURCE1 licensed under GPL-2.0-only
 License:        ISC AND BSD-2-Clause AND BSD-3-Clause AND GPL-2.0-only
 URL:            https://tmux.github.io/
+VCS:            git:https://github.com/tmux/tmux
 #!RemoteAsset:  sha256:b6d8d9c76585db8ef5fa00d4931902fa4b8cbe8166f528f44fc403961a3f3759
 Source0:        https://github.com/tmux/tmux/releases/download/%{version}/tmux-%{version}.tar.gz
 #!RemoteAsset:  sha256:4e2179053376f4194b342249d75c243c1573c82c185bfbea008be1739048e709
@@ -38,7 +40,6 @@ intended to be a simple, modern, BSD-licensed alternative to programs such
 as GNU Screen.
 
 %install -a
-
 install -Dpm 644 %{S:1} %{buildroot}%{_datadir}/bash-completion/completions/tmux
 
 %files
