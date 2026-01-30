@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -13,6 +14,7 @@ Release:        %autorelease
 Summary:        C++ interface for the GLib library
 License:        LGPL-2.1-or-later AND GPL-2.0-or-later
 URL:            https://gitlab.gnome.org/GNOME/glibmm
+VCS:            git:https://gitlab.gnome.org/GNOME/gtkmm.git
 #!RemoteAsset:  sha256:64f11d3b95a24e2a8d4166ecff518730f79ecc27222ef41faf7c7e0340fc9329
 Source0:        https://download.gnome.org/sources/glibmm/2.66/glibmm-%{version}.tar.xz
 BuildSystem:    meson
@@ -25,8 +27,8 @@ BuildOption(conf):  -Dbuild-documentation=false
 BuildRequires:  meson
 BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig
-BuildRequires:  pkgconfig(glib-2.0) >= 2.61.2
-BuildRequires:  pkgconfig(sigc++-2.0) >= 2.9.1
+BuildRequires:  pkgconfig(glib-2.0)
+BuildRequires:  pkgconfig(sigc++-2.0)
 
 %description
 glibmm is the official C++ interface for the popular cross-platform
