@@ -1,0 +1,13 @@
+diff --git a/Makefile.in b/Makefile.in
+index XXXXXXX..YYYYYYY 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -248,7 +248,7 @@ $(CURL_VERSION)/.chrome: $(chrome_libs)	$(CURL_VERSION).tar.gz $(CURL_VERSION)/
+ 	# If the user provided the --host flag to our configure script
+ 	# (for cross compilation), then pass it on to curl.
+ 	{ \
+-	  config_flags="--prefix=@prefix@"; \
++	  config_flags="--prefix=@prefix@ --libdir=@libdir@"; \
+ 	  config_flags="$$config_flags --with-nghttp2=$(nghttp2_install_dir)"; \
+ 	  config_flags="$$config_flags --with-brotli=$(brotli_install_dir)"; \
+ 	  config_flags="$$config_flags --with-openssl=$(boringssl_install_dir)"; \
