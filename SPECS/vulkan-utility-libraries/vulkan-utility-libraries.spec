@@ -25,8 +25,8 @@ BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(python3)
 BuildRequires:  vulkan-headers
 # for tests
-BuildRequires:  gtest-devel
-BuildRequires:  pkgconfig(magic_enum)
+BuildRequires:  cmake(GTest)
+BuildRequires:  cmake(magic_enum)
 
 %description
 Vulkan utility libraries.
