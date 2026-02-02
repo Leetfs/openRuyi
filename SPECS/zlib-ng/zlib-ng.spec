@@ -53,7 +53,7 @@ Summary:        Development files for %{name}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 %if %{with zlib_compat}
 Conflicts:      zlib-devel%{?_isa}
-Obsoletes:      zlib-devel%{?_isa}
+Obsoletes:      zlib-devel
 Provides:       zlib-devel = %{version}-%{release}
 Provides:       zlib-devel%{?_isa} = %{version}-%{release}
 %endif
