@@ -2,41 +2,56 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <1772413353@qq.com>
+# SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-Name:          authselect
-Version:       1.6.1
-Release:       %autorelease
-Summary:       A tool to select system authentication and identity sources
-License:       GPL-3.0-or-later
-URL:           https://github.com/authselect/authselect
+Name:           authselect
+Version:        1.6.1
+Release:        %autorelease
+Summary:        A tool to select system authentication and identity sources
+License:        GPL-3.0-or-later
+URL:            https://github.com/authselect/authselect
 #!RemoteAsset
-Source:        https://github.com/authselect/authselect/archive/%{version}/authselect-%{version}.tar.gz
-BuildSystem:   autotools
+Source:         https://github.com/authselect/authselect/archive/%{version}/authselect-%{version}.tar.gz
+BuildSystem:    autotools
 
-BuildOption(conf): --disable-rpath
-BuildOption(conf): --disable-static
-BuildOption(conf): --with-completion-dir=%{bash_completions_dir}
-BuildOption(conf): --with-pythonbin=%{__python3}
-BuildOption(conf): --disable-nls
+BuildOption(conf):  --disable-rpath
+BuildOption(conf):  --disable-static
+BuildOption(conf):  --with-completion-dir=%{bash_completions_dir}
+BuildOption(conf):  --with-pythonbin=%{__python3}
+BuildOption(conf):  --disable-nls
 
-BuildRequires: autoconf automake libtool popt-devel cmocka-devel
-BuildRequires: m4  python3-devel libselinux-devel chrpath
-Requires:      grep sed systemd gawk coreutils findutils pam >= 1.3.1
-Requires:      libpwquality
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
+BuildRequires:  pkgconfig(popt)
+BuildRequires:  pkgconfig(cmocka)
+BuildRequires:  m4
+BuildRequires:  pkgconfig(python3)
+BuildRequires:  pkgconfig(libselinux)
+BuildRequires:  chrpath
+
+Requires:       grep
+Requires:       sed
+Requires:       systemd
+Requires:       gawk
+Requires:       coreutils
+Requires:       findutils
+Requires:       pam
+Requires:       libpwquality
+
 %description
 Authselect is a tool to configure system authentication and identity sources
 from a list of supported profiles. It replaces the legacy authconfig tool.
 
-%package       devel
-Summary:       Development files for the authselect library
-Requires:      %{name} = %{version}
+%package        devel
+Summary:        Development files for the authselect library
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
-%description   devel
+%description    devel
 This package contains the development library files and headers for the
 authselect tool, used for developing front-ends.
-
 
 %conf -p
 autoreconf -ivf
