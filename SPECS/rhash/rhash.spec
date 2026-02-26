@@ -53,8 +53,6 @@ data for a long-term storing or transferring.
 
 This package includes LibRHash development files.
 
-%lang_package
-
 %conf
 # repleace unwanted fomit-frame pointer with desirable optflags
 sed -i "s|-fomit-frame-pointer|%{optflags}|g" configure
@@ -67,9 +65,9 @@ sed -i "s|-fomit-frame-pointer|%{optflags}|g" configure
   --enable-gettext
 
 %install -a
-%find_lang %{name} %{?no_lang_C}
+%find_lang %{name} --generate-subpackages
 
-%files
+%files -f %{name}.lang
 %license COPYING
 %doc ChangeLog README.md
 %config(noreplace) %{_sysconfdir}/rhashrc
@@ -105,8 +103,6 @@ sed -i "s|-fomit-frame-pointer|%{optflags}|g" configure
 %{_includedir}/rhash.h
 %{_includedir}/rhash_torrent.h
 %{_libdir}/librhash.so
-
-%files lang -f %{name}.lang
 
 %changelog
 %{?autochangelog}
