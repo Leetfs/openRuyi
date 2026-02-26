@@ -9,7 +9,7 @@
 %define real_version 6.10.1
 %define short_version 6.10
 
-Name:           qt6-httpserver
+Name:           qt6-qthttpserver
 Version:        6.10.1
 Release:        %autorelease
 Summary:        Library to facilitate the creation of an http server with Qt
