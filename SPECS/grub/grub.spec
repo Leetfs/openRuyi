@@ -42,7 +42,7 @@ VCS:            git:https://https.git.savannah.gnu.org/git/grub.git
 #!RemoteAsset
 Source0:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz
 %else
-#!RemoteAsset:  git+https://git.oerv.ac.cn/upstream-mirrors/grub.git#grub-2.14-rc1
+#!RemoteAsset:  git+https://git.openruyi.cn/upstream-mirrors/grub.git#grub-2.14-rc1
 #!CreateArchive
 Source0:        grub.tar.gz
 %endif
@@ -51,7 +51,7 @@ Source0:        grub.tar.gz
 Source1:        https://ftpmirror.gnu.org/gnu/%{name}/%{name}-%{version}.tar.xz.sig
 %endif
 # Find this commit hash from bootstrap.conf
-#!RemoteAsset:  git+https://git.oerv.ac.cn/upstream-mirrors/gnulib.git#9f48fb992a3d7e96610c4ce8be969cff2d61a01b
+#!RemoteAsset:  git+https://git.openruyi.cn/upstream-mirrors/gnulib.git#9f48fb992a3d7e96610c4ce8be969cff2d61a01b
 #!CreateArchive
 Source2:        gnulib.tar.gz
 Source3:        grub.default
