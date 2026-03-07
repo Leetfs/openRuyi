@@ -42,7 +42,7 @@ Summary:        Rentrant, shared library (libqhull_r.so)
 
 %package        devel
 Summary:        Development files for qhull
-Requires:       %{name}-libs{?_isa} = %{version}-%{release}
+Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
