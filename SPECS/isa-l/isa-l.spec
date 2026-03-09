@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           isa-l
-Version:        2.31.1
+Version:        2.32.0
 Release:        %autorelease
 Summary:        Intelligent Storage Acceleration Library
 License:        BSD-3-Clause
