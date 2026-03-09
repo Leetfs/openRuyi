@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           fakeroot
-Version:        1.37.1.2
+Version:        1.37.2
 Release:        %autorelease
 Summary:        Gives a fake root environment
 License:        GPL-3.0-or-later
