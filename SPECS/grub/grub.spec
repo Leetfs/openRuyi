@@ -109,7 +109,10 @@ for plat in %{grub_platforms}; do
     CRYPTO_MODULES="luks luks2 gcry_rijndael gcry_sha1 gcry_sha256 gcry_sha512"
 
     # Add efi related modules
-    CD_MODULES="${CD_MODULES} chain efifwsetup efinet efi_uga read tpm tss2 tpm2_key_protector memdisk tar squash4 xzio"
+    %ifarch x86_64
+    CD_MODULES="${CD_MODULES} efi_uga"
+    %endif
+    CD_MODULES="${CD_MODULES} chain efifwsetup efinet read tpm tss2 tpm2_key_protector memdisk tar squash4 xzio"
     PXE_MODULES="${PXE_MODULES} efinet"
 
     CD_MODULES="$CD_MODULES %{kernel_module}"
@@ -142,10 +145,7 @@ for plat in %{grub_platforms}; do
     rm -f %{buildroot}%{_libdir}/grub/$plat/*.module
     rm -f %{buildroot}%{_libdir}/grub/$plat/*.image
     rm -f %{buildroot}%{_libdir}/grub/$plat/{kernel.exec,gdb_grub,gmodule.pl}
-
-    mkdir -p %{buildroot}%{_datadir}/%{name}/%{grub_platforms}/
-    install -m 644 grub.efi %{buildroot}%{_datadir}/%{name}/%{grub_platforms}/
-    cd -
+    popd
 done
 
 install -D -m 0644 %{SOURCE1} %{buildroot}%{_sysconfdir}/default/grub
@@ -213,7 +213,6 @@ rm -rf $RPM_BUILD_ROOT%{_datadir}/locale/*@*
 %{_datadir}/%{name}/ascii.h
 %{_datadir}/%{name}/widthspec.h
 %{_datadir}/%{name}/themes/starfield
-%{_datadir}/%{name}/%{grub_platforms}/grub.efi
 %{bash_completions_dir}/grub*
 %{_datadir}/info/%{name}.info*
 %{_datadir}/info/grub-dev.info*
