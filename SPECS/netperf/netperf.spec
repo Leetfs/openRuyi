@@ -19,6 +19,15 @@ URL:            https://github.com/HewlettPackard/netperf
 Source0:        https://github.com/HewlettPackard/netperf/archive/%{commit}/%{name}-%{commit}.tar.gz
 BuildSystem:    autotools
 
+BuildOption(conf):  --enable-burst
+BuildOption(conf):  --enable-dccp
+BuildOption(conf):  --enable-demo
+BuildOption(conf):  --enable-dirty
+BuildOption(conf):  --enable-histogram
+BuildOption(conf):  --enable-intervals
+BuildOption(conf):  --enable-omni
+BuildOption(conf):  --enable-sctp
+BuildOption(conf):  --enable-unixdomain
 BuildOption(build):  CFLAGS="%{optflags} -fno-strict-aliasing -fcommon -std=c99 -D_GNU_SOURCE"
 
 BuildRequires:  autoconf
@@ -26,6 +35,7 @@ BuildRequires:  automake
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  texinfo
+BuildRequires:  pkgconfig(libsctp)
 
 %description
 Netperf is a benchmark that can be used to measure the performance of many
