@@ -20,7 +20,7 @@ BuildSystem:    pyproject
 
 Patch0:         python-cart-1.2.2-cryptodomex.patch
 
-BuildOption(install): -l %{srcname}
+BuildOption(install):  -l %{srcname}
 
 BuildRequires:  pyproject-rpm-macros
 BuildRequires:  pkgconfig(python3)
