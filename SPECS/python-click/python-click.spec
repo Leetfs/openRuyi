@@ -13,14 +13,14 @@ Summary:        Simple wrapper around optparse for powerful command line utiliti
 License:        BSD-3-Clause
 URL:            https://github.com/pallets/click
 #!RemoteAsset
-Source0:        %{url}/archive/%{version}/click-%{version}.tar.gz
+Source0:        https://files.pythonhosted.org/packages/source/c/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
 
-BuildOption(install): %{srcname}
+BuildOption(install):  %{srcname}
 
 BuildRequires:  pyproject-rpm-macros
-BuildRequires:  python3-devel
+BuildRequires:  pkgconfig(python3)
 
 Provides:       python3-%{srcname}
 %python_provide python3-%{srcname}
