@@ -17,11 +17,11 @@ Source0:        https://files.pythonhosted.org/packages/source/p/%{srcname}/%{sr
 BuildArch:      noarch
 BuildSystem:    pyproject
 
-BuildOption(install): %{srcname} ordlookup peutils +auto
+BuildOption(install):  %{srcname} ordlookup peutils +auto
 
 BuildRequires:  pyproject-rpm-macros
 BuildRequires:  pytest
-BuildRequires:  python3-devel
+BuildRequires:  pkgconfig(python3)
 
 Provides:       python3-%{srcname}
 %python_provide python3-%{srcname}
