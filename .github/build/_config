@@ -9,6 +9,7 @@ Repotype: rpm-md sha512:rsyncable:zchunk:compression-zstd:filelists-ex
 Release: <CI_CNT>.<B_CNT>%%{?dist}
 PublishFilter: .*-bootstrap.*
 
+Prefer: systemd-udev
 Prefer: zlib-ng-compat-devel zlib-ng-compat pytest
 # use ninja, not samurai-ninja
 Prefer: ninja
