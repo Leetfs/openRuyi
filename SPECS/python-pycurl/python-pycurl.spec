@@ -16,10 +16,10 @@ URL:            https://github.com/pycurl/pycurl
 Source0:        https://files.pythonhosted.org/packages/source/p/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildSystem:    pyproject
 
-BuildOption(install): -l %{srcname} curl
+BuildOption(install):  -l %{srcname} curl
 
 BuildRequires:  pyproject-rpm-macros
-BuildRequires:  python3-devel
+BuildRequires:  pkgconfig(python3)
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(libcurl)
 
