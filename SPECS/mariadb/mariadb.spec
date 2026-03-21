@@ -36,6 +36,7 @@ Source3:        mariadb.service.in
 Source4:        mariadb.target
 Source5:        mysql-systemd-helper
 Source6:        mariadb@.service.in
+Source7:        mariadb.tmpfiles
 BuildSystem:    cmake
 
 Patch0:         fix-pamdir.patch
@@ -406,11 +407,8 @@ install -D -m 644 %{_sourcedir}/mariadb.target '%{buildroot}'%{_unitdir}/mariadb
 # mysql-systemd-helper
 sed -e 's:mysql.sock-%I:mysql.%I.sock:' -i %{buildroot}%{_unitdir}/mariadb@.socket
 
-# Tmpfiles file to exclude mysql tempfiles that are auto-cleaned up
-mkdir -p %{buildroot}%{_tmpfilesdir}
-cat >> %{buildroot}%{_tmpfilesdir}/mariadb.conf <<EOF
-x %{_localstatedir}/tmp/mysql.*
-EOF
+# Tmpfiles config for /run/mysql socket directory and temp file exclusion
+install -m0644 -D %{SOURCE7} %{buildroot}%{_tmpfilesdir}/mariadb.conf
 
 # Testsuite
 install -d -m 755 '%{buildroot}'%{_datadir}/%{name}-test/
