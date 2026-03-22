@@ -14,9 +14,9 @@ URL:            https://www.gnu.org/software/bison/bison.html
 VCS:            git:https://https.git.savannah.gnu.org/git/bison.git
 #!RemoteAsset
 Source:         https://ftpmirror.gnu.org/gnu/bison/bison-%{version}.tar.xz
-#!RemoteAsset
-Source:         https://ftpmirror.gnu.org/gnu/bison/bison-%{version}.tar.xz.sig
 BuildSystem:    autotools
+
+Patch3000:      glr2-cc-ensure-yylookaheadNeeds-is-same-size-as-yystates.patch
 
 BuildRequires:  flex
 BuildRequires:  gcc-c++
@@ -39,12 +39,10 @@ Bison is a parser generator similar to yacc(1).
 %exclude %{_docdir}/%{name}/THANKS
 %exclude %{_docdir}/%{name}/TODO
 %doc %{_docdir}/%{name}/examples
-%dir %{_datadir}/aclocal
 %{_bindir}/bison
 %{_bindir}/yacc
 %{_libdir}/liby.a
 %{_datadir}/bison
-%dir %{_datadir}/aclocal
 %{_datadir}/aclocal/bison-i18n.m4
 %{_infodir}/bison.info*.gz
 %{_mandir}/man1/bison.1%{?ext_man}
