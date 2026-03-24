@@ -64,6 +64,7 @@ BuildRequires:  pkgconfig(libselinux)
 
 Requires(post): update-alternatives
 Requires(preun):update-alternatives
+Requires(pre):  dbus-common
 Requires:       dbus-common
 Requires:       dbus-tools
 Requires:       dbus-broker
