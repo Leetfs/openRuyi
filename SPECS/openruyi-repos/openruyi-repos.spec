@@ -9,7 +9,7 @@
 %global _vendor_repo_url https://repo.build.openruyi.cn/openruyi/\\$basearch/
 %endif
 
-Name:           openRuyi-repos
+Name:           openruyi-repos
 Version:        3
 Release:        %autorelease
 Summary:        openRuyi repository files
@@ -17,6 +17,7 @@ License:        MulanPSL-2.0
 URL:            https://www.openruyi.cn
 
 Provides:       system-repos
+Provides:       openRuyi-repos
 
 %description
 This package contains the repository files for %{_vendor}.
