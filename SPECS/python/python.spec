@@ -27,7 +27,6 @@
 %global pkgname python3
 %endif
 
-
 # Whether to use RPM build wheels from the python-{pip,setuptools,wheel}-wheel packages
 # Uses upstream bundled prebuilt wheels otherwise
 %bcond rpmwheels %{without bootstrap}
