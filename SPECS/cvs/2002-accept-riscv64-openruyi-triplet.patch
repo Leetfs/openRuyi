@@ -1,0 +1,13 @@
+diff --git a/build-aux/config.sub b/build-aux/config.sub
+--- a/build-aux/config.sub
++++ b/build-aux/config.sub
+@@ -116,0 +117,9 @@
++case $1 in
++ riscv64-openruyi-linux)
++   echo "$1-gnu"
++   exit 0;;
++ riscv64-openruyi-linux-gnu)
++   echo "$1"
++   exit 0;;
++esac
++

@@ -1,0 +1,19 @@
+diff --git a/lib/vasnprintf.c b/lib/vasnprintf.c
+--- a/lib/vasnprintf.c
++++ b/lib/vasnprintf.c
+@@ -88 +88,6 @@
+-# define USE_SNPRINTF 1
++# if defined __GLIBC__
++/* glibc rejects the writable format used for the %n length probe. */
++#  define USE_SNPRINTF 0
++# else
++#  define USE_SNPRINTF 1
++# endif
+@@ -103 +108,6 @@
+-# define USE_SNPRINTF (HAVE_DECL__SNPRINTF || HAVE_SNPRINTF)
++# if defined __GLIBC__
++/* glibc rejects the writable format used for the %n length probe. */
++#  define USE_SNPRINTF 0
++# else
++#  define USE_SNPRINTF (HAVE_DECL__SNPRINTF || HAVE_SNPRINTF)
++# endif

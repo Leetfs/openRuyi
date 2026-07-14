@@ -1,0 +1,16 @@
+diff --git a/lib/sighandle.c b/lib/sighandle.c
+--- a/lib/sighandle.c
++++ b/lib/sighandle.c
+@@ -40,11 +40 @@
+-#ifdef STDC_HEADERS
+-#include <stdlib.h>
+-#else
+-#if __STDC__
+-char *calloc(unsigned nelem, unsigned size);
+-char *malloc(unsigned size);
+-#else
+-char *calloc();
+-char *malloc();
+-#endif /* __STDC__ */
+-#endif /* STDC_HEADERS */
++#include <stdlib.h>

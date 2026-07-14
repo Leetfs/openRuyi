@@ -1,0 +1,9 @@
+diff --git a/src/client.c b/src/client.c
+--- a/src/client.c
++++ b/src/client.c
+@@ -3561 +3561 @@ connect_to_pserver (cvsroot_t *root, struct buffer **to_server_p,
+-	sscanf (read_buf, "%s %d", write_buf, &codenum);
++	count = sscanf (read_buf, "%*s %d", &codenum);
+@@ -3563 +3563 @@ connect_to_pserver (cvsroot_t *root, struct buffer **to_server_p,
+-	if ((codenum / 100) != 2)
++	if (count != 1 || (codenum / 100) != 2)
