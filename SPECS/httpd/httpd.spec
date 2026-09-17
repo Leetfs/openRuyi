@@ -75,9 +75,9 @@ BuildOption(conf):  --enable-cgid-fdpassing
 BuildOption(conf):  --enable-authn-anon
 BuildOption(conf):  --enable-authn-alias
 BuildOption(conf):  --enable-systemd=static
+BuildOption(conf):  --enable-http2
 BuildOption(conf):  --disable-imagemap
 BuildOption(conf):  --disable-file-cache
-BuildOption(conf):  --disable-http2
 BuildOption(conf):  --disable-md
 BuildOption(install):  DESTDIR=%{buildroot}
 
@@ -102,6 +102,7 @@ BuildRequires:  pkgconfig(ldap)
 BuildRequires:  pkgconfig(libxcrypt)
 BuildRequires:  pkgconfig(libpcre2-8)
 BuildRequires:  pkgconfig(openssl)
+BuildRequires:  pkgconfig(libnghttp2)
 BuildRequires:  pkgconfig(libcap)
 BuildRequires:  systemd-rpm-macros
 
