@@ -1,0 +1,23 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 17 Sep 2026 13:35:00 +0800
+Subject: [PATCH] Remove musl-only jemalloc dependency for openRuyi GNU targets
+
+openRuyi builds ripgrep for GNU targets. Cargo's offline resolver still
+requires source metadata for target-specific dependencies that cannot be
+used by either configured architecture. Remove the musl-only allocator
+dependency so the system allocator is used on both build targets.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -60,9 +60,6 @@
+ termcolor = "1.4.0"
+ textwrap = { version = "0.16.0", default-features = false }
+ 
+-[target.'cfg(all(target_env = "musl", target_pointer_width = "64"))'.dependencies.tikv-jemallocator]
+-version = "0.7.0"
+-
+ [dev-dependencies]
+ serde = "1.0.77"
+ serde_derive = "1.0.77"
