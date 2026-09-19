@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Xuhai Chang <xuhai.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -102,6 +103,10 @@ BuildRequires:  dlpack
 0017-onnxruntime-ignore-deprecated-thrust-warnings.patch
 # Add ROCm compatibility: CUBLAS_GEMM_DEFAULT_TENSOR_OP is not supported in ROCm
 0018-onnxruntime-rocm-no-CUBLAS_GEMM_DEFAULT_TENSOR_OP-su.patch
+# Adapt schema registration macros for ONNX 1.21 and later
+2000-onnx-1.21-schema-macros.patch
+# Link onnxruntime to ONNX's official static archives because it uses internal APIs
+2001-link-system-onnx-static.patch
 
 %description
 %{name} is a cross-platform inferencing and training accelerator compatible

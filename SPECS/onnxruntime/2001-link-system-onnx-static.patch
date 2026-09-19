@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Sat, 20 Sep 2026 11:30:00 +0800
+Subject: [PATCH] Link the system ONNX static archives
+
+ONNX deliberately hides non-public symbols in its shared library, while
+onnxruntime uses some of those internal APIs.  Keep using the distribution's
+ONNX headers and sources, but link its official static build artifacts so the
+private references are resolved within libonnxruntime.
+
+This is a distribution build-compatibility patch, not a security fix and not
+an upstream backport.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ cmake/external/onnxruntime_external_deps.cmake | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 58ffff8..1c9787a 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -498,6 +498,28 @@ endif()
+ 
+ find_package(ONNX REQUIRED)
+ 
++find_file(ONNX_STATIC_LIBRARY
++  NAMES libonnx.a
++  PATHS ${CMAKE_INSTALL_FULL_LIBDIR} /usr/lib64 /usr/lib
++  NO_DEFAULT_PATH
++)
++find_file(ONNX_PROTO_STATIC_LIBRARY
++  NAMES libonnx_proto.a
++  PATHS ${CMAKE_INSTALL_FULL_LIBDIR} /usr/lib64 /usr/lib
++  NO_DEFAULT_PATH
++)
++if(NOT ONNX_STATIC_LIBRARY OR NOT ONNX_PROTO_STATIC_LIBRARY)
++  message(FATAL_ERROR "ONNX static archives are required to link onnxruntime")
++endif()
++set_target_properties(ONNX::onnx PROPERTIES
++  IMPORTED_LOCATION "${ONNX_STATIC_LIBRARY}"
++  IMPORTED_LOCATION_RELWITHDEBINFO "${ONNX_STATIC_LIBRARY}"
++)
++set_target_properties(ONNX::onnx_proto PROPERTIES
++  IMPORTED_LOCATION "${ONNX_PROTO_STATIC_LIBRARY}"
++  IMPORTED_LOCATION_RELWITHDEBINFO "${ONNX_PROTO_STATIC_LIBRARY}"
++)
++
+ if(TARGET ONNX::onnx AND NOT TARGET onnx)
+   message(STATUS "Aliasing ONNX::onnx to onnx")
+   add_library(onnx ALIAS ONNX::onnx)
+-- 
+2.51.0

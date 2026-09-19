@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Sun, 20 Sep 2026 00:23:21 +0800
+Subject: [PATCH] Adapt schema macros for ONNX 1.21 and later
+
+ONNX 1.21 changed OpSchemaRegisterOnce declarations to use a named
+variable and the standard [[maybe_unused]] attribute. Adapt the two
+ONNX Runtime contrib registration macros to the same form so the
+system-ONNX build remains source compatible.
+
+This is a downstream build-compatibility patch containing only the
+contrib_defs.h hunk, not a complete backport of the upstream commit.
+
+Upstream-Reference: https://github.com/microsoft/onnxruntime/commit/aaa49440491a88f812ba79355b18457c8fa9ed7c
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ onnxruntime/core/graph/contrib_ops/contrib_defs.h | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/onnxruntime/core/graph/contrib_ops/contrib_defs.h b/onnxruntime/core/graph/contrib_ops/contrib_defs.h
+index 835439bf3e..5c69d4db2c 100644
+--- a/onnxruntime/core/graph/contrib_ops/contrib_defs.h
++++ b/onnxruntime/core/graph/contrib_ops/contrib_defs.h
+@@ -35,19 +35,17 @@ inline bool HasRawData(const ONNX_NAMESPACE::TensorProto& ten_proto) {
+   ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_HELPER(__COUNTER__, name)
+ #define ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_HELPER(Counter, name) \
+   ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ(Counter, name)
+-#define ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ(Counter, name)         \
+-  static ONNX_NAMESPACE::OpSchemaRegistry::OpSchemaRegisterOnce( \
+-      op_schema_register_once##name##Counter) ONNX_UNUSED =      \
+-      ONNX_NAMESPACE::OpSchema(#name, __FILE__, __LINE__)
++#define ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ(Counter, name)                                               \
++  static ONNX_NAMESPACE::OpSchemaRegistry::OpSchemaRegisterOnce op_schema_register_once##name##Counter \
++      [[maybe_unused]] = ONNX_NAMESPACE::OpSchema(#name, __FILE__, __LINE__)
+ 
+ #define ONNX_CONTRIB_OPERATOR_SCHEMA_ELSEWHERE(name, schema_func) \
+   ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_HELPER_ELSEWHERE(__COUNTER__, name, schema_func)
+ #define ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_HELPER_ELSEWHERE(Counter, name, schema_func) \
+   ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_ELSEWHERE(Counter, name, schema_func)
+-#define ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_ELSEWHERE(Counter, name, schema_func) \
+-  static ONNX_NAMESPACE::OpSchemaRegistry::OpSchemaRegisterOnce(                \
+-      op_schema_register_once##name##Counter) ONNX_UNUSED =                     \
+-      schema_func(ONNX_NAMESPACE::OpSchema(#name, __FILE__, __LINE__))
++#define ONNX_CONTRIB_OPERATOR_SCHEMA_UNIQ_ELSEWHERE(Counter, name, schema_func)                        \
++  static ONNX_NAMESPACE::OpSchemaRegistry::OpSchemaRegisterOnce op_schema_register_once##name##Counter \
++      [[maybe_unused]] = schema_func(ONNX_NAMESPACE::OpSchema(#name, __FILE__, __LINE__))
+ 
+ void RegisterContribSchemas();
+ void RegisterNchwcSchemas();
+-- 
+2.51.0
+
