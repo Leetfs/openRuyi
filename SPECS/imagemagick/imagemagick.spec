@@ -1,22 +1,22 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: purofle <yuguo.or@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           imagemagick
-Version:        7.1.2.30
+Version:        7.1.2.31
 Release:        %autorelease
 Summary:        An X application for displaying and manipulating images
 License:        ImageMagick
 URL:            https://github.com/ImageMagick/ImageMagick
-#!RemoteAsset:  sha256:3034a64f22398e15ee3dd1e6b1aa83d838cfc47df1bb246ae0eca9590e6ace72
-Source:         https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.2-30.tar.gz
+#!RemoteAsset:  sha256:34d9cc3acddc3e3c429d23af60eda5ceaac477a8b296ddb9469f773f44a80a5f
+Source:         https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.2-31.tar.gz
 BuildSystem:    autotools
 
 BuildOption(conf):  --enable-shared
 BuildOption(conf):  --disable-static
-BuildOption(conf):  --with-modules
 BuildOption(conf):  --with-webp
 
 BuildRequires:  autoconf
@@ -27,6 +27,7 @@ BuildRequires:  pkgconfig(bzip2)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libzstd)
 BuildRequires:  pkgconfig(ddjvuapi)
+BuildRequires:  pkgconfig(libwebp)
 
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
@@ -117,7 +118,6 @@ autoreconf -fiv
 %{_libdir}/libMagickWand-7.Q16HDRI.so.10.*
 %{_libdir}/libMagick++-7.Q16HDRI.so.5
 %{_libdir}/libMagick++-7.Q16HDRI.so.5.*
-%{_libdir}/ImageMagick-7.1.2/modules-Q16HDRI/*
 
 %changelog
 %autochangelog
