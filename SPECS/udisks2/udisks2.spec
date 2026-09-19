@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -9,12 +10,12 @@
 %bcond doc 0
 
 Name:           udisks2
-Version:        2.11.0
+Version:        2.11.2
 Release:        %autorelease
 Summary:        Disk Manager
 License:        GPL-2.0-or-later
 URL:            https://github.com/storaged-project/udisks
-#!RemoteAsset:  sha256:0bf30151fe8d9d2fb59b57f6630739dfbbd16417dee69ec57d43b37335bd649a
+#!RemoteAsset:  sha256:18630a8aad806bea0bc626ce97e71e50ec82c742956ac1c834a4275f8f22207b
 Source0:        https://github.com/storaged-project/udisks/releases/download/udisks-%{version}/udisks-%{version}.tar.bz2
 BuildSystem:    autotools
 
