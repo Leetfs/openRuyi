@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Ruoqing He <heruoqing@iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -14,12 +15,12 @@
 #global go_test_ignore_failure 1
 
 Name:           runc
-Version:        1.4.0
+Version:        1.4.3
 Release:        %autorelease
 Summary:        CLI for running Open Containers
 License:        Apache-2.0 and BSD-2-Clause and BSD-3-Clause and MIT
 URL:            https://github.com/opencontainers/runc
-#!RemoteAsset
+#!RemoteAsset:  sha256:e0a89f9e883ce93e740d14bb105b25c665f7d7beade4cfd0714fcafb38855d35
 Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 BuildSystem:    golang
 
