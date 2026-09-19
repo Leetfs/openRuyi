@@ -1,7 +1,8 @@
-diff -Naur onnx-1.20.1.orig/onnx/defs/schema.cc onnx-1.20.1/onnx/defs/schema.cc
---- onnx-1.20.1.orig/onnx/defs/schema.cc	2026-02-10 19:51:33
-+++ onnx-1.20.1/onnx/defs/schema.cc	2026-02-10 19:53:06
-@@ -24,8 +24,18 @@
+diff --git a/onnx/defs/schema.cc b/onnx/defs/schema.cc
+index 438eacd..a2a7eaa 100644
+--- a/onnx/defs/schema.cc
++++ b/onnx/defs/schema.cc
+@@ -28,8 +28,18 @@
  #include "onnx/common/assertions.h"
  #endif
  #include "onnx/defs/parser.h"
@@ -20,29 +21,32 @@ diff -Naur onnx-1.20.1.orig/onnx/defs/schema.cc onnx-1.20.1/onnx/defs/schema.cc
  // -1 means ONNX schema hasn't been loaded yet
  // 0 means all versions of ONNX schema have been loaded
  // Other positive integer means the ONNX schemas for the specified version have been loaded
-@@ -1738,6 +1748,8 @@
+@@ -1630,6 +1640,9 @@ OpName_Domain_Version_Schema_Map& OpSchemaRegistry::map() {
    class SchemasRegisterer {
     public:
      SchemasRegisterer() {
 +      // Check if static registration is actually disabled
-+      if(ONNXRuntimeFix::isStaticRegistrationDisabled()) return;
++      if (ONNXRuntimeFix::isStaticRegistrationDisabled())
++        return;
        // In debug builds, the number of schema registered in this constructor
        // is compared against the number of calls to schema registration macros.
  #ifndef NDEBUG
-diff -Naur onnx-1.20.1.orig/onnx/onnxruntime_fix.h onnx-1.20.1/onnx/onnxruntime_fix.h
---- onnx-1.20.1.orig/onnx/onnxruntime_fix.h	1970-01-01 08:00:00
-+++ onnx-1.20.1/onnx/onnxruntime_fix.h	2026-02-10 19:52:43
+diff --git a/onnx/onnxruntime_fix.h b/onnx/onnxruntime_fix.h
+new file mode 100644
+index 0000000..6268289
+--- /dev/null
++++ b/onnx/onnxruntime_fix.h
 @@ -0,0 +1,14 @@
 +#pragma once
 +
 +namespace ONNX_NAMESPACE {
 +
 +class ONNXRuntimeFix {
-+public:
++ public:
 +  static bool isStaticRegistrationDisabled();
 +  static void disableStaticRegistration();
 +
-+private:
++ private:
 +  static bool _static_registration_disabled;
 +};
 +
