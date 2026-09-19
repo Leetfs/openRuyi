@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %define package_version 9.2
-%define patchlevel 0593
+%define patchlevel 1090
 
 %define vimdir vim92
 
@@ -18,7 +18,7 @@ Summary:        A popular VI editor derivative with enhanced functionality
 License:        Vim AND LGPL-2.1-or-later AND MIT AND GPL-1.0-only AND (GPL-2.0-only OR Vim) AND Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND GPL-2.0-or-later AND GPL-3.0-or-later AND OPUBL-1.0 AND Apache-2.0
 URL:            https://www.vim.org/
 VCS:            git:https://github.com/vim/vim
-#!RemoteAsset:  sha256:43835eae8d0d202cc3b1ce9364183b4be7b48095a6895cf988b96dc385504a85
+#!RemoteAsset:  sha256:268201ebd7b8c9d55f839e47d1b192658f24b7b2dfc8402024a3b0fab8d8dd09
 Source0:        https://github.com/vim/vim/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 BuildSystem:    autotools
 
