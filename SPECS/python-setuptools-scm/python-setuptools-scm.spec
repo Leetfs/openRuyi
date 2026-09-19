@@ -3,6 +3,7 @@
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 # SPDX-FileContributor: panglars <panghao.riscv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -35,7 +36,7 @@ Provides:       python3-setuptools-scm = %{version}-%{release}
 Setuptools_scm handles managing your Python package versions in SCM metadata.
 It also handles file finders for the supported SCMs.
 
-%pyproject_extras_subpkg -n python-setuptools-scm toml,rich
+%pyproject_extras_subpkg -n python-setuptools-scm simple,toml,rich
 
 %prep
 %autosetup -p1 -n setuptools_scm-%{version}
