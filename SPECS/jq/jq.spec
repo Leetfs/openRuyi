@@ -3,19 +3,20 @@
 # SPDX-FileContributor: Dingli Zhang <dingli@iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %bcond valgrind 0
 
 Name:           jq
-Version:        1.8.1
+Version:        1.8.2
 Release:        %autorelease
 Summary:        A lightweight and flexible command-line JSON processor
 License:        MIT AND ICU AND CC-BY-3.0
 URL:            https://jqlang.org/
 VCS:            git:https://github.com/jqlang/jq
-#!RemoteAsset:  sha256:2be64e7129cecb11d5906290eba10af694fb9e3e7f9fc208a311dc33ca837eb0
+#!RemoteAsset:  sha256:71b8d6e8f5fe81f6c6d0d110e3892251f6ce76ed095abd315e26e6e1193af3af
 Source0:        https://github.com/jqlang/jq/releases/download/jq-%{version}/jq-%{version}.tar.gz
 BuildSystem:    autotools
 
