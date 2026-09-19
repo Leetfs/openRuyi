@@ -2,18 +2,19 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 # SPDX-FileContributor: Zitao Zhou <zitao.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname virtualenv
 
 Name:           python-%{srcname}
-Version:        21.7.4
+Version:        21.14.11
 Release:        %autorelease
 Summary:        Tool to create isolated Python environments
 License:        MIT
 URL:            https://github.com/pypa/virtualenv
-#!RemoteAsset:  sha256:c9d960c95fa458171e58222a5ccab7465298e4b6559977865e627c4719f1e825
+#!RemoteAsset:  sha256:593052d8477ea8c55a842387ce111bd08c72618f0c1133c302cafe335e570a57
 Source0:        https://files.pythonhosted.org/packages/source/v/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
