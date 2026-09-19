@@ -3,21 +3,20 @@
 # SPDX-FileContributor: Jingwiw <wangjingwei@iscas.ac.cn>
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           pcre2
-Version:        10.47
+Version:        10.48
 Release:        %autorelease
 Summary:        A library for Perl-compatible regular expressions
 License:        BSD-3-Clause WITH PCRE2-exception
 URL:            https://pcre2project.github.io/pcre2/
 VCS:            git:https://github.com/PCRE2Project/pcre2.git
-#!RemoteAsset:  sha256:47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7
+#!RemoteAsset:  sha256:b6c68fdf6f3ac31388b50aa89ff0fc49c00c987c16e7b5146491d12003f2c8ed
 Source0:        https://github.com/PCRE2Project/pcre2/releases/download/pcre2-%{version}/pcre2-%{version}.tar.bz2
 BuildSystem:    autotools
-
-Patch0:         0001-pcre2test-allow-using-dynamically-allocated-buffers-and.patch
 
 BuildOption(conf):  --enable-jit
 BuildOption(conf):  --enable-pcre2-16
