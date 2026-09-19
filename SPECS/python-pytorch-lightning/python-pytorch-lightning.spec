@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Xuhai Chang <xuhai.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -8,12 +9,12 @@
 %global pypi_name pytorch_lightning
 
 Name:           python-%{srcname}
-Version:        2.6.4
+Version:        2.6.6
 Release:        %autorelease
 Summary:        The lightweight PyTorch wrapper for ML researchers
 License:        Apache-2.0
 URL:            https://github.com/Lightning-AI/lightning
-#!RemoteAsset:  sha256:fdd2a7052b9afb92394968205b9b55baab426aa57dec11b95bf1b84a67c2bc25
+#!RemoteAsset:  sha256:52c52b20522dd3d3feb3bb3aae2dbe3f291e8e836d4111a74cfd72e9df018834
 Source0:        https://files.pythonhosted.org/packages/source/p/%{pypi_name}/%{pypi_name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
