@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Gui-Yue <xiangwei.riscv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -8,13 +9,13 @@
 
 Name:           python-%{srcname}
 # NOTE: Please check compatibility of python-datasets when updating.
-Version:        2026.4.0
+Version:        2026.6.0
 Release:        %autorelease
 Summary:        File-system specification for Python
 License:        BSD-3-Clause
 URL:            https://pypi.org/project/fsspec/
 VCS:            git:https://github.com/fsspec/filesystem_spec
-#!RemoteAsset:  sha256:301d8ac70ae90ef3ad05dcf94d6c3754a097f9b5fe4667d2787aa359ec7df7e4
+#!RemoteAsset:  sha256:f5bac145310fe30e16e1471bd6840b2d990d609e872251d7e674241822abf01a
 Source0:        https://files.pythonhosted.org/packages/source/f/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
