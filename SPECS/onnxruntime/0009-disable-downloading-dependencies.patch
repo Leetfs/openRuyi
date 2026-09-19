@@ -1,15 +1,16 @@
 diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
-index 6e83d77..8d53f87 100644
+index 493925e..c4f2ff8 100644
 --- a/cmake/external/onnxruntime_external_deps.cmake
 +++ b/cmake/external/onnxruntime_external_deps.cmake
-@@ -5,36 +5,6 @@ message(STATUS "Loading Dependencies URLs ...")
+@@ -5,38 +5,6 @@ message(STATUS "Loading Dependencies URLs ...")
  
  include(external/helper_functions.cmake)
  
 -file(STRINGS deps.txt ONNXRUNTIME_DEPS_LIST)
 -foreach(ONNXRUNTIME_DEP IN LISTS ONNXRUNTIME_DEPS_LIST)
--  # Lines start with "#" are comments
--  if(NOT ONNXRUNTIME_DEP MATCHES "^#")
+-  # Lines start with "#" are comments, so skip them.
+-  # cpp_client_telemetry is only needed for telemetry on non-Windows platforms, so skip if telemetry is not enabled or it's Windows platform.
+-  if((NOT ONNXRUNTIME_DEP MATCHES "^#") AND ((NOT ONNXRUNTIME_DEP MATCHES "^cpp_client_telemetry") OR (onnxruntime_USE_TELEMETRY AND NOT WIN32)))
 -    # The first column is name
 -    list(POP_FRONT ONNXRUNTIME_DEP ONNXRUNTIME_DEP_NAME)
 -    # The second column is URL
@@ -36,6 +37,7 @@ index 6e83d77..8d53f87 100644
 -
 -# ABSL should be included before protobuf because protobuf may use absl
 -include(external/abseil-cpp.cmake)
- 
+-
  set(RE2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
  
+ onnxruntime_fetchcontent_declare(
