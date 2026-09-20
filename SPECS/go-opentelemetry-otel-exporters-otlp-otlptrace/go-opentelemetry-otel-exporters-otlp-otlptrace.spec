@@ -7,34 +7,20 @@
 %define go_import_path  go.opentelemetry.io/otel/exporters/otlp/otlptrace
 
 Name:           go-opentelemetry-otel-exporters-otlp-otlptrace
-Version:        1.46.0
+Version:        1.47.0
 Release:        %autorelease
 Summary:        OTLP trace exporter abstractions for OpenTelemetry Go
 License:        Apache-2.0
 URL:            https://github.com/open-telemetry/opentelemetry-go
-#!RemoteAsset:  sha256:5da7830e37741e46606c10b65f15f16481c2c7f83ee31bb8e833d76376f6331b
+#!RemoteAsset:  sha256:4e8bd2fcc26dd6a61df4edf478c00c9cf661bae4cbc1f4621df006a9e642b7da
 Source0:        https://github.com/open-telemetry/opentelemetry-go/archive/refs/tags/exporters/otlp/otlptrace/v%{version}.tar.gz#/%{_name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    golangmodules
 
+
+
 BuildRequires:  go
 BuildRequires:  go-rpm-macros
-BuildRequires:  go(github.com/cenkalti/backoff/v5)
-BuildRequires:  go(github.com/go-logr/logr)
-BuildRequires:  go(github.com/google/go-cmp)
-BuildRequires:  go(github.com/stretchr/testify)
-BuildRequires:  go(go.opentelemetry.io/otel)
-BuildRequires:  go(go.opentelemetry.io/otel/metric)
-BuildRequires:  go(go.opentelemetry.io/otel/sdk)
-BuildRequires:  go(go.opentelemetry.io/otel/sdk/metric)
-BuildRequires:  go(go.opentelemetry.io/otel/trace)
-BuildRequires:  go(go.opentelemetry.io/proto)
-BuildRequires:  go(go.uber.org/goleak)
-BuildRequires:  go(google.golang.org/genproto/googleapis/rpc)
-BuildRequires:  go(google.golang.org/grpc)
-BuildRequires:  go(google.golang.org/protobuf)
-BuildRequires:  go(go.opentelemetry.io/auto/sdk)
-BuildRequires:  go(github.com/grpc-ecosystem/grpc-gateway/v2)
 
 Provides:       go(go.opentelemetry.io/otel/exporters/otlp/otlptrace) = %{version}
 Provides:       go(go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc) = %{version}
