@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name twox-hash
-%global full_version 2.1.2
+%global full_version 2.1.3
 %global pkgname twox-hash-2
 
 Name:           rust-twox-hash-2
-Version:        2.1.2
+Version:        2.1.3
 Release:        %autorelease
 Summary:        Rust crate "twox-hash"
 License:        MIT
 URL:            https://github.com/shepmaster/twox-hash
-#!RemoteAsset:  sha256:9ea3136b675547379c4bd395ca6b938e5ad3c3d20fad76e7fe85f9e0d011419c
+#!RemoteAsset:  sha256:8464ec13c3691491391d9fce00f6416c9a48e46972f72d7865688be2080192c9
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
@@ -48,7 +48,7 @@ This metapackage enables feature "default" for the Rust twox-hash crate, by pull
 %package     -n %{name}+random
 Summary:        The XXHash and XXH3 algorithms - feature "random"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(rand-0.9/thread-rng) >= 0.9.0
+Requires:       crate(rand-0.9/thread-rng) >= 0.9.5
 Provides:       crate(%{pkgname}/random) = %{version}
 
 %description -n %{name}+random
@@ -57,7 +57,7 @@ This metapackage enables feature "random" for the Rust twox-hash crate, by pulli
 %package     -n %{name}+serialize
 Summary:        The XXHash and XXH3 algorithms - feature "serialize"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(serde-1/derive) >= 1.0.0
+Requires:       crate(serde-1/derive) >= 1.0.228
 Provides:       crate(%{pkgname}/serialize) = %{version}
 
 %description -n %{name}+serialize

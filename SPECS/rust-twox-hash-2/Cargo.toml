@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.81"
 name = "twox-hash"
-version = "2.1.2"
+version = "2.1.3"
 authors = ["Jake Goulding <jake.goulding@gmail.com>"]
 build = false
 autolib = false
@@ -60,7 +60,7 @@ name = "twox_hash"
 path = "src/lib.rs"
 
 [dependencies.rand]
-version = "0.9.0"
+version = ">=0.9.0, <=0.11.0"
 features = ["thread_rng"]
 optional = true
 default-features = false
