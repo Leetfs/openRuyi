@@ -2,16 +2,17 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           glslang
-Version:        1.4.357.0
+Version:        16.4.0
 Release:        %autorelease
 Summary:        OpenGL and OpenGL ES shader front end and validator
 License:        BSD-3-Clause AND GPL-3.0-or-later AND Apache-2.0
 URL:            https://github.com/KhronosGroup/glslang
-#!RemoteAsset:  git+https://github.com/KhronosGroup/glslang.git#vulkan-sdk-%{version}
+#!RemoteAsset:  git+https://github.com/KhronosGroup/glslang.git#%{version}
 #!CreateArchive
 Source0:        %{name}-%{version}.tar.gz
 BuildSystem:    cmake
