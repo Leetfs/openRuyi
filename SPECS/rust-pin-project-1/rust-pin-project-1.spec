@@ -4,23 +4,24 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name pin-project
-%global full_version 1.1.10
+%global full_version 1.1.13
 %global pkgname pin-project-1
 
 Name:           rust-pin-project-1
-Version:        1.1.10
+Version:        1.1.13
 Release:        %autorelease
 Summary:        Rust crate "pin-project"
 License:        Apache-2.0 OR MIT
 URL:            https://github.com/taiki-e/pin-project
-#!RemoteAsset:  sha256:677f1add503faace112b9f1373e43e9e054bfdd22ff1a63c1bc485eaec6a6a8a
+#!RemoteAsset:  sha256:2466b2336ed02bcdca6b294417127b90ec92038d1d5c4fbeac971a922e0e0924
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(pin-project-internal-1/default) >= 1.1.10
+Requires:       crate(pin-project-internal-1/default) >= 1.1.13
+
 Provides:       crate(%{pkgname}) = %{version}
 Provides:       crate(%{pkgname}/default) = %{version}
 
