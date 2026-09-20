@@ -4,32 +4,33 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name axum-core
-%global full_version 0.5.5
+%global full_version 0.5.6
 %global pkgname axum-core-0.5
 
 Name:           rust-axum-core-0.5
-Version:        0.5.5
+Version:        0.5.6
 Release:        %autorelease
 Summary:        Rust crate "axum-core"
 License:        MIT
 URL:            https://github.com/tokio-rs/axum
-#!RemoteAsset:  sha256:59446ce19cd142f8833f856eb31f3eb097812d1479ab224f54d72428ca21ea22
+#!RemoteAsset:  sha256:08c78f31d7b1291f7ee735c1c6780ccde7785daae9a9206026862dab7d8792d1
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(bytes-1/default) >= 1.2.0
-Requires:       crate(futures-core-0.3/default) >= 0.3.0
-Requires:       crate(http-1/default) >= 1.0.0
-Requires:       crate(http-body-1/default) >= 1.0.0
-Requires:       crate(http-body-util-0.1/default) >= 0.1.0
-Requires:       crate(mime-0.3/default) >= 0.3.16
-Requires:       crate(pin-project-lite-0.2/default) >= 0.2.7
-Requires:       crate(sync-wrapper-1/default) >= 1.0.0
-Requires:       crate(tower-layer-0.3/default) >= 0.3.0
-Requires:       crate(tower-service-0.3/default) >= 0.3.0
+Requires:       crate(bytes-1/default) >= 1.12.0
+Requires:       crate(futures-core-0.3/default) >= 0.3.32
+Requires:       crate(http-1/default) >= 1.4.0
+Requires:       crate(http-body-1/default) >= 1.0.1
+Requires:       crate(http-body-util-0.1/default) >= 0.1.3
+Requires:       crate(mime-0.3/default) >= 0.3.17
+Requires:       crate(pin-project-lite-0.2/default) >= 0.2.17
+Requires:       crate(sync-wrapper-1/default) >= 1.0.2
+Requires:       crate(tower-layer-0.3/default) >= 0.3.3
+Requires:       crate(tower-service-0.3/default) >= 0.3.3
+
 Provides:       crate(%{pkgname}) = %{version}
 Provides:       crate(%{pkgname}/default) = %{version}
 
@@ -49,7 +50,7 @@ This metapackage enables feature "__private_docs" for the Rust axum-core crate, 
 %package     -n %{name}+tracing
 Summary:        Core types and traits for axum - feature "tracing"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(tracing-0.1) >= 0.1.37
+Requires:       crate(tracing-0.1) >= 0.1.44
 Provides:       crate(%{pkgname}/tracing) = %{version}
 
 %description -n %{name}+tracing
