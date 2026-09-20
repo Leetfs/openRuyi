@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name bytes
-%global full_version 1.11.1
+%global full_version 1.12.0
 %global pkgname bytes-1
 
 Name:           rust-bytes-1
-Version:        1.11.1
+Version:        1.12.0
 Release:        %autorelease
 Summary:        Rust crate "bytes"
 License:        MIT
 URL:            https://github.com/tokio-rs/bytes
-#!RemoteAsset:  sha256:1e748733b7cbc798e1434b6ac524f0c1ff2ab456fe201501e6497c8417a4fc33
+#!RemoteAsset:  sha256:8ae3f5d315924270530207e2a68396c3cc547f6dca3fbdca317cfb1a51edb593
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
@@ -39,7 +39,7 @@ This metapackage enables feature "extra-platforms" for the Rust bytes crate, by 
 %package     -n %{name}+serde
 Summary:        Types and traits for working with bytes - feature "serde"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(serde-1/alloc) >= 1.0.60
+Requires:       crate(serde-1/alloc) >= 1.0.228
 Provides:       crate(%{pkgname}/serde) = %{version}
 
 %description -n %{name}+serde
