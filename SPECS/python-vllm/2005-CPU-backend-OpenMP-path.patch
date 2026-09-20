@@ -1,6 +1,6 @@
-From 9a08bb255736c69063dd9d1c757647db281e26ea Mon Sep 17 00:00:00 2001
+From d3f37088b055f7b61736183a850aa9a9d42edcd8 Mon Sep 17 00:00:00 2001
 From: CHEN Xuan <chenxuan@iscas.ac.cn>
-Date: Mon, 24 Aug 2026 12:34:33 +0800
+Date: Sun, 20 Sep 2026 13:12:42 +0800
 Subject: [PATCH] Use the openRuyi CPU backend OpenMP path
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] Use the openRuyi CPU backend OpenMP path
  1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/cmake/cpu_extension.cmake b/cmake/cpu_extension.cmake
-index cdfc6cb..3ca8b6a 100644
+index 92c3daa..3d3e8af 100644
 --- a/cmake/cpu_extension.cmake
 +++ b/cmake/cpu_extension.cmake
 @@ -53,7 +53,8 @@ else()
@@ -21,7 +21,7 @@ index cdfc6cb..3ca8b6a 100644
      endif()
  endif()
  
-@@ -552,9 +553,9 @@ if (ENABLE_X86_ISA)
+@@ -563,9 +564,9 @@ if (ENABLE_X86_ISA)
      message(STATUS "CPU extension (AVX512F) source files: ${VLLM_EXT_SRC_AVX512}")
      message(STATUS "CPU extension (AVX2) source files: ${VLLM_EXT_SRC_AVX2}")
  
@@ -35,5 +35,5 @@ index cdfc6cb..3ca8b6a 100644
      # AMX + AVX512F + AVX512BF16 + AVX512VNNI
      define_extension_target(
 -- 
-2.53.0
+2.46.0.windows.1
 

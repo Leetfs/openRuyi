@@ -1,6 +1,6 @@
-From ff439381f2be955730fa80a70625a9d7f510805c Mon Sep 17 00:00:00 2001
+From b6d764e0984d710e315eac00df6eda6f69bedc5e Mon Sep 17 00:00:00 2001
 From: CHEN Xuan <chenxuan@iscas.ac.cn>
-Date: Mon, 24 Aug 2026 12:34:33 +0800
+Date: Sun, 20 Sep 2026 13:12:02 +0800
 Subject: [PATCH] ROCm hipSPARSELt ordering
 
 Find hipSPARSELt before Torch so the roc::hipsparselt target exists when Torch's exported CMake targets reference it.
@@ -9,7 +9,7 @@ Find hipSPARSELt before Torch so the roc::hipsparselt target exists when Torch's
  1 file changed, 1 insertion(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 54374c2..9354d5f 100644
+index bf7a58e..ad9a982 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -109,6 +109,7 @@ endif()
@@ -21,5 +21,5 @@ index 54374c2..9354d5f 100644
  
  # Supported NVIDIA architectures.
 -- 
-2.53.0
+2.46.0.windows.1
 

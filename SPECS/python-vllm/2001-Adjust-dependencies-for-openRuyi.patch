@@ -1,17 +1,18 @@
-From 89eebe932c2656f1da218f9023216d35fd96d195 Mon Sep 17 00:00:00 2001
+From 227a001949165ebf72b817a3d5e39992b1912413 Mon Sep 17 00:00:00 2001
 From: CHEN Xuan <chenxuan@iscas.ac.cn>
-Date: Mon, 24 Aug 2026 12:34:33 +0800
+Date: Sun, 20 Sep 2026 13:10:44 +0800
 Subject: [PATCH] Adjust dependencies for openRuyi
 
+Refresh the existing distribution dependency adaptation for vLLM 0.29.0. Keep upstream security-related minimum versions intact while using dependency names and versions available in openRuyi and enabling the packaged parsers on riscv64.
 ---
  pyproject.toml          |  5 +----
- requirements/common.txt | 25 +++++++++++--------------
+ requirements/common.txt | 20 +++++++++-----------
  requirements/cpu.txt    | 17 +++--------------
  requirements/rocm.txt   | 20 ++++----------------
- 4 files changed, 19 insertions(+), 48 deletions(-)
+ 4 files changed, 17 insertions(+), 45 deletions(-)
 
 diff --git a/pyproject.toml b/pyproject.toml
-index 0766645..954df4c 100644
+index d689d50..d3d212a 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -1,13 +1,10 @@
@@ -30,33 +31,30 @@ index 0766645..954df4c 100644
      "jinja2",
  ]
 diff --git a/requirements/common.txt b/requirements/common.txt
-index 748ffe8..37177b6 100644
+index a1f8dbe..a42bd12 100644
 --- a/requirements/common.txt
 +++ b/requirements/common.txt
-@@ -10,39 +10,37 @@ py-cpuinfo
- transformers >= 5.5.3
+@@ -12,38 +12,37 @@ huggingface_hub >= 1.28.0
  tokenizers >= 0.21.1  # Required for fast incremental detokenization.
  safetensors >= 0.6.2  # MXFP4/MXFP6 dtype support (F8_E8M0, F4) added in 0.6.0: https://github.com/huggingface/safetensors/pull/611
--protobuf >= 5.29.6, !=6.30.*, !=6.31.*, !=6.32.*, !=6.33.0.*, !=6.33.1.*, !=6.33.2.*, !=6.33.3.*, !=6.33.4.* # Required by LlamaTokenizer, gRPC. CVE-2026-0994
+ protobuf >= 5.29.6, !=6.30.*, !=6.31.*, !=6.32.*, !=6.33.0.*, !=6.33.1.*, !=6.33.2.*, !=6.33.3.*, !=6.33.4.* # Required by LlamaTokenizer, gRPC. CVE-2026-0994
 -fastapi[standard] >= 0.133.0, < 0.137.0 # First version supporting Starlette 1.0; < 0.137.0 avoids route-tree change that breaks model-hosting-container-standards handler overrides.
--starlette >= 1.0.1 # CVE-2026-48710: Host header injection in < 1.0.1
-+protobuf >= 5.29.6, !=6.30.*, !=6.31.*, !=6.32.*, !=6.33.0.*, !=6.33.1.*, !=6.33.3.*, !=6.33.4.* # Required by LlamaTokenizer, gRPC. CVE-2026-0994
 +fastapi >= 0.133.0, < 0.137.0 # First version supporting Starlette 1.0; < 0.137.0 avoids route-tree change that breaks model-hosting-container-standards handler overrides.
-+starlette >= 1.0.0 # CVE-2026-48710: Host header injection in < 1.0.1
+ starlette >= 1.0.1 # CVE-2026-48710: Host header injection in < 1.0.1
  aiohttp >= 3.13.3
  openai >= 2.0.0  # For Responses API with reasoning content
  pydantic >= 2.12.0
  prometheus_client >= 0.18.0
  pillow  # Required for image processing
 -prometheus-fastapi-instrumentator >= 8.0.0 # v8 unblocks starlette >= 1.0
-+prometheus-fastapi-instrumentator >= 7.1.0 # v8 unblocks starlette >= 1.0
++prometheus-fastapi-instrumentator >= 7.1.0
  tiktoken >= 0.6.0  # Required for DBRX tokenizer
  lm-format-enforcer == 0.11.3
 -llguidance >= 1.7.0, < 1.8.0; platform_machine == "x86_64" or platform_machine == "arm64" or platform_machine == "aarch64" or platform_machine == "ppc64le" or platform_machine == "s390x"
--outlines_core == 0.2.14
++llguidance >= 1.7.0, < 1.8.0; platform_machine == "x86_64" or platform_machine == "arm64" or platform_machine == "aarch64" or platform_machine == "ppc64le" or platform_machine == "s390x" or platform_machine == "riscv64"
+ outlines_core == 0.2.14
 -lark == 1.2.2
 -xgrammar >= 0.2.1, < 1.0.0; platform_machine == "x86_64" or platform_machine == "aarch64" or platform_machine == "arm64" or platform_machine == "s390x" or platform_machine == "ppc64le"
-+llguidance >= 1.7.0, < 1.8.0; platform_machine == "x86_64" or platform_machine == "arm64" or platform_machine == "aarch64" or platform_machine == "ppc64le" or platform_machine == "s390x" or platform_machine == "riscv64"
 +lark
 +xgrammar >= 0.2.1, < 1.0.0; platform_machine == "x86_64" or platform_machine == "aarch64" or platform_machine == "arm64" or platform_machine == "s390x" or platform_machine == "ppc64le" or platform_machine == "riscv64"
  typing_extensions >= 4.10
@@ -67,7 +65,7 @@ index 748ffe8..37177b6 100644
  msgspec
 -mistral_common[image] >= 1.11.6
 -opencv-python-headless >= 4.13.0    # required for video IO
-+mistral_common >= 1.11.2
++mistral_common >= 1.11.3
 +opencv >= 4.13.0    # required for video IO
  pyyaml
  six>=1.16.0; python_version > '3.11' # transitive dependency of pandas that needs to be the latest version for python 3.12
@@ -84,7 +82,7 @@ index 748ffe8..37177b6 100644
  pybase64 # fast base64 implementation
  cbor2 # Required for cross-language serialization of hashable objects
  ijson # Required for mistral streaming tool parser
-@@ -53,5 +51,4 @@ model-hosting-container-standards >= 0.1.14, < 1.0.0
+@@ -54,5 +53,4 @@ model-hosting-container-standards >= 0.1.14, < 1.0.0
  mcp
  opentelemetry-sdk >= 1.27.0
  opentelemetry-api >= 1.27.0
@@ -124,7 +122,7 @@ index 30e47a8..c74af4c 100644
  # Use this to gather CPU info and optimize based on ARM Neoverse cores
  py-cpuinfo; platform_machine == "aarch64"
 diff --git a/requirements/rocm.txt b/requirements/rocm.txt
-index b5bcdf4..a11dcdc 100644
+index d2bf989..a11dcdc 100644
 --- a/requirements/rocm.txt
 +++ b/requirements/rocm.txt
 @@ -2,28 +2,16 @@
@@ -159,7 +157,7 @@ index b5bcdf4..a11dcdc 100644
 -# Required apache-tvm-ffi matching tilelang version
 -apache-tvm-ffi==0.1.10 
 -# Required for faster safetensors model loading
--fastsafetensors >= 0.3.2
+-fastsafetensors >= 0.3.3
 -- 
-2.53.0
+2.46.0.windows.1
 
