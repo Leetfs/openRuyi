@@ -22,6 +22,7 @@ BuildRequires:  rust-rpm-macros
 
 Requires:       crate(tower-layer-0.3/default) >= 0.3.3
 Requires:       crate(tower-service-0.3/default) >= 0.3.3
+
 Provides:       crate(%{pkgname}) = %{version}
 Provides:       crate(%{pkgname}/default) = %{version}
 Provides:       crate(%{pkgname}/steer) = %{version}
@@ -50,8 +51,8 @@ Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/pin-project-lite) = %{version}
 Requires:       crate(%{pkgname}/tokio-util) = %{version}
 Requires:       crate(%{pkgname}/tracing) = %{version}
-Requires:       crate(tokio-1/rt) >= 1.6.2
-Requires:       crate(tokio-1/sync) >= 1.6.2
+Requires:       crate(tokio-1/rt) >= 1.52.3
+Requires:       crate(tokio-1/sync) >= 1.52.3
 Provides:       crate(%{pkgname}/buffer) = %{version}
 
 %description -n %{name}+buffer
@@ -104,7 +105,7 @@ This metapackage enables feature "full" for the Rust tower crate, by pulling in 
 %package     -n %{name}+futures-core
 Summary:        Modular and reusable components for building robust clients and servers - feature "futures-core"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(futures-core-0.3/default) >= 0.3.22
+Requires:       crate(futures-core-0.3/default) >= 0.3.32
 Provides:       crate(%{pkgname}/futures-core) = %{version}
 
 %description -n %{name}+futures-core
@@ -113,7 +114,7 @@ This metapackage enables feature "futures-core" for the Rust tower crate, by pul
 %package     -n %{name}+futures-util
 Summary:        Modular and reusable components for building robust clients and servers - feature "futures-util"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(futures-util-0.3/alloc) >= 0.3.22
+Requires:       crate(futures-util-0.3/alloc) >= 0.3.32
 Provides:       crate(%{pkgname}/futures-util) = %{version}
 
 %description -n %{name}+futures-util
@@ -136,7 +137,7 @@ Requires:       crate(%{pkgname}/futures-util) = %{version}
 Requires:       crate(%{pkgname}/hdrhistogram) = %{version}
 Requires:       crate(%{pkgname}/tracing) = %{version}
 Requires:       crate(%{pkgname}/util) = %{version}
-Requires:       crate(tokio-1/time) >= 1.6.2
+Requires:       crate(tokio-1/time) >= 1.52.3
 Provides:       crate(%{pkgname}/hedge) = %{version}
 
 %description -n %{name}+hedge
@@ -145,7 +146,7 @@ This metapackage enables feature "hedge" for the Rust tower crate, by pulling in
 %package     -n %{name}+indexmap
 Summary:        Modular and reusable components for building robust clients and servers - feature "indexmap"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(indexmap-2/default) >= 2.0.2
+Requires:       crate(indexmap-2/default) >= 2.13.0
 Provides:       crate(%{pkgname}/indexmap) = %{version}
 
 %description -n %{name}+indexmap
@@ -157,8 +158,8 @@ Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/pin-project-lite) = %{version}
 Requires:       crate(%{pkgname}/tokio-util) = %{version}
 Requires:       crate(%{pkgname}/tracing) = %{version}
-Requires:       crate(tokio-1/sync) >= 1.6.2
-Requires:       crate(tokio-1/time) >= 1.6.2
+Requires:       crate(tokio-1/sync) >= 1.52.3
+Requires:       crate(tokio-1/time) >= 1.52.3
 Provides:       crate(%{pkgname}/limit) = %{version}
 
 %description -n %{name}+limit
@@ -169,7 +170,7 @@ Summary:        Modular and reusable components for building robust clients and 
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/pin-project-lite) = %{version}
 Requires:       crate(%{pkgname}/tracing) = %{version}
-Requires:       crate(tokio-1/time) >= 1.6.2
+Requires:       crate(tokio-1/time) >= 1.52.3
 Provides:       crate(%{pkgname}/load) = %{version}
 
 %description -n %{name}+load
@@ -178,8 +179,8 @@ This metapackage enables feature "load" for the Rust tower crate, by pulling in 
 %package     -n %{name}+log
 Summary:        Modular and reusable components for building robust clients and servers - feature "log"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(tracing-0.1/log) >= 0.1.2
-Requires:       crate(tracing-0.1/std) >= 0.1.2
+Requires:       crate(tracing-0.1/log) >= 0.1.44
+Requires:       crate(tracing-0.1/std) >= 0.1.44
 Provides:       crate(%{pkgname}/log) = %{version}
 
 %description -n %{name}+log
@@ -198,7 +199,7 @@ This metapackage enables feature "make" for the Rust tower crate, by pulling in 
 %package     -n %{name}+pin-project-lite
 Summary:        Modular and reusable components for building robust clients and servers - feature "pin-project-lite" and 1 more
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(pin-project-lite-0.2/default) >= 0.2.7
+Requires:       crate(pin-project-lite-0.2/default) >= 0.2.17
 Provides:       crate(%{pkgname}/load-shed) = %{version}
 Provides:       crate(%{pkgname}/pin-project-lite) = %{version}
 
@@ -215,7 +216,7 @@ Requires:       crate(%{pkgname}/futures-util) = %{version}
 Requires:       crate(%{pkgname}/indexmap) = %{version}
 Requires:       crate(%{pkgname}/pin-project-lite) = %{version}
 Requires:       crate(%{pkgname}/tracing) = %{version}
-Requires:       crate(tokio-1/sync) >= 1.6.2
+Requires:       crate(tokio-1/sync) >= 1.52.3
 Provides:       crate(%{pkgname}/ready-cache) = %{version}
 
 %description -n %{name}+ready-cache
@@ -235,7 +236,7 @@ This metapackage enables feature "reconnect" for the Rust tower crate, by pullin
 Summary:        Modular and reusable components for building robust clients and servers - feature "retry"
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/util) = %{version}
-Requires:       crate(tokio-1/time) >= 1.6.2
+Requires:       crate(tokio-1/time) >= 1.52.3
 Provides:       crate(%{pkgname}/retry) = %{version}
 
 %description -n %{name}+retry
@@ -244,7 +245,7 @@ This metapackage enables feature "retry" for the Rust tower crate, by pulling in
 %package     -n %{name}+slab
 Summary:        Modular and reusable components for building robust clients and servers - feature "slab"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(slab-0.4/default) >= 0.4.9
+Requires:       crate(slab-0.4/default) >= 0.4.12
 Provides:       crate(%{pkgname}/slab) = %{version}
 
 %description -n %{name}+slab
@@ -256,8 +257,8 @@ Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/futures-util) = %{version}
 Requires:       crate(%{pkgname}/tracing) = %{version}
 Requires:       crate(%{pkgname}/util) = %{version}
-Requires:       crate(tokio-1/rt) >= 1.6.2
-Requires:       crate(tokio-1/sync) >= 1.6.2
+Requires:       crate(tokio-1/rt) >= 1.52.3
+Requires:       crate(tokio-1/sync) >= 1.52.3
 Provides:       crate(%{pkgname}/spawn-ready) = %{version}
 
 %description -n %{name}+spawn-ready
@@ -266,7 +267,7 @@ This metapackage enables feature "spawn-ready" for the Rust tower crate, by pull
 %package     -n %{name}+sync-wrapper
 Summary:        Modular and reusable components for building robust clients and servers - feature "sync_wrapper"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(sync-wrapper-1/default) >= 1.0.0
+Requires:       crate(sync-wrapper-1/default) >= 1.0.2
 Provides:       crate(%{pkgname}/sync-wrapper) = %{version}
 
 %description -n %{name}+sync-wrapper
@@ -276,7 +277,7 @@ This metapackage enables feature "sync_wrapper" for the Rust tower crate, by pul
 Summary:        Modular and reusable components for building robust clients and servers - feature "timeout"
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/pin-project-lite) = %{version}
-Requires:       crate(tokio-1/time) >= 1.6.2
+Requires:       crate(tokio-1/time) >= 1.52.3
 Provides:       crate(%{pkgname}/timeout) = %{version}
 
 %description -n %{name}+timeout
@@ -285,7 +286,7 @@ This metapackage enables feature "timeout" for the Rust tower crate, by pulling 
 %package     -n %{name}+tokio
 Summary:        Modular and reusable components for building robust clients and servers - feature "tokio"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(tokio-1/default) >= 1.6.2
+Requires:       crate(tokio-1/default) >= 1.52.3
 Provides:       crate(%{pkgname}/tokio) = %{version}
 
 %description -n %{name}+tokio
@@ -294,7 +295,7 @@ This metapackage enables feature "tokio" for the Rust tower crate, by pulling in
 %package     -n %{name}+tokio-util
 Summary:        Modular and reusable components for building robust clients and servers - feature "tokio-util"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(tokio-util-0.7) >= 0.7.0
+Requires:       crate(tokio-util-0.7) >= 0.7.18
 Provides:       crate(%{pkgname}/tokio-util) = %{version}
 
 %description -n %{name}+tokio-util
@@ -303,7 +304,7 @@ This metapackage enables feature "tokio-util" for the Rust tower crate, by pulli
 %package     -n %{name}+tracing
 Summary:        Modular and reusable components for building robust clients and servers - feature "tracing"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(tracing-0.1/std) >= 0.1.2
+Requires:       crate(tracing-0.1/std) >= 0.1.44
 Provides:       crate(%{pkgname}/tracing) = %{version}
 
 %description -n %{name}+tracing
