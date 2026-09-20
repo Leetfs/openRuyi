@@ -1,0 +1,36 @@
+# SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
+# SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
+#
+# SPDX-License-Identifier: MulanPSL-2.0
+
+%global crate_name symphonia-codec-adpcm
+%global full_version 0.6.0
+%global pkgname symphonia-codec-adpcm-0.6
+
+Name:           rust-symphonia-codec-adpcm-0.6
+Version:        0.6.0
+Release:        %autorelease
+Summary:        Rust crate "symphonia-codec-adpcm"
+License:        MPL-2.0
+URL:            https://github.com/pdeljanov/Symphonia
+#!RemoteAsset:  sha256:4ebbdfd76d6cc5a601c6292a44357c5b7c82f2cd7cdc0f171421f5c5cff0ea1f
+Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
+BuildArch:      noarch
+BuildSystem:    rustcrates
+
+BuildRequires:  rust-rpm-macros
+
+Requires:       crate(log-0.4/default) >= 0.4.29
+Requires:       crate(symphonia-core-0.6/default) >= 0.6.0
+
+Provides:       crate(%{pkgname}) = %{version}
+Provides:       crate(%{pkgname}/default) = %{version}
+
+%description
+Source code for takopackized Rust crate "symphonia-codec-adpcm"
+
+%files
+%{_datadir}/cargo/registry/%{crate_name}-%{version}/
+
+%changelog
+%autochangelog
