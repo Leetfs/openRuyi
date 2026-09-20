@@ -4,27 +4,28 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name hyper
-%global full_version 1.9.0
+%global full_version 1.10.1
 %global pkgname hyper-1
 
 Name:           rust-hyper-1
-Version:        1.9.0
+Version:        1.10.1
 Release:        %autorelease
 Summary:        Rust crate "hyper"
 License:        MIT
 URL:            https://hyper.rs
-#!RemoteAsset:  sha256:6299f016b246a94207e63da54dbe807655bf9e00044f73ded42c3ac5305fbcca
+#!RemoteAsset:  sha256:55281c53a1894c864990125767da440a4e630446785086f52523b20033b74498
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(bytes-1/default) >= 1.2.0
-Requires:       crate(http-1/default) >= 1.0.0
-Requires:       crate(http-body-1/default) >= 1.0.0
-Requires:       crate(tokio-1/default) >= 1.0.0
-Requires:       crate(tokio-1/sync) >= 1.0.0
+Requires:       crate(bytes-1/default) >= 1.12.0
+Requires:       crate(http-1/default) >= 1.4.0
+Requires:       crate(http-body-1/default) >= 1.0.1
+Requires:       crate(tokio-1/default) >= 1.52.3
+Requires:       crate(tokio-1/sync) >= 1.52.3
+
 Provides:       crate(%{pkgname}) = %{version}
 Provides:       crate(%{pkgname}/capi) = %{version}
 Provides:       crate(%{pkgname}/default) = %{version}
@@ -36,11 +37,11 @@ Source code for takopackized Rust crate "hyper"
 %package     -n %{name}+client
 Summary:        Protective and efficient HTTP library for all - feature "client"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(pin-project-lite-0.2/default) >= 0.2.4
-Requires:       crate(smallvec-1/const-generics) >= 1.12.0
-Requires:       crate(smallvec-1/const-new) >= 1.12.0
-Requires:       crate(smallvec-1/default) >= 1.12.0
-Requires:       crate(want-0.3/default) >= 0.3.0
+Requires:       crate(pin-project-lite-0.2/default) >= 0.2.17
+Requires:       crate(smallvec-1/const-generics) >= 1.15.1
+Requires:       crate(smallvec-1/const-new) >= 1.15.1
+Requires:       crate(smallvec-1/default) >= 1.15.1
+Requires:       crate(want-0.3/default) >= 0.3.1
 Provides:       crate(%{pkgname}/client) = %{version}
 
 %description -n %{name}+client
@@ -72,10 +73,10 @@ This metapackage enables feature "full" for the Rust hyper crate, by pulling in 
 Summary:        Protective and efficient HTTP library for all - feature "http1"
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(atomic-waker-1/default) >= 1.1.2
-Requires:       crate(futures-channel-0.3/default) >= 0.3.0
-Requires:       crate(futures-core-0.3/default) >= 0.3.31
-Requires:       crate(httparse-1/default) >= 1.9.0
-Requires:       crate(itoa-1/default) >= 1.0.0
+Requires:       crate(futures-channel-0.3/default) >= 0.3.32
+Requires:       crate(futures-core-0.3/default) >= 0.3.32
+Requires:       crate(httparse-1/default) >= 1.10.1
+Requires:       crate(itoa-1/default) >= 1.0.17
 Provides:       crate(%{pkgname}/http1) = %{version}
 
 %description -n %{name}+http1
@@ -84,9 +85,9 @@ This metapackage enables feature "http1" for the Rust hyper crate, by pulling in
 %package     -n %{name}+http2
 Summary:        Protective and efficient HTTP library for all - feature "http2"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(futures-channel-0.3/default) >= 0.3.0
-Requires:       crate(futures-core-0.3/default) >= 0.3.31
-Requires:       crate(h2-0.4/default) >= 0.4.6
+Requires:       crate(futures-channel-0.3/default) >= 0.3.32
+Requires:       crate(futures-core-0.3/default) >= 0.3.32
+Requires:       crate(h2-0.4/default) >= 0.4.15
 Provides:       crate(%{pkgname}/http2) = %{version}
 
 %description -n %{name}+http2
@@ -95,11 +96,11 @@ This metapackage enables feature "http2" for the Rust hyper crate, by pulling in
 %package     -n %{name}+server
 Summary:        Protective and efficient HTTP library for all - feature "server"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(httpdate-1/default) >= 1.0.0
-Requires:       crate(pin-project-lite-0.2/default) >= 0.2.4
-Requires:       crate(smallvec-1/const-generics) >= 1.12.0
-Requires:       crate(smallvec-1/const-new) >= 1.12.0
-Requires:       crate(smallvec-1/default) >= 1.12.0
+Requires:       crate(httpdate-1/default) >= 1.0.3
+Requires:       crate(pin-project-lite-0.2/default) >= 0.2.17
+Requires:       crate(smallvec-1/const-generics) >= 1.15.1
+Requires:       crate(smallvec-1/const-new) >= 1.15.1
+Requires:       crate(smallvec-1/default) >= 1.15.1
 Provides:       crate(%{pkgname}/server) = %{version}
 
 %description -n %{name}+server
