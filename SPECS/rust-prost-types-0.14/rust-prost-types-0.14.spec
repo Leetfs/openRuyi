@@ -4,23 +4,24 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name prost-types
-%global full_version 0.14.1
+%global full_version 0.14.3
 %global pkgname prost-types-0.14
 
 Name:           rust-prost-types-0.14
-Version:        0.14.1
+Version:        0.14.3
 Release:        %autorelease
 Summary:        Rust crate "prost-types"
 License:        Apache-2.0
 URL:            https://github.com/tokio-rs/prost
-#!RemoteAsset:  sha256:b9b4db3d6da204ed77bb26ba83b6122a73aeb2e87e25fbf7ad2e84c4ccbf8f72
+#!RemoteAsset:  sha256:8991c4cbdb8bc5b11f0b074ffe286c30e523de90fee5ba8132f1399f23cb3dd7
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(prost-0.14/derive) >= 0.14.1
+Requires:       crate(prost-0.14/derive) >= 0.14.3
+
 Provides:       crate(%{pkgname}) = %{version}
 
 %description
@@ -48,8 +49,8 @@ This metapackage enables feature "chrono" for the Rust prost-types crate, by pul
 %package     -n %{name}+std
 Summary:        Prost definitions of Protocol Buffers well known types - feature "std" and 1 more
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(prost-0.14/derive) >= 0.14.1
-Requires:       crate(prost-0.14/std) >= 0.14.1
+Requires:       crate(prost-0.14/derive) >= 0.14.3
+Requires:       crate(prost-0.14/std) >= 0.14.3
 Provides:       crate(%{pkgname}/default) = %{version}
 Provides:       crate(%{pkgname}/std) = %{version}
 
