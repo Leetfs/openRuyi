@@ -4,24 +4,25 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name hf-hub
-%global full_version 0.4.1
+%global full_version 0.4.3
 %global pkgname hf-hub-0.4
 
 Name:           rust-hf-hub-0.4
-Version:        0.4.1
+Version:        0.4.3
 Release:        %autorelease
 Summary:        Rust crate "hf-hub"
 License:        Apache-2.0
 URL:            https://github.com/huggingface/hf-hub
-#!RemoteAsset:  sha256:112fa2f6ad4ab815b9e1b938b4b1e437032d055e2f92ed10fd6ab2e62d02c6b6
+#!RemoteAsset:  sha256:629d8f3bbeda9d148036d6b0de0a3ab947abd08ce90626327fc3547a49d59d97
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(dirs-5/default) >= 5.0.1
+Requires:       crate(dirs-6/default) >= 6.0.0
 Requires:       crate(log-0.4/default) >= 0.4.19
+
 Provides:       crate(%{pkgname}) = %{version}
 
 %description
@@ -45,9 +46,10 @@ Requires:       crate(native-tls-0.2/default) >= 0.2.12
 Requires:       crate(reqwest-0.12/default) >= 0.12.2
 Requires:       crate(reqwest-0.12/json) >= 0.12.2
 Requires:       crate(reqwest-0.12/stream) >= 0.12.2
-Requires:       crate(ureq-2/json) >= 2.8.0
-Requires:       crate(ureq-2/native-tls) >= 2.8.0
-Requires:       crate(ureq-2/socks-proxy) >= 2.8.0
+Requires:       crate(ureq-2/default) >= 2.0.0
+Requires:       crate(ureq-2/json) >= 2.0.0
+Requires:       crate(ureq-2/native-tls) >= 2.0.0
+Requires:       crate(ureq-2/socks-proxy) >= 2.0.0
 Provides:       crate(%{pkgname}/default-tls) = %{version}
 Provides:       crate(%{pkgname}/native-tls) = %{version}
 
@@ -62,7 +64,6 @@ Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(reqwest-0.12/json) >= 0.12.2
 Requires:       crate(reqwest-0.12/rustls-tls) >= 0.12.2
 Requires:       crate(reqwest-0.12/stream) >= 0.12.2
-Requires:       crate(rustls-0.23/default) >= 0.23.4
 Provides:       crate(%{pkgname}/rustls-tls) = %{version}
 
 %description -n %{name}+rustls-tls
@@ -73,8 +74,9 @@ Summary:        This crates aims ease the interaction with [huggingface](https:/
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(futures-0.3/default) >= 0.3.28
 Requires:       crate(indicatif-0.17/default) >= 0.17.5
+Requires:       crate(libc-0.2/default) >= 0.2.0
 Requires:       crate(num-cpus-1/default) >= 1.15.0
-Requires:       crate(rand-0.8/default) >= 0.8.5
+Requires:       crate(rand-0.9/default) >= 0.9.0
 Requires:       crate(reqwest-0.12/charset) >= 0.12.2
 Requires:       crate(reqwest-0.12/http2) >= 0.12.2
 Requires:       crate(reqwest-0.12/json) >= 0.12.2
@@ -88,6 +90,10 @@ Requires:       crate(tokio-1/default) >= 1.29.1
 Requires:       crate(tokio-1/fs) >= 1.29.1
 Requires:       crate(tokio-1/macros) >= 1.29.1
 Requires:       crate(tokio-1/rt-multi-thread) >= 1.29.1
+Requires:       crate(windows-sys-0.60/default) >= 0.60.0
+Requires:       crate(windows-sys-0.60/win32-foundation) >= 0.60.0
+Requires:       crate(windows-sys-0.60/win32-storage-filesystem) >= 0.60.0
+Requires:       crate(windows-sys-0.60/win32-system-io) >= 0.60.0
 Provides:       crate(%{pkgname}/tokio) = %{version}
 
 %description -n %{name}+tokio
@@ -98,14 +104,19 @@ Summary:        This crates aims ease the interaction with [huggingface](https:/
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(http-1/default) >= 1.0.0
 Requires:       crate(indicatif-0.17/default) >= 0.17.5
-Requires:       crate(rand-0.8/default) >= 0.8.5
+Requires:       crate(libc-0.2/default) >= 0.2.0
+Requires:       crate(rand-0.9/default) >= 0.9.0
 Requires:       crate(serde-1/default) >= 1.0.0
 Requires:       crate(serde-1/derive) >= 1.0.0
 Requires:       crate(serde-json-1/default) >= 1.0.0
 Requires:       crate(thiserror-2/default) >= 2.0.0
-Requires:       crate(ureq-2/default) >= 2.8.0
-Requires:       crate(ureq-2/json) >= 2.8.0
-Requires:       crate(ureq-2/socks-proxy) >= 2.8.0
+Requires:       crate(ureq-2/default) >= 2.0.0
+Requires:       crate(ureq-2/json) >= 2.0.0
+Requires:       crate(ureq-2/socks-proxy) >= 2.0.0
+Requires:       crate(windows-sys-0.60/default) >= 0.60.0
+Requires:       crate(windows-sys-0.60/win32-foundation) >= 0.60.0
+Requires:       crate(windows-sys-0.60/win32-storage-filesystem) >= 0.60.0
+Requires:       crate(windows-sys-0.60/win32-system-io) >= 0.60.0
 Provides:       crate(%{pkgname}/ureq) = %{version}
 
 %description -n %{name}+ureq
