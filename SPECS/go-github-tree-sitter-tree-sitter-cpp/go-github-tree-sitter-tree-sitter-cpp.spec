@@ -21,7 +21,7 @@ BuildRequires:  go
 BuildRequires:  go-rpm-macros
 BuildRequires:  go(github.com/tree-sitter/go-tree-sitter)
 
-Provides:       go(%{go_import_path}) = %{version}
+Provides:       go(github.com/tree-sitter/tree-sitter-cpp) = %{version}
 
 Requires:       go(github.com/tree-sitter/go-tree-sitter)
 
