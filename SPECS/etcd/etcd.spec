@@ -23,6 +23,7 @@ Source3:        etcd.tmpfiles
 
 BuildRequires:  go >= 1.25
 BuildRequires:  go-rpm-macros
+BuildRequires:  go-github-olekukonko-tablewriter-v0
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  go(github.com/VividCortex/ewma)
 BuildRequires:  go(github.com/beorn7/perks)
