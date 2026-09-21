@@ -26,7 +26,7 @@ BuildRequires:  go(github.com/tkrajina/go-reflector)
 BuildRequires:  nodejs
 BuildRequires:  typescript
 
-Provides:       go(%{go_import_path}) = %{version}
+Provides:       go(github.com/tkrajina/typescriptify-golang-structs) = %{version}
 
 Requires:       go(github.com/tkrajina/go-reflector)
 
