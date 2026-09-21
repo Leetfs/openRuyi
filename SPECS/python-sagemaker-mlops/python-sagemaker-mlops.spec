@@ -26,6 +26,7 @@ BuildRequires:  pkgconfig(python3)
 
 Provides:       python3-%{srcname} = %{version}-%{release}
 %python_provide python3-%{srcname}
+Provides:       python3dist(sagemaker-mlops) = %{version}
 
 %description
 The sagemaker-mlops package provides high-level orchestration
