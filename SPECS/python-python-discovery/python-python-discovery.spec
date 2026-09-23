@@ -1,24 +1,25 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Zitao Zhou <zitao.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-%global srcname python_discovery
-%global pypi_name python-discovery
+%global srcname python-discovery
+%global pypi_name python_discovery
 
 Name:           python-python-discovery
-Version:        1.5.2
+Version:        1.6.1
 Release:        %autorelease
 Summary:        Python interpreter discovery
 License:        MIT
 URL:            https://github.com/tox-dev/python-discovery
-#!RemoteAsset:  sha256:45fd4f20a4e3f9b7bf2e0817870bc8e3b320a19658da177af800768c82dbf354
-Source0:        https://files.pythonhosted.org/packages/source/p/%{pypi_name}/%{srcname}-%{version}.tar.gz
+#!RemoteAsset:  sha256:cf87d3627dfb4412437fdd5b13eae402607722998d21567993aedbc59b23c15e
+Source0:        https://files.pythonhosted.org/packages/source/p/%{srcname}/%{pypi_name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
 
-BuildOption(install):  -l %{srcname} +auto
+BuildOption(install):  -l %{pypi_name} +auto
 BuildOption(check):  -e 'python_discovery._windows.*'
 
 BuildRequires:  pyproject-rpm-macros
@@ -29,6 +30,7 @@ BuildRequires:  python3dist(hatchling)
 
 Provides:       python3-%{pypi_name} = %{version}-%{release}
 %python_provide python3-%{pypi_name}
+Provides:       python3dist(python-discovery) = %{version}
 
 %description
 python-discovery is a library for discovering Python interpreters installed on a system.

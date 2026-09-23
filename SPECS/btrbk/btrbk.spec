@@ -24,6 +24,8 @@ BuildRequires:  pkgconfig(bash-completion)
 Recommends:     openssh-clients
 Requires:       btrfs-progs
 
+Requires:       btrfs-progs
+
 %description
 Backup tool for btrfs sub-volumes, using a configuration file, allows
 creation of backups from multiple sources to multiple destinations,
