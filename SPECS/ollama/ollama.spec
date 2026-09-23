@@ -127,10 +127,7 @@ popd
 # Ollama binary built by go will use dlopen to load *.so built by cmake.
 # Building order of go/cmake is not important.
 %build -a
-%if %{with rocm}
-# Ollama's ROCm preset uses the retired -parallel-jobs spelling. LLVM 22
-# provides the equivalent --offload-jobs option for parallel device builds.
-%endif
+# A supported nonempty HIP flag prevents Ollama from adding -parallel-jobs=4.
 %cmake \
     -G Ninja \
     -W no-dev \
@@ -143,7 +140,7 @@ popd
 %if %{with rocm}
     -DOLLAMA_LLAMA_BACKENDS=rocm_v7_2 \
     -DCMAKE_HIP_COMPILER=%{rocmllvm_bindir}/clang++ \
-    -DCMAKE_HIP_FLAGS=--offload-jobs=4 \
+    -DCMAKE_HIP_FLAGS:STRING=-O2 \
     -DAMDGPU_TARGETS=%{rocm_gpu_list_default}
 %endif
 %cmake_build
