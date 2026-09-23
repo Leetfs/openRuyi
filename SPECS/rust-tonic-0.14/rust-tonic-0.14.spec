@@ -4,34 +4,35 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name tonic
-%global full_version 0.14.2
+%global full_version 0.14.6
 %global pkgname tonic-0.14
 
 Name:           rust-tonic-0.14
-Version:        0.14.2
+Version:        0.14.6
 Release:        %autorelease
 Summary:        Rust crate "tonic"
 License:        MIT
 URL:            https://github.com/hyperium/tonic
-#!RemoteAsset:  sha256:eb7613188ce9f7df5bfe185db26c5814347d110db17920415cf2fbcad85e7203
+#!RemoteAsset:  sha256:ac2a5518c70fa84342385732db33fb3f44bc4cc748936eb5833d2df34d6445ef
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(base64-0.22/default) >= 0.22.0
-Requires:       crate(bytes-1/default) >= 1.0.0
-Requires:       crate(http-1/default) >= 1.0.0
-Requires:       crate(http-body-1/default) >= 1.0.0
-Requires:       crate(http-body-util-0.1/default) >= 0.1.0
-Requires:       crate(percent-encoding-2/default) >= 2.1.0
-Requires:       crate(pin-project-1/default) >= 1.0.11
+Requires:       crate(base64-0.22/default) >= 0.22.1
+Requires:       crate(bytes-1/default) >= 1.12.0
+Requires:       crate(http-1/default) >= 1.4.0
+Requires:       crate(http-body-1/default) >= 1.0.1
+Requires:       crate(http-body-util-0.1/default) >= 0.1.3
+Requires:       crate(percent-encoding-2/default) >= 2.3.2
+Requires:       crate(pin-project-1/default) >= 1.1.13
 Requires:       crate(sync-wrapper-1/default) >= 1.0.2
-Requires:       crate(tokio-stream-0.1) >= 0.1.16
-Requires:       crate(tower-layer-0.3/default) >= 0.3.0
-Requires:       crate(tower-service-0.3/default) >= 0.3.0
-Requires:       crate(tracing-0.1/default) >= 0.1.0
+Requires:       crate(tokio-stream-0.1) >= 0.1.18
+Requires:       crate(tower-layer-0.3/default) >= 0.3.3
+Requires:       crate(tower-service-0.3/default) >= 0.3.3
+Requires:       crate(tracing-0.1/default) >= 0.1.44
+
 Provides:       crate(%{pkgname}) = %{version}
 
 %description
@@ -41,9 +42,9 @@ Source code for takopackized Rust crate "tonic"
 Summary:        GRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility - feature "_tls-any"
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/tls-connect-info) = %{version}
-Requires:       crate(tokio-1) >= 1.0.0
-Requires:       crate(tokio-1/macros) >= 1.0.0
-Requires:       crate(tokio-1/rt) >= 1.0.0
+Requires:       crate(tokio-1) >= 1.53.1
+Requires:       crate(tokio-1/macros) >= 1.53.1
+Requires:       crate(tokio-1/rt) >= 1.53.1
 Provides:       crate(%{pkgname}/tls-any) = %{version}
 
 %description -n %{name}+tls-any
@@ -52,23 +53,23 @@ This metapackage enables feature "_tls-any" for the Rust tonic crate, by pulling
 %package     -n %{name}+channel
 Summary:        GRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility - feature "channel"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(hyper-1/client) >= 1.0.0
-Requires:       crate(hyper-1/default) >= 1.0.0
-Requires:       crate(hyper-1/http1) >= 1.0.0
-Requires:       crate(hyper-1/http2) >= 1.0.0
-Requires:       crate(hyper-timeout-0.5/default) >= 0.5.0
-Requires:       crate(hyper-util-0.1/client-legacy) >= 0.1.4
-Requires:       crate(hyper-util-0.1/default) >= 0.1.4
-Requires:       crate(hyper-util-0.1/tokio) >= 0.1.4
-Requires:       crate(tokio-1) >= 1.0.0
-Requires:       crate(tokio-1/time) >= 1.0.0
-Requires:       crate(tower-0.5) >= 0.5.0
-Requires:       crate(tower-0.5/balance) >= 0.5.0
-Requires:       crate(tower-0.5/buffer) >= 0.5.0
-Requires:       crate(tower-0.5/discover) >= 0.5.0
-Requires:       crate(tower-0.5/limit) >= 0.5.0
-Requires:       crate(tower-0.5/load-shed) >= 0.5.0
-Requires:       crate(tower-0.5/util) >= 0.5.0
+Requires:       crate(hyper-1/client) >= 1.10.1
+Requires:       crate(hyper-1/default) >= 1.10.1
+Requires:       crate(hyper-1/http1) >= 1.10.1
+Requires:       crate(hyper-1/http2) >= 1.10.1
+Requires:       crate(hyper-timeout-0.5/default) >= 0.5.2
+Requires:       crate(hyper-util-0.1/client-legacy) >= 0.1.20
+Requires:       crate(hyper-util-0.1/default) >= 0.1.20
+Requires:       crate(hyper-util-0.1/tokio) >= 0.1.20
+Requires:       crate(tokio-1) >= 1.53.1
+Requires:       crate(tokio-1/time) >= 1.53.1
+Requires:       crate(tower-0.5) >= 0.5.3
+Requires:       crate(tower-0.5/balance) >= 0.5.3
+Requires:       crate(tower-0.5/buffer) >= 0.5.3
+Requires:       crate(tower-0.5/discover) >= 0.5.3
+Requires:       crate(tower-0.5/limit) >= 0.5.3
+Requires:       crate(tower-0.5/load-shed) >= 0.5.3
+Requires:       crate(tower-0.5/util) >= 0.5.3
 Provides:       crate(%{pkgname}/channel) = %{version}
 
 %description -n %{name}+channel
@@ -77,7 +78,7 @@ This metapackage enables feature "channel" for the Rust tonic crate, by pulling 
 %package     -n %{name}+codegen
 Summary:        GRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility - feature "codegen"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(async-trait-0.1/default) >= 0.1.13
+Requires:       crate(async-trait-0.1/default) >= 0.1.89
 Provides:       crate(%{pkgname}/codegen) = %{version}
 
 %description -n %{name}+codegen
@@ -109,9 +110,9 @@ Additionally, this package also provides the "gzip" feature.
 %package     -n %{name}+router
 Summary:        GRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility - feature "router"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(axum-0.8) >= 0.8.0
-Requires:       crate(tower-0.5) >= 0.5.0
-Requires:       crate(tower-0.5/util) >= 0.5.0
+Requires:       crate(axum-0.8) >= 0.8.8
+Requires:       crate(tower-0.5) >= 0.5.3
+Requires:       crate(tower-0.5/util) >= 0.5.3
 Provides:       crate(%{pkgname}/router) = %{version}
 
 %description -n %{name}+router
@@ -120,26 +121,26 @@ This metapackage enables feature "router" for the Rust tonic crate, by pulling i
 %package     -n %{name}+server
 Summary:        GRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility - feature "server"
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(h2-0.4/default) >= 0.4.0
-Requires:       crate(hyper-1/default) >= 1.0.0
-Requires:       crate(hyper-1/http1) >= 1.0.0
-Requires:       crate(hyper-1/http2) >= 1.0.0
-Requires:       crate(hyper-1/server) >= 1.0.0
-Requires:       crate(hyper-util-0.1/default) >= 0.1.4
-Requires:       crate(hyper-util-0.1/server-auto) >= 0.1.4
-Requires:       crate(hyper-util-0.1/service) >= 0.1.4
-Requires:       crate(hyper-util-0.1/tokio) >= 0.1.4
-Requires:       crate(socket2-0.6/all) >= 0.6.0
-Requires:       crate(socket2-0.6/default) >= 0.6.0
-Requires:       crate(tokio-1) >= 1.0.0
-Requires:       crate(tokio-1/macros) >= 1.0.0
-Requires:       crate(tokio-1/net) >= 1.0.0
-Requires:       crate(tokio-1/time) >= 1.0.0
-Requires:       crate(tokio-stream-0.1/net) >= 0.1.16
-Requires:       crate(tower-0.5) >= 0.5.0
-Requires:       crate(tower-0.5/limit) >= 0.5.0
-Requires:       crate(tower-0.5/load-shed) >= 0.5.0
-Requires:       crate(tower-0.5/util) >= 0.5.0
+Requires:       crate(h2-0.4/default) >= 0.4.15
+Requires:       crate(hyper-1/default) >= 1.10.1
+Requires:       crate(hyper-1/http1) >= 1.10.1
+Requires:       crate(hyper-1/http2) >= 1.10.1
+Requires:       crate(hyper-1/server) >= 1.10.1
+Requires:       crate(hyper-util-0.1/default) >= 0.1.20
+Requires:       crate(hyper-util-0.1/server-auto) >= 0.1.20
+Requires:       crate(hyper-util-0.1/service) >= 0.1.20
+Requires:       crate(hyper-util-0.1/tokio) >= 0.1.20
+Requires:       crate(socket2-0.6/all) >= 0.6.3
+Requires:       crate(socket2-0.6/default) >= 0.6.3
+Requires:       crate(tokio-1) >= 1.53.1
+Requires:       crate(tokio-1/macros) >= 1.53.1
+Requires:       crate(tokio-1/net) >= 1.53.1
+Requires:       crate(tokio-1/time) >= 1.53.1
+Requires:       crate(tokio-stream-0.1/net) >= 0.1.18
+Requires:       crate(tower-0.5) >= 0.5.3
+Requires:       crate(tower-0.5/limit) >= 0.5.3
+Requires:       crate(tower-0.5/load-shed) >= 0.5.3
+Requires:       crate(tower-0.5/util) >= 0.5.3
 Provides:       crate(%{pkgname}/server) = %{version}
 
 %description -n %{name}+server
