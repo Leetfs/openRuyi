@@ -6,6 +6,7 @@
 %global crate_name pyo3
 %global full_version 0.21.2
 %global pkgname pyo3-0.21
+%global __requires_exclude_from ^%{_datadir}/cargo/registry/.*$
 
 Name:           rust-pyo3-0.21
 Version:        0.21.2
