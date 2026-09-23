@@ -2,19 +2,20 @@
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Gui-Yue <xiangwei.riscv@isrc.iscas.ac.cn>
 # SPDX-FileContributor: yyjeqhc <jialin.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname hf_xet
 
 Name:           python-hf-xet
-Version:        1.5.1
+Version:        1.5.2
 Release:        %autorelease
 Summary:        Fast transfer layer for large files on Hugging Face Hub
 License:        Apache-2.0
 URL:            https://pypi.org/project/hf-xet/
 VCS:            git:https://github.com/huggingface/xet-core
-#!RemoteAsset:  sha256:51ef4500dab3764b41135ee1381a4b62ce56fc54d4c92b719b59e597d6df5bf6
+#!RemoteAsset:  sha256:73044bd31bae33c984af832d19c752a0dffb67518fee9ddbd91d616e1101cf47
 Source0:        https://files.pythonhosted.org/packages/source/h/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildSystem:    pyproject
 
@@ -37,9 +38,16 @@ BuildRequires:  crate(pprof-0.14/prost) >= 0.14
 BuildRequires:  crate(pprof-0.14/cpp) >= 0.14
 BuildRequires:  crate(jni-sys-0.4) >= 0.4
 BuildRequires:  crate(openssl-src-300) >= 300
-BuildRequires:  crate(pyo3-0.26/indoc) >= 0.26
-BuildRequires:  crate(pyo3-0.26/macros) >= 0.26
-BuildRequires:  crate(pyo3-0.26/multiple-pymethods) >= 0.26
+BuildRequires:  crate(pyo3-0.29/abi3-py38) >= 0.29
+BuildRequires:  crate(pyo3-0.29/auto-initialize) >= 0.29
+BuildRequires:  crate(pyo3-0.29/extension-module) >= 0.29
+BuildRequires:  crate(pyo3-0.29/macros) >= 0.29
+BuildRequires:  crate(pyo3-0.29/multiple-pymethods) >= 0.29
+BuildRequires:  crate(tokio-with-wasm-0.8/default) >= 0.8.8
+BuildRequires:  crate(tokio-with-wasm-0.8/macros) >= 0.8.8
+BuildRequires:  crate(tokio-with-wasm-0.8/rt) >= 0.8.8
+BuildRequires:  crate(tokio-with-wasm-0.8/sync) >= 0.8.8
+BuildRequires:  crate(tokio-with-wasm-0.8/time) >= 0.8.8
 BuildRequires:  crate(console-subscriber-0.5) >= 0.5
 BuildRequires:  crate(signal-hook-0.3) >= 0.3
 BuildRequires:  crate(anyhow-1/default) >= 1.0.102
