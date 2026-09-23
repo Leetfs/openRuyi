@@ -93,6 +93,7 @@ BuildRequires:  crate(half-2/bytemuck) >= 2.7.1
 BuildRequires:  crate(half-2/default) >= 2.7.1
 BuildRequires:  crate(hex-0.4/default) >= 0.4.3
 BuildRequires:  crate(hf-hub-0.5/tokio) >= 0.5.0
+BuildRequires:  crate(hmac-0.12/default) >= 0.12.1
 BuildRequires:  crate(http-body-1/default) >= 1.0.1
 BuildRequires:  crate(hyper-util-0.1/default) >= 0.1.20
 BuildRequires:  crate(hyper-util-0.1/server-graceful) >= 0.1.20
