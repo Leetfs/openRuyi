@@ -315,6 +315,8 @@ Conflicts:      python-%{srcname}-rocm
 2006-Use-system-registry-for-Git-Rust-dependencies.patch
 # Resolve the Rust workspace against the packaged system-registry versions
 2007-Refresh-Rust-lockfile-for-system-registry.patch
+# Match the currently published system-registry package versions
+2008-Refresh-Cargo-lockfile-for-current-system-registry.patch
 
 %description
 vLLM is a fast and easy-to-use library for LLM inference and serving, featuring
