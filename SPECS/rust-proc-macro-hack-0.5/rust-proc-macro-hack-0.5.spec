@@ -21,14 +21,18 @@ BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Provides:       crate(%{pkgname}) = %{version}
-Provides:       crate(%{pkgname}/default) = %{version}
+Provides:       crate(%{pkgname}) = %{full_version}
+Provides:       crate(%{pkgname}/default) = %{full_version}
 
 %description
 Source code for takopackized Rust crate "proc-macro-hack"
 
+%install
+%rust_install_crate
+mv %{buildroot}%{_datadir}/cargo/registry/%{crate_name}-%{version} %{buildroot}%{_datadir}/cargo/registry/%{crate_name}-%{full_version}
+
 %files
-%{_datadir}/cargo/registry/%{crate_name}-%{version}/
+%{_datadir}/cargo/registry/%{crate_name}-%{full_version}/
 
 %changelog
 %autochangelog
