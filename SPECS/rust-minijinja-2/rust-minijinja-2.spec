@@ -4,24 +4,25 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name minijinja
-%global full_version 2.20.0
+%global full_version 2.24.0
 %global pkgname minijinja-2
 
 Name:           rust-minijinja-2
-Version:        2.20.0
+Version:        2.24.0
 Release:        %autorelease
 Summary:        Rust crate "minijinja"
 License:        Apache-2.0
 URL:            https://github.com/mitsuhiko/minijinja
-#!RemoteAsset:  sha256:2929e494b2280e1e18959bb2e121da03347ae896896fdfaceaab43c88a02803f
+#!RemoteAsset:  sha256:86886cf6dbf4e614b19c9a1eec9775f021869d7eadde0fc73921a81b90c9b4c9
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(memo-map-0.3/default) >= 0.3.1
-Requires:       crate(serde-1/default) >= 1.0.130
+Requires:       crate(memo-map-0.3/default) >= 0.3.3
+Requires:       crate(serde-1/default) >= 1.0.228
+
 Provides:       crate(%{pkgname}) = %{version}
 Provides:       crate(%{pkgname}/adjacent-loop-items) = %{version}
 Provides:       crate(%{pkgname}/builtins) = %{version}
@@ -70,7 +71,7 @@ This metapackage enables feature "default" for the Rust minijinja crate, by pull
 %package     -n %{name}+indexmap
 Summary:        Powerful template engine for Rust with minimal dependencies - feature "indexmap" and 1 more
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(indexmap-2/default) >= 2.2.0
+Requires:       crate(indexmap-2/default) >= 2.14.0
 Provides:       crate(%{pkgname}/indexmap) = %{version}
 Provides:       crate(%{pkgname}/preserve-order) = %{version}
 
@@ -94,7 +95,7 @@ Additionally, this package also provides the "urlencode" feature.
 %package     -n %{name}+serde-json
 Summary:        Powerful template engine for Rust with minimal dependencies - feature "serde_json" and 1 more
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(serde-json-1/default) >= 1.0.68
+Requires:       crate(serde-json-1/default) >= 1.0.150
 Provides:       crate(%{pkgname}/json) = %{version}
 Provides:       crate(%{pkgname}/serde-json) = %{version}
 
@@ -144,7 +145,7 @@ This metapackage enables feature "unicode-ident" for the Rust minijinja crate, b
 Summary:        Powerful template engine for Rust with minimal dependencies - feature "unstable_machinery_serde"
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/unstable-machinery) = %{version}
-Requires:       crate(serde-1/derive) >= 1.0.130
+Requires:       crate(serde-1/derive) >= 1.0.228
 Provides:       crate(%{pkgname}/unstable-machinery-serde) = %{version}
 
 %description -n %{name}+unstable-machinery-serde
