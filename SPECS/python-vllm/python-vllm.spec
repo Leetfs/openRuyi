@@ -190,6 +190,7 @@ BuildRequires:  crate(tls-listener-0.11/tokio-net) >= 0.11.2
 BuildRequires:  crate(tokenizers-0.22/default) >= 0.22.2
 BuildRequires:  crate(tokio-openssl-0.6/default) >= 0.6.5
 BuildRequires:  crate(tokio-stream-0.1/default) >= 0.1.18
+BuildRequires:  crate(tokio-tungstenite-0.28) >= 0.28.0
 BuildRequires:  crate(tokio-util-0.7/default) >= 0.7.18
 BuildRequires:  crate(tokio-util-0.7/rt) >= 0.7.18
 BuildRequires:  crate(tokio-1/default) >= 1.52.3
@@ -218,11 +219,17 @@ BuildRequires:  crate(tracing-subscriber-0.3/fmt) >= 0.3.23
 BuildRequires:  crate(tracing-0.1/default) >= 0.1.44
 BuildRequires:  crate(tracing-0.1/release-max-level-debug) >= 0.1.44
 BuildRequires:  crate(trait-set-0.3/default) >= 0.3.0
+BuildRequires:  crate(tungstenite-0.28) >= 0.28.0
+BuildRequires:  crate(utf-8-0.7) >= 0.7.6
 BuildRequires:  crate(url-2/default) >= 2.5.8
 BuildRequires:  crate(uuid-1/default) >= 1.23.2
 BuildRequires:  crate(uuid-1/v4) >= 1.23.2
 BuildRequires:  crate(validator-0.20/default) >= 0.20.0
 BuildRequires:  crate(validator-0.20/derive) >= 0.20.0
+BuildRequires:  crate(webpki-roots-1) >= 1.0.5
+BuildRequires:  crate(windows-core-0.62) >= 0.62.2
+BuildRequires:  crate(windows-implement-0.60) >= 0.60.2
+BuildRequires:  crate(windows-interface-0.59) >= 0.59.3
 BuildRequires:  crate(winnow-1/default) >= 1.0.3
 BuildRequires:  crate(winnow-1/simd) >= 1.0.3
 BuildRequires:  crate(xgrammar-structural-tag-0.2/default) >= 0.2.0
@@ -371,8 +378,10 @@ mem_gb=$(awk '/MemTotal/ {print int($2/1024/1024)}' /proc/meminfo)
 compile_jobs=$(nproc)
 mem_jobs=$(( 1 + mem_gb / 3 ))
 [ "$mem_jobs" -lt "$compile_jobs" ] && compile_jobs=$mem_jobs
+[ "$compile_jobs" -gt 32 ] && compile_jobs=32
 [ "$compile_jobs" -lt 1 ] && compile_jobs=1
 export MAX_JOBS=$compile_jobs
+export CARGO_BUILD_JOBS=$compile_jobs
 
 %check
 # Not all runtime dependencies and backend setup are unavailable.
