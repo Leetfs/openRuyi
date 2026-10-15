@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name tinyvec
-%global full_version 1.11.0
+%global full_version 1.12.0
 %global pkgname tinyvec-1
 
 Name:           rust-tinyvec-1
-Version:        1.11.0
+Version:        1.12.0
 Release:        %autorelease
 Summary:        Rust crate "tinyvec"
 License:        Zlib OR Apache-2.0 OR MIT
 URL:            https://github.com/Lokathor/tinyvec
-#!RemoteAsset:  sha256:3e61e67053d25a4e82c844e8424039d9745781b3fc4f32b8d55ed50f5f667ef3
+#!RemoteAsset:  sha256:bb4ebadaa0af04fab11ae01eb5f9fdb5f9c5b875506e210e71c07873528baa7f
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
@@ -45,6 +45,15 @@ Provides:       crate(%{pkgname}/arbitrary) = %{version}
 %description -n %{name}+arbitrary
 This metapackage enables feature "arbitrary" for the Rust tinyvec crate, by pulling in any additional dependencies needed by that feature.
 
+%package     -n %{name}+bin-proto
+Summary:        `tinyvec` provides 100% safe vec-like data structures - feature "bin-proto"
+Requires:       crate(%{pkgname}) = %{version}
+Requires:       crate(bin-proto-0.12) >= 0.12.5
+Provides:       crate(%{pkgname}/bin-proto) = %{version}
+
+%description -n %{name}+bin-proto
+This metapackage enables feature "bin-proto" for the Rust tinyvec crate, by pulling in any additional dependencies needed by that feature.
+
 %package     -n %{name}+borsh
 Summary:        `tinyvec` provides 100% safe vec-like data structures - feature "borsh"
 Requires:       crate(%{pkgname}) = %{version}
@@ -71,6 +80,16 @@ Provides:       crate(%{pkgname}/generic-array) = %{version}
 
 %description -n %{name}+generic-array
 This metapackage enables feature "generic-array" for the Rust tinyvec crate, by pulling in any additional dependencies needed by that feature.
+
+%package     -n %{name}+schemars
+Summary:        `tinyvec` provides 100% safe vec-like data structures - feature "schemars"
+Requires:       crate(%{pkgname}) = %{version}
+Requires:       crate(%{pkgname}/alloc) = %{version}
+Requires:       crate(schemars-1) >= 1.0.0
+Provides:       crate(%{pkgname}/schemars) = %{version}
+
+%description -n %{name}+schemars
+This metapackage enables feature "schemars" for the Rust tinyvec crate, by pulling in any additional dependencies needed by that feature.
 
 %package     -n %{name}+serde
 Summary:        `tinyvec` provides 100% safe vec-like data structures - feature "serde"
