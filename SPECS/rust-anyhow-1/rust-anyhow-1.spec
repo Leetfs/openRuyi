@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name anyhow
-%global full_version 1.0.102
+%global full_version 1.0.103
 %global pkgname anyhow-1
 
 Name:           rust-anyhow-1
-Version:        1.0.102
+Version:        1.0.103
 Release:        %autorelease
 Summary:        Rust crate "anyhow"
 License:        MIT OR Apache-2.0
 URL:            https://github.com/dtolnay/anyhow
-#!RemoteAsset:  sha256:7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c
+#!RemoteAsset:  sha256:2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
