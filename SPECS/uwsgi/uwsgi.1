@@ -1,0 +1,57 @@
+.TH UWSGI 1 "October 20, 2026" "uWSGI 2.0.31" "User Commands"
+.SH NAME
+uwsgi \- application server with Python WSGI support
+.SH SYNOPSIS
+.B uwsgi
+.RI [ options ]
+.br
+.B uwsgi
+.I configuration.ini
+.SH DESCRIPTION
+uWSGI serves Python WSGI applications over HTTP or the uwsgi protocol.
+It provides worker process management, request routing, and caching.
+Application configuration can be supplied on the command line or in an
+INI file containing a [uwsgi] section.
+.SH OPTIONS
+.TP
+.B --help
+Show the complete list of available options.
+.TP
+.B --version
+Print the server version.
+.TP
+.BI --http-socket " address"
+Listen for HTTP requests on the specified address, such as 127.0.0.1:8080.
+.TP
+.BI --socket " address"
+Listen for requests using the uwsgi protocol.
+.TP
+.BI --wsgi-file " file"
+Load a Python WSGI application from the specified file.
+.TP
+.BI --module " module[:callable]"
+Load a Python module and an optional application callable.
+.TP
+.B --master
+Enable the master process, which supervises worker processes.
+.TP
+.BI --processes " count"
+Start the specified number of worker processes.
+.TP
+.BI --threads " count"
+Use the specified number of threads in each worker.
+.TP
+.B --need-app
+Exit if no application can be loaded.
+.TP
+.B --vacuum
+Remove generated sockets and PID files when the server exits.
+.SH EXAMPLE
+.nf
+uwsgi --http-socket 127.0.0.1:8080 --master --processes 2 \\
+      --module myapp:application --need-app --vacuum
+.fi
+.SH SEE ALSO
+The complete upstream documentation is available at
+.UR https://uwsgi-docs.readthedocs.io/en/latest/
+.UE .
