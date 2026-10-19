@@ -13,11 +13,7 @@
 edition = "2021"
 rust-version = "1.56.0"
 name = "zerocopy"
-version = "0.8.50"
-authors = [
-    "Joshua Liebow-Feeser <joshlf@google.com>",
-    "Jack Wrenn <jswrenn@amazon.com>",
-]
+version = "0.8.63"
 build = "build.rs"
 exclude = [".*"]
 autolib = false
@@ -47,6 +43,7 @@ repository = "https://github.com/google/zerocopy"
 [package.metadata.build-rs]
 no-zerocopy-simd-x86-avx12-1-89-0 = "1.89.0"
 no-zerocopy-core-error-1-81-0 = "1.81.0"
+no-zerocopy-slice-ptr-len-1-79-0 = "1.79.0"
 no-zerocopy-diagnostic-on-unimplemented-1-78-0 = "1.78.0"
 no-zerocopy-generic-bounds-in-const-fn-1-61-0 = "1.61.0"
 no-zerocopy-target-has-atomics-1-60-0 = "1.60.0"
@@ -55,8 +52,8 @@ no-zerocopy-aarch64-simd-be-1-87-0 = "1.87.0"
 no-zerocopy-panic-in-const-and-vec-try-reserve-1-57-0 = "1.57.0"
 
 [package.metadata.ci]
-pinned-stable = "1.93.1"
-pinned-nightly = "nightly-2026-01-25"
+pinned-stable = "1.99.0"
+pinned-nightly = "nightly-2026-09-30"
 
 [package.metadata.docs.rs]
 all-features = true
@@ -99,6 +96,7 @@ path = "src/lib.rs"
 [[test]]
 name = "codegen"
 path = "tests/codegen.rs"
+test = false
 
 [[test]]
 name = "include"
@@ -107,6 +105,7 @@ path = "tests/include.rs"
 [[test]]
 name = "ui"
 path = "tests/ui.rs"
+required-features = ["derive"]
 
 [[bench]]
 name = "as_bytes_dynamic_size"
@@ -215,6 +214,138 @@ path = "benches/ref_from_suffix_with_elems_dynamic_padding.rs"
 [[bench]]
 name = "ref_from_suffix_with_elems_dynamic_size"
 path = "benches/ref_from_suffix_with_elems_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_bytes_dynamic_padding"
+path = "benches/ref_type_bytes_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_bytes_dynamic_size"
+path = "benches/ref_type_bytes_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_bytes_mut_dynamic_padding"
+path = "benches/ref_type_bytes_mut_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_bytes_mut_dynamic_size"
+path = "benches/ref_type_bytes_mut_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_bytes_mut_static_size"
+path = "benches/ref_type_bytes_mut_static_size.rs"
+
+[[bench]]
+name = "ref_type_bytes_static_size"
+path = "benches/ref_type_bytes_static_size.rs"
+
+[[bench]]
+name = "ref_type_deref_dynamic_padding"
+path = "benches/ref_type_deref_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_deref_dynamic_size"
+path = "benches/ref_type_deref_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_deref_mut_dynamic_size"
+path = "benches/ref_type_deref_mut_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_deref_mut_static_size"
+path = "benches/ref_type_deref_mut_static_size.rs"
+
+[[bench]]
+name = "ref_type_deref_static_size"
+path = "benches/ref_type_deref_static_size.rs"
+
+[[bench]]
+name = "ref_type_from_bytes_dynamic_padding"
+path = "benches/ref_type_from_bytes_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_from_bytes_dynamic_size"
+path = "benches/ref_type_from_bytes_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_from_bytes_static_size"
+path = "benches/ref_type_from_bytes_static_size.rs"
+
+[[bench]]
+name = "ref_type_from_bytes_with_elems_dynamic_padding"
+path = "benches/ref_type_from_bytes_with_elems_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_from_bytes_with_elems_dynamic_size"
+path = "benches/ref_type_from_bytes_with_elems_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_from_prefix_dynamic_padding"
+path = "benches/ref_type_from_prefix_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_from_prefix_dynamic_size"
+path = "benches/ref_type_from_prefix_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_from_prefix_static_size"
+path = "benches/ref_type_from_prefix_static_size.rs"
+
+[[bench]]
+name = "ref_type_from_prefix_with_elems_dynamic_padding"
+path = "benches/ref_type_from_prefix_with_elems_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_from_prefix_with_elems_dynamic_size"
+path = "benches/ref_type_from_prefix_with_elems_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_from_suffix_dynamic_padding"
+path = "benches/ref_type_from_suffix_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_from_suffix_dynamic_size"
+path = "benches/ref_type_from_suffix_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_from_suffix_static_size"
+path = "benches/ref_type_from_suffix_static_size.rs"
+
+[[bench]]
+name = "ref_type_from_suffix_with_elems_dynamic_padding"
+path = "benches/ref_type_from_suffix_with_elems_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_from_suffix_with_elems_dynamic_size"
+path = "benches/ref_type_from_suffix_with_elems_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_into_mut_dynamic_size"
+path = "benches/ref_type_into_mut_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_into_mut_static_size"
+path = "benches/ref_type_into_mut_static_size.rs"
+
+[[bench]]
+name = "ref_type_into_ref_dynamic_padding"
+path = "benches/ref_type_into_ref_dynamic_padding.rs"
+
+[[bench]]
+name = "ref_type_into_ref_dynamic_size"
+path = "benches/ref_type_into_ref_dynamic_size.rs"
+
+[[bench]]
+name = "ref_type_into_ref_static_size"
+path = "benches/ref_type_into_ref_static_size.rs"
+
+[[bench]]
+name = "ref_type_read_static_size"
+path = "benches/ref_type_read_static_size.rs"
+
+[[bench]]
+name = "ref_type_write_static_size"
+path = "benches/ref_type_write_static_size.rs"
 
 [[bench]]
 name = "split_at_dynamic_padding"
@@ -389,7 +520,7 @@ name = "zero_static_size"
 path = "benches/zero_static_size.rs"
 
 [dependencies.zerocopy-derive]
-version = "=0.8.50"
+version = "=0.8.63"
 optional = true
 
 [dev-dependencies.elain]
@@ -399,7 +530,7 @@ version = "0.3.0"
 version = "0.11"
 
 [dev-dependencies.rand]
-version = "0.8.5"
+version = "0.8.7"
 features = ["small_rng"]
 default-features = false
 
@@ -413,7 +544,7 @@ version = "1.0"
 version = "1.1"
 
 [dev-dependencies.zerocopy-derive]
-version = "=0.8.50"
+version = "=0.8.63"
 
 [target."cfg(any())".dependencies.zerocopy-derive]
-version = "=0.8.50"
+version = "=0.8.63"

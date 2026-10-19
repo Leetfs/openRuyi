@@ -4,23 +4,24 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name zerocopy
-%global full_version 0.8.50
+%global full_version 0.8.63
 %global pkgname zerocopy-0.8
 
 Name:           rust-zerocopy-0.8
-Version:        0.8.50
+Version:        0.8.63
 Release:        %autorelease
 Summary:        Rust crate "zerocopy"
 License:        BSD-2-Clause OR Apache-2.0 OR MIT
 URL:            https://github.com/google/zerocopy
-#!RemoteAsset:  sha256:3b065d4f0e55f82fae73202e189638116a87c55ab6b8e6c2721e13dd9d854ad1
+#!RemoteAsset:  sha256:e5fe1f8f1b06191a00962174c61aa5005e0bb391a6d80d07e24d115c01a92ed8
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
 
 BuildRequires:  rust-rpm-macros
 
-Requires:       crate(zerocopy-derive-0.8/default) >= 0.8.50
+Requires:       crate(zerocopy-derive-0.8/default) >= 0.8.63
+
 Provides:       crate(%{pkgname}) = %{version}
 Provides:       crate(%{pkgname}/alloc) = %{version}
 Provides:       crate(%{pkgname}/default) = %{version}
@@ -49,7 +50,7 @@ This metapackage enables feature "__internal_use_only_features_that_work_on_stab
 %package     -n %{name}+zerocopy-derive
 Summary:        Zerocopy makes zero-cost memory manipulation effortless - feature "zerocopy-derive" and 1 more
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(zerocopy-derive-0.8/default) >= 0.8.50
+Requires:       crate(zerocopy-derive-0.8/default) >= 0.8.63
 Provides:       crate(%{pkgname}/derive) = %{version}
 Provides:       crate(%{pkgname}/zerocopy-derive) = %{version}
 
