@@ -1,0 +1,67 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] build: link private tests in shared-only configurations
+
+The Check runner calls private test registration functions even when
+--disable-static excludes their source files. Other test cases also use
+internal library symbols that are hidden from the shared library.
+
+Compile the same test cases in both configurations. For shared-only
+builds, reuse the existing library objects and their convenience-library
+dependencies in an uninstalled libtool convenience library. Link the Check
+runner against that library so its private API references can resolve.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/Makefile.am b/src/Makefile.am
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -151,6 +151,18 @@
+ libfyaml_la_LDFLAGS += $(CLANG_BLOCKS_LIBS)
+ endif
+ 
++if !HAVE_STATIC
++if HAVE_COMPATIBLE_CHECK
++if !CROSS_COMPILING
++# Reuse library objects so private tests can link without an installed archive.
++noinst_LTLIBRARIES += libfyaml-test.la
++libfyaml_test_la_SOURCES =
++libfyaml_test_la_LIBADD = $(libfyaml_la_OBJECTS) $(libfyaml_la_LIBADD)
++libfyaml_test_la_DEPENDENCIES = $(libfyaml_la_OBJECTS) $(libfyaml_la_DEPENDENCIES)
++endif
++endif
++endif
++
+ if HAVE_STATIC
+ 
+ if HAVE_LIBYAML
+diff --git a/test/Makefile.am b/test/Makefile.am
+--- a/test/Makefile.am
++++ b/test/Makefile.am
+@@ -39,7 +39,6 @@
+ 			 -I$(top_srcdir)/src/lib/ \
+ 			 -I$(top_srcdir)/src/util \
+ 			 -I$(top_srcdir)/src/allocator
+-libfyaml_test_LDADD = $(AM_LDADD) $(CHECK_LIBS) $(top_builddir)/src/libfyaml.la
+ libfyaml_test_CFLAGS = $(AM_CFLAGS) $(CHECK_CFLAGS) 
+ libfyaml_test_LDFLAGS = $(AM_LDFLAGS) $(CHECK_LDFLAGS)
+ 
+@@ -53,15 +52,16 @@
+ 	libfyaml-test-emit-bugs.c \
+ 	libfyaml-test-parse-bugs.c
+ 
+-# the private tests require static compilation
+-# if we're compiling shared only, disable the private parts
+-if HAVE_STATIC
+ libfyaml_test_SOURCES += \
+ 	libfyaml-test-private.c \
+ 	libfyaml-test-private-id.c \
+ 	libfyaml-test-parser.c \
+ 	libfyaml-test-thread.c
++if HAVE_STATIC
++libfyaml_test_LDADD = $(AM_LDADD) $(CHECK_LIBS) $(top_builddir)/src/libfyaml.la
+ libfyaml_test_LDFLAGS += -static
++else
++libfyaml_test_LDADD = $(AM_LDADD) $(CHECK_LIBS) $(top_builddir)/src/libfyaml-test.la
+ endif
+ 
+ TESTS += libfyaml.test
