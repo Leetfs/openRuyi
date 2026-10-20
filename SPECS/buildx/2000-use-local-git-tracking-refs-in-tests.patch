@@ -1,0 +1,23 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Tue, 20 Oct 2026 10:29:00 +0800
+Subject: [PATCH] Use local tracking refs in Git URL tests
+
+The URL-selection tests only inspect branch tracking configuration.
+Creating the remote-tracking ref from HEAD supplies that configuration
+without fetching GitHub in the offline build environment.
+
+Upstream: https://github.com/docker/buildx/blob/v0.38.0/util/gitutil/gittestutil/testutil.go
+Upstream-Status: Inappropriate [offline distribution builds]
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/util/gitutil/gittestutil/testutil.go
++++ b/util/gitutil/gittestutil/testutil.go
+@@ -64,7 +64,7 @@
+ 
+ func GitSetMainUpstream(c *gitutil.GitCLI, tb testing.TB, remote, target string) {
+ 	tb.Helper()
+-	_, err := fakeGit(c, "fetch", "--depth", "1", remote, target)
++	_, err := fakeGit(c, "update-ref", "refs/remotes/"+remote+"/"+target, "HEAD")
+ 	require.NoError(tb, err)
+ 
+ 	_, err = fakeGit(c, "branch", "--set-upstream-to", remote+"/"+target, "main")
