@@ -29,6 +29,7 @@ BuildRequires:  crate(thiserror-1/default) >= 1.0.0
 BuildRequires:  crate(toml-0.6/default) >= 0.6.0
 # Additional dependencies required by OBS builds.
 BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
+BuildRequires:  crate(quickcheck-1) >= 1.0.0
 
 %description
 Configure Sequoia using a configuration file.
