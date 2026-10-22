@@ -40,6 +40,7 @@ BuildRequires:  crate(rpassword-7/default) >= 7.0.0
 BuildRequires:  crate(rusqlite-0.31/default) >= 0.31.0
 BuildRequires:  crate(sequoia-cert-store-0.7) >= 0.7.0
 BuildRequires:  crate(sequoia-gpg-agent-0.6) >= 0.6.0
+BuildRequires:  crate(sequoia-net-0.30) >= 0.30.0
 
 Requires:       gnupg
 
