@@ -31,6 +31,7 @@ BuildRequires:  crate(sequoia-keystore-0.7/default) >= 0.7.0
 BuildRequires:  crate(sequoia-openpgp-2) >= 2.0.0
 # Additional dependencies required by OBS builds.
 BuildRequires:  crate(aes-0.8) >= 0.8.4
+BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 
 Recommends:     gnupg
 
