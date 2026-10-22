@@ -80,6 +80,7 @@ BuildRequires:  crate(rsa-0.9) >= 0.9.10
 BuildRequires:  crate(slh-dsa-0.0.3) >= 0.0.3
 BuildRequires:  crate(twofish-0.7) >= 0.7.1
 BuildRequires:  crate(x25519-dalek-2) >= 2.0.1
+BuildRequires:  crate(link-section-0.18) >= 0.18.2
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
