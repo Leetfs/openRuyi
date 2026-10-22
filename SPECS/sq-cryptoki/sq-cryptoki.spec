@@ -35,6 +35,7 @@ BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
 BuildRequires:  crate(clap-4/derive) >= 4.0.0
 BuildRequires:  crate(sequoia-openpgp-2/default) >= 2.4.0
 BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
+BuildRequires:  crate(cx448-0.1) >= 0.1.1
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
