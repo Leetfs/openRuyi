@@ -88,6 +88,7 @@ BuildRequires:  crate(ocb3-0.1) >= 0.1.0
 BuildRequires:  crate(ossl-1) >= 1.5.3
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(aes-0.8) >= 0.8.4
+BuildRequires:  crate(link-section-0.18) >= 0.18.2
 
 Requires:       gnupg
 
