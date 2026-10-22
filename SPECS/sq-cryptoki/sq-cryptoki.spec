@@ -37,6 +37,8 @@ BuildRequires:  crate(sequoia-openpgp-2) >= 2.4.0
 BuildRequires:  crate(sequoia-policy-config-0.8/default) >= 0.8.0
 BuildRequires:  crate(terminal-size-0.2/default) >= 0.2.6
 BuildRequires:  crate(textwrap-0.15/default) >= 0.15.0
+# Additional dependencies required by OBS builds.
+BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
