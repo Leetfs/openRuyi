@@ -26,6 +26,7 @@ BuildRequires:  crate(chrono-0.4/default) >= 0.4.0
 BuildRequires:  crate(daemonize-0.5/default) >= 0.5.0
 BuildRequires:  crate(dirs-6/default) >= 6.0.0
 BuildRequires:  crate(fd-lock-3) >= 3.0.0
+BuildRequires:  crate(filetime-0.2/default) >= 0.2.0
 
 Requires:       gnupg
 
