@@ -19,6 +19,7 @@ BuildRequires:  rust
 BuildRequires:  rust-rpm-macros
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(nettle)
+BuildRequires:  clang
 # TakoPack-generated dependencies.
 BuildRequires:  crate(anyhow-1) >= 1.0.0
 BuildRequires:  crate(anyhow-1/default) >= 1.0.0
