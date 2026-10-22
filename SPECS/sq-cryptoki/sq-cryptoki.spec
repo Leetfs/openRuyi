@@ -49,6 +49,7 @@ BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  capnproto >= 0.5.2
+BuildRequires:  pkgconfig(sqlite3)
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
