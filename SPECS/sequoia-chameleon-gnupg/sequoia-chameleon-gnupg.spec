@@ -91,6 +91,7 @@ BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(link-section-0.18) >= 0.18.2
 BuildRequires:  crate(linktime-proc-macro-0.2) >= 0.2.0
 BuildRequires:  crate(clap-4/default) >= 4.4.18
+BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 
 Requires:       gnupg
 
