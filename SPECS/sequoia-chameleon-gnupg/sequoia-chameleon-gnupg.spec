@@ -67,6 +67,8 @@ BuildRequires:  crate(tokio-1/io-util) >= 1.19.0
 BuildRequires:  crate(tokio-1/net) >= 1.19.0
 BuildRequires:  crate(tokio-1/process) >= 1.19.0
 BuildRequires:  crate(tokio-1/rt-multi-thread) >= 1.19.0
+# Additional dependencies required by OBS builds.
+BuildRequires:  crate(editdistancek-1/default) >= 1.0.0
 
 Requires:       gnupg
 
