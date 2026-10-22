@@ -59,6 +59,7 @@ BuildRequires:  crate(ctor-1) >= 1.0.7
 BuildRequires:  crate(cx448-0.1) >= 0.1.1
 BuildRequires:  crate(eax-0.5) >= 0.5.0
 BuildRequires:  crate(ed25519-2) >= 2.2.3
+BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
 
 Requires:       gnupg
 
