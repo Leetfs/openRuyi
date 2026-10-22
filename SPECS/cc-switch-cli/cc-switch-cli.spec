@@ -121,6 +121,7 @@ BuildRequires:  crate(which-6/default) >= 6.0.0
 BuildRequires:  crate(minisign-0.9/default) >= 0.9.1
 BuildRequires:  crate(serial-test-3/default) >= 3.0.0
 BuildRequires:  crate(self-replace-1) >= 1.0.0
+BuildRequires:  crate(winreg-0.52) >= 0.52.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
