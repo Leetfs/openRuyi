@@ -29,6 +29,7 @@ BuildRequires:  crate(fd-lock-3) >= 3.0.0
 BuildRequires:  crate(filetime-0.2/default) >= 0.2.0
 BuildRequires:  crate(futures-0.3/default) >= 0.3.0
 BuildRequires:  crate(indexmap-2/default) >= 2.0.0
+BuildRequires:  crate(interprocess-2) >= 2.4.5
 
 Requires:       gnupg
 
