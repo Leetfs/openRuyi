@@ -21,6 +21,7 @@ BuildOption(build):  --features cli,cliv
 BuildRequires:  rust-rpm-macros
 # Additional dependencies required by OBS builds.
 BuildRequires:  rust
+BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
