@@ -20,6 +20,7 @@ BuildRequires:  rust-rpm-macros
 # Additional dependencies required by OBS builds.
 BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
+BuildRequires:  crate(chrono-0.4/default) >= 0.4.10
 
 %description
 A simple OpenPGP signature verification program.
