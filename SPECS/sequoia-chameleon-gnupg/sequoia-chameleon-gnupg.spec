@@ -56,6 +56,7 @@ BuildRequires:  crate(clap-mangen-0.2/default) >= 0.2.19
 BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 BuildRequires:  crate(botan-0.10) >= 0.10.7
 BuildRequires:  crate(ctor-1) >= 1.0.7
+BuildRequires:  crate(cx448-0.1) >= 0.1.1
 
 Requires:       gnupg
 
