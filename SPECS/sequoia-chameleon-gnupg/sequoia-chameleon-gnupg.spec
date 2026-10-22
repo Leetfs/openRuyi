@@ -49,6 +49,7 @@ BuildRequires:  crate(histo-1/default) >= 1.0.0
 BuildRequires:  crate(ntest-0.9/default) >= 0.9.0
 BuildRequires:  crate(pty-process-0.4) >= 0.4.0
 BuildRequires:  crate(serde-with-3/default) >= 3.0.0
+BuildRequires:  crate(tar-0.4) >= 0.4.0
 
 Requires:       gnupg
 
