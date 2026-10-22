@@ -70,6 +70,7 @@ BuildRequires:  crate(culpa-1/default) >= 1.0.2
 BuildRequires:  crate(subplotlib-0.12/default) >= 0.12.0
 BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
 BuildRequires:  crate(subplot-build-0.12/default) >= 0.12.0
+BuildRequires:  crate(predicates-3/default) >= 3.1.4
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
