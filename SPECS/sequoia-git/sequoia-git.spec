@@ -36,6 +36,7 @@ BuildRequires:  crate(sequoia-openpgp-2/default) >= 2.0.0
 BuildRequires:  crate(tokio-1/full) >= 1.0.0
 BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
 BuildRequires:  pkgconfig(openssl)
+BuildRequires:  pkgconfig(nettle)
 
 %description
 A tool for managing and enforcing a commit signing policy.
