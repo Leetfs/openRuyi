@@ -26,6 +26,7 @@ BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.0
 BuildRequires:  crate(sequoia-openpgp-2) >= 2.4.0
 BuildRequires:  crate(serde-1/default) >= 1.0.0
+BuildRequires:  crate(toml-0.8/default) >= 0.8.23
 
 %description
 Configure Sequoia using a configuration file.
