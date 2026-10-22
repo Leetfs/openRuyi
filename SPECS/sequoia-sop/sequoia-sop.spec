@@ -24,6 +24,7 @@ BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(sequoia-openpgp-2/crypto-nettle) >= 2.4.0
 BuildRequires:  crate(sequoia-policy-config-0.8) >= 0.8.2
+BuildRequires:  crate(sequoia-wot-0.15) >= 0.15.0
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
