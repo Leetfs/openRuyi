@@ -18,33 +18,8 @@ BuildSystem:    rust
 
 BuildOption(build):  --features sequoia-openpgp/crypto-nettle
 
-BuildRequires:  clang
-BuildRequires:  pkgconfig(hogweed)
-BuildRequires:  pkgconfig(nettle)
-BuildRequires:  rust
+# TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
-BuildRequires:  crate(anyhow-1/default) >= 1.0.18
-BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
-BuildRequires:  crate(chrono-0.4/default) >= 0.4.0
-BuildRequires:  crate(quickcheck-1) >= 1.0.0
-BuildRequires:  crate(sequoia-openpgp-2) >= 2.4.0
-BuildRequires:  crate(sequoia-openpgp-2/crypto-nettle) >= 2.4.0
-BuildRequires:  crate(sequoia-openpgp-2/implicit-crypto-backend-for-tests) >= 2.4.0
-BuildRequires:  crate(serde-1/default) >= 1.0.0
-BuildRequires:  crate(thiserror-2/default) >= 2.0.18
-BuildRequires:  crate(toml-0.8/default) >= 0.8.23
-BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
-BuildRequires:  crate(cx448-0.1) >= 0.1.1
-BuildRequires:  crate(eax-0.5) >= 0.5.0
-BuildRequires:  crate(ed25519-2) >= 2.2.3
-BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
-BuildRequires:  crate(hkdf-0.12) >= 0.12.4
-BuildRequires:  crate(num-bigint-dig-0.8) >= 0.8.6
-BuildRequires:  crate(ocb3-0.1) >= 0.1.0
-BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
-BuildRequires:  crate(aes-0.8) >= 0.8.4
-BuildRequires:  crate(vcpkg-0.2) >= 0.2.15
-BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 
 %description
 Configure Sequoia using a configuration file.
