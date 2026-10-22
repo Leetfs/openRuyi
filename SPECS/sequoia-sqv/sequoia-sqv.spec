@@ -57,6 +57,7 @@ BuildRequires:  crate(openssl-sys-0.9) >= 0.9.117
 BuildRequires:  crate(ossl-1) >= 1.5.3
 BuildRequires:  crate(p256-0.13) >= 0.13.2
 BuildRequires:  crate(p384-0.13) >= 0.13.1
+BuildRequires:  crate(p521-0.13) >= 0.13.3
 
 %description
 A simple OpenPGP signature verification program.
