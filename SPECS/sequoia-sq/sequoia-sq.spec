@@ -21,6 +21,7 @@ BuildRequires:  pkgconfig(nettle)
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  clang
 BuildRequires:  capnproto >= 0.5.2
+BuildRequires:  pkgconfig(sqlite3)
 # TakoPack-generated dependencies.
 BuildRequires:  crate(aho-corasick-1/default) >= 1.0.0
 BuildRequires:  crate(anyhow-1) >= 1.0.18
