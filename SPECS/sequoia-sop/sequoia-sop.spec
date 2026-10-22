@@ -25,6 +25,8 @@ BuildRequires:  crate(sequoia-openpgp-2) >= 2.4.0
 BuildRequires:  crate(sequoia-wot-0.15) >= 0.15.0
 BuildRequires:  crate(sop-0.8) >= 0.8.1
 BuildRequires:  crate(sop-0.8/default) >= 0.8.1
+# Additional dependencies required by OBS builds.
+BuildRequires:  crate(sequoia-policy-config-0.8) >= 0.8.2
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
