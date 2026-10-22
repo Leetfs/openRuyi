@@ -46,6 +46,7 @@ BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 BuildRequires:  pkgconfig(nettle)
+BuildRequires:  clang
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
