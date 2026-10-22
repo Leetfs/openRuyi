@@ -38,6 +38,7 @@ BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
+BuildRequires:  pkgconfig(sqlite3)
 
 %description
 A tool for managing and enforcing a commit signing policy.
