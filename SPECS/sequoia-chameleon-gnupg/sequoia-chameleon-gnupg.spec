@@ -37,6 +37,7 @@ BuildRequires:  crate(rand-distr-0.4) >= 0.4.0
 BuildRequires:  crate(rayon-1/default) >= 1.0.0
 BuildRequires:  crate(reqwest-0.12/default) >= 0.12.0
 BuildRequires:  crate(rpassword-7/default) >= 7.0.0
+BuildRequires:  crate(rusqlite-0.31/default) >= 0.31.0
 
 Requires:       gnupg
 
