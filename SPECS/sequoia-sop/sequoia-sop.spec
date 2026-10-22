@@ -19,6 +19,8 @@ BuildOption(build):  --features cli,cliv
 
 # TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
+# Additional dependencies required by OBS builds.
+BuildRequires:  rust
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
