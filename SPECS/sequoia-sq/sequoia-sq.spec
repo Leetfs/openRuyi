@@ -31,6 +31,7 @@ BuildRequires:  crate(indicatif-0.18/default) >= 0.18.0
 BuildRequires:  crate(regex-1/default) >= 1.0.0
 BuildRequires:  crate(reqwest-0.12/default) >= 0.12.0
 BuildRequires:  crate(rpassword-7/default) >= 7.0.0
+BuildRequires:  crate(sequoia-net-0.30) >= 0.30.0
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
