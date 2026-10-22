@@ -21,6 +21,7 @@ BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
 BuildRequires:  crate(aho-corasick-1/default) >= 1.0.0
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
+BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
