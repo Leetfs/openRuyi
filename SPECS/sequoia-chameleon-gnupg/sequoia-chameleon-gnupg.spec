@@ -76,6 +76,7 @@ BuildRequires:  crate(serde-with-3/default) >= 3.0.0
 BuildRequires:  crate(tar-0.4) >= 0.4.0
 BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 BuildRequires:  crate(botan-0.10) >= 0.10.7
+BuildRequires:  crate(ctor-1) >= 1.0.7
 
 Requires:       gnupg
 
