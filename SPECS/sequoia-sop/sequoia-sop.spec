@@ -27,6 +27,7 @@ BuildRequires:  crate(sop-0.8) >= 0.8.1
 BuildRequires:  crate(sop-0.8/default) >= 0.8.1
 # Additional dependencies required by OBS builds.
 BuildRequires:  crate(sequoia-policy-config-0.8) >= 0.8.2
+BuildRequires:  crate(aes-0.8) >= 0.8.4
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
