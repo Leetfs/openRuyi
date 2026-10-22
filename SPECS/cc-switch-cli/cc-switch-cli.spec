@@ -83,6 +83,7 @@ BuildRequires:  crate(rkyv-0.7/size-32) >= 0.7.46
 BuildRequires:  crate(crossbeam-utils-0.8) >= 0.8.21
 BuildRequires:  crate(arbitrary-1/derive) >= 1.4.1
 BuildRequires:  crate(clap-4/wrap-help) >= 4.5.0
+BuildRequires:  crate(rand-chacha-0.3) >= 0.3.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
