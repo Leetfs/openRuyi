@@ -20,6 +20,8 @@ BuildOption(build):  --features sequoia-openpgp/crypto-nettle
 
 # TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
+# Additional dependencies required by OBS builds.
+BuildRequires:  rust
 
 %description
 Configure Sequoia using a configuration file.
