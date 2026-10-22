@@ -38,6 +38,7 @@ BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
 BuildRequires:  crate(tempfile-3/default) >= 3.0.0
 BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
+BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 
 %description
 A simple OpenPGP signature verification program.
