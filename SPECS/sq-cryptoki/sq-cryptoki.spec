@@ -15,41 +15,28 @@ VCS:            git:https://gitlab.com/sequoia-pgp/sequoia-cryptoki
 Source0:        https://static.crates.io/crates/%{name}/%{version}/download#/%{name}-%{version}.tar.gz
 BuildSystem:    rust
 
-BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
-BuildRequires:  pkgconfig(nettle)
-BuildRequires:  clang
-BuildRequires:  pkgconfig(openssl)
-BuildRequires:  capnproto >= 0.5.2
-BuildRequires:  pkgconfig(sqlite3)
-BuildRequires:  help2man
-BuildRequires:  softhsm
+BuildRequires:  rust-rpm-macros
+# TakoPack-generated dependencies.
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
 BuildRequires:  crate(clap-4/default) >= 4.0.0
-BuildRequires:  crate(dirs-6/default) >= 6.0.0
+BuildRequires:  crate(clap-4/derive) >= 4.0.0
+BuildRequires:  crate(clap-4/env) >= 4.0.0
+BuildRequires:  crate(clap-4/string) >= 4.0.0
+BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
+BuildRequires:  crate(clap-lex-0.7) >= 0.7.0
+BuildRequires:  crate(dirs-5/default) >= 5.0.0
 BuildRequires:  crate(pastey-0.2/default) >= 0.2.0
 BuildRequires:  crate(rpassword-7/default) >= 7.0.0
 BuildRequires:  crate(sequoia-cert-store-0.7/default) >= 0.7.0
 BuildRequires:  crate(sequoia-cryptoki-0.2/default) >= 0.2.0
+BuildRequires:  crate(sequoia-directories-0.1/default) >= 0.1.0
 BuildRequires:  crate(sequoia-keystore-0.7/default) >= 0.7.0
+BuildRequires:  crate(sequoia-openpgp-2) >= 2.4.0
 BuildRequires:  crate(sequoia-policy-config-0.8/default) >= 0.8.0
-BuildRequires:  crate(terminal-size-0.4/default) >= 0.4.4
-BuildRequires:  crate(textwrap-0.16/default) >= 0.16.2
-BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
-BuildRequires:  crate(clap-4/derive) >= 4.0.0
-BuildRequires:  crate(sequoia-openpgp-2/default) >= 2.4.0
-BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
-BuildRequires:  crate(cx448-0.1) >= 0.1.1
-BuildRequires:  crate(eax-0.5) >= 0.5.0
-BuildRequires:  crate(ed25519-2) >= 2.2.3
-BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
-BuildRequires:  crate(hkdf-0.12) >= 0.12.4
-BuildRequires:  crate(num-bigint-dig-0.8) >= 0.8.6
-BuildRequires:  crate(ocb3-0.1) >= 0.1.0
-BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
-BuildRequires:  crate(aes-0.8) >= 0.8.4
-BuildRequires:  crate(block-padding-0.3) >= 0.3.3
+BuildRequires:  crate(terminal-size-0.2/default) >= 0.2.6
+BuildRequires:  crate(textwrap-0.15/default) >= 0.15.0
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
