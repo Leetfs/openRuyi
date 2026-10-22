@@ -20,6 +20,7 @@ BuildRequires:  rust-rpm-macros
 # Additional dependencies required by OBS builds.
 BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
+BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
