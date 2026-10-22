@@ -72,6 +72,7 @@ BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
 BuildRequires:  capnproto >= 0.5.2
+BuildRequires:  help2man
 
 Recommends:     gnupg
 
