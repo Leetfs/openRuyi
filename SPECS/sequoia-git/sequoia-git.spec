@@ -39,6 +39,7 @@ BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
 BuildRequires:  pkgconfig(sqlite3)
+BuildRequires:  libfaketime
 
 %description
 A tool for managing and enforcing a commit signing policy.
