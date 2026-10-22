@@ -41,6 +41,7 @@ BuildRequires:  crate(rusqlite-0.31/default) >= 0.31.0
 BuildRequires:  crate(sequoia-cert-store-0.7) >= 0.7.0
 BuildRequires:  crate(sequoia-gpg-agent-0.6) >= 0.6.0
 BuildRequires:  crate(sequoia-net-0.30) >= 0.30.0
+BuildRequires:  crate(sequoia-policy-config-0.8) >= 0.8.0
 
 Requires:       gnupg
 
