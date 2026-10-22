@@ -65,6 +65,7 @@ BuildRequires:  crate(tachyonfx-0.25/default) >= 0.25.0
 BuildRequires:  crate(tar-0.4/default) >= 0.4.0
 BuildRequires:  crate(tempfile-3/default) >= 3.0.0
 BuildRequires:  crate(toml-0.8/default) >= 0.8.0
+BuildRequires:  crate(tower-http-0.5/default) >= 0.5.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
