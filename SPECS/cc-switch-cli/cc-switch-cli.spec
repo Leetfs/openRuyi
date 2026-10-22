@@ -110,6 +110,7 @@ BuildRequires:  crate(comfy-table-7/default) >= 7.1.0
 BuildRequires:  crate(console-0.15/default) >= 0.15.0
 BuildRequires:  crate(env-logger-0.11/default) >= 0.11.0
 BuildRequires:  crate(indicatif-0.17/default) >= 0.17.0
+BuildRequires:  crate(inquire-0.9/default) >= 0.9.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
