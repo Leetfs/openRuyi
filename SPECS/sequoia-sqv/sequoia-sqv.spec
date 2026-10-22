@@ -73,6 +73,7 @@ BuildRequires:  crate(getrandom-0.4) >= 0.4.2
 BuildRequires:  crate(zeroize-derive-1) >= 1.4.2
 BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
 BuildRequires:  pkgconfig(nettle)
+BuildRequires:  clang
 
 %description
 A simple OpenPGP signature verification program.
