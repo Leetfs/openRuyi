@@ -55,6 +55,7 @@ BuildRequires:  crate(ml-dsa-0.1) >= 0.1.1
 BuildRequires:  crate(ml-kem-0.3) >= 0.3.2
 BuildRequires:  crate(sequoia-openpgp-2/crypto-nettle) >= 2.0.0
 BuildRequires:  crate(ocb3-0.1) >= 0.1.0
+BuildRequires:  crate(openssl-sys-0.9) >= 0.9.117
 
 Recommends:     gnupg
 
