@@ -92,6 +92,7 @@ BuildRequires:  crate(cfb-mode-0.8) >= 0.8.2
 BuildRequires:  crate(ctor-1) >= 1.0.7
 BuildRequires:  crate(des-0.8) >= 0.8.1
 BuildRequires:  crate(dsa-0.6) >= 0.6.3
+BuildRequires:  crate(ecb-0.1) >= 0.1.2
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
