@@ -83,6 +83,7 @@ BuildRequires:  crate(ocb3-0.1) >= 0.1.0
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(block-padding-0.3) >= 0.3.3
+BuildRequires:  crate(blowfish-0.9) >= 0.9.1
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
