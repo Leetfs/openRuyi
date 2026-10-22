@@ -78,6 +78,7 @@ BuildRequires:  crate(hyper-1/full) >= 1.0.0
 BuildRequires:  crate(reqwest-0.12/rustls-tls-native-roots) >= 0.12.0
 BuildRequires:  crate(reqwest-0.12/rustls-tls-webpki-roots) >= 0.12.0
 BuildRequires:  crate(reqwest-0.12/stream) >= 0.12.0
+BuildRequires:  crate(borsh-1/unstable--schema) >= 1.1.1
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
