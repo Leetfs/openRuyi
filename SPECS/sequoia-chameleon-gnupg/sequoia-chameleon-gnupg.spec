@@ -35,6 +35,7 @@ BuildRequires:  crate(percent-encoding-2/default) >= 2.0.0
 BuildRequires:  crate(rand-0.8/default) >= 0.8.0
 BuildRequires:  crate(rand-distr-0.4) >= 0.4.0
 BuildRequires:  crate(rayon-1/default) >= 1.0.0
+BuildRequires:  crate(reqwest-0.12/default) >= 0.12.0
 
 Requires:       gnupg
 
