@@ -46,6 +46,7 @@ BuildRequires:  crate(sequoia-wot-0.14) >= 0.14.0
 BuildRequires:  crate(shellexpand-3/default) >= 3.0.0
 BuildRequires:  crate(editdistancek-1/default) >= 1.0.0
 BuildRequires:  crate(histo-1/default) >= 1.0.0
+BuildRequires:  crate(ntest-0.9/default) >= 0.9.0
 
 Requires:       gnupg
 
