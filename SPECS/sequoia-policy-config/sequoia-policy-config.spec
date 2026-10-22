@@ -39,6 +39,7 @@ BuildRequires:  crate(hkdf-0.12) >= 0.12.4
 BuildRequires:  crate(num-bigint-dig-0.8) >= 0.8.6
 BuildRequires:  crate(ocb3-0.1) >= 0.1.0
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
+BuildRequires:  crate(aes-0.8) >= 0.8.4
 
 %description
 Configure Sequoia using a configuration file.
