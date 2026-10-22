@@ -24,6 +24,7 @@ BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
 BuildRequires:  crate(clap-4/default) >= 4.0.0
 BuildRequires:  crate(clap-lex-0.7) >= 0.7.0
+BuildRequires:  crate(culpa-1/default) >= 1.0.2
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
