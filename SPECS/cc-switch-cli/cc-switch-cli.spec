@@ -113,6 +113,7 @@ BuildRequires:  crate(indicatif-0.17/default) >= 0.17.0
 BuildRequires:  crate(inquire-0.9/default) >= 0.9.0
 BuildRequires:  crate(minisign-verify-0.2/default) >= 0.2.4
 BuildRequires:  crate(ratatui-0.30/default) >= 0.30.0
+BuildRequires:  crate(shlex-1/default) >= 1.3.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
