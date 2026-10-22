@@ -23,6 +23,7 @@ BuildRequires:  crate(anyhow-1/default) >= 1.0.0
 BuildRequires:  crate(base64-0.22/default) >= 0.22.1
 BuildRequires:  crate(buffered-reader-1/default) >= 1.4.0
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.0
+BuildRequires:  crate(daemonize-0.5/default) >= 0.5.0
 
 Requires:       gnupg
 
