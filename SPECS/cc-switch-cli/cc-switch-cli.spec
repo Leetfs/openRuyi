@@ -30,6 +30,8 @@ BuildOption(check):  --skip cli::commands::update::tests::resolve_target_release
 
 # TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
+# Additional dependencies required by OBS builds.
+BuildRequires:  rust
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
