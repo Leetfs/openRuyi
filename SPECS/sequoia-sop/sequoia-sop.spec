@@ -70,6 +70,7 @@ BuildRequires:  crate(zeroize-derive-1) >= 1.4.2
 BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
+BuildRequires:  pkgconfig(sqlite3)
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
