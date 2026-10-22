@@ -86,6 +86,7 @@ BuildRequires:  crate(zeroize-derive-1) >= 1.4.2
 BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
+BuildRequires:  pkgconfig(openssl)
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
