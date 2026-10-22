@@ -33,6 +33,8 @@ BuildRequires:  crate(sequoia-openpgp-2) >= 2.4.0
 BuildRequires:  crate(sequoia-openpgp-2/compression) >= 2.4.0
 BuildRequires:  crate(sequoia-policy-config-0.8) >= 0.8.0
 BuildRequires:  crate(sequoia-policy-config-0.8/default) >= 0.8.0
+# Additional dependencies required by OBS builds.
+BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
 
 %description
 A simple OpenPGP signature verification program.
