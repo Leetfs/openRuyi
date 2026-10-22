@@ -56,6 +56,7 @@ BuildRequires:  crate(terminal-size-0.4/default) >= 0.4.4
 BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 BuildRequires:  crate(blowfish-0.9) >= 0.9.1
+BuildRequires:  crate(botan-0.10) >= 0.10.7
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
