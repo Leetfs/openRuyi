@@ -29,6 +29,7 @@ BuildRequires:  crate(sop-0.8/default) >= 0.8.1
 BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 BuildRequires:  crate(block-padding-0.3) >= 0.3.3
+BuildRequires:  crate(blowfish-0.9) >= 0.9.1
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
