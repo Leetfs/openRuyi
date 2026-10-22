@@ -63,6 +63,7 @@ BuildRequires:  crate(twofish-0.7) >= 0.7.1
 BuildRequires:  crate(x25519-dalek-2) >= 2.0.1
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(sop-0.8/cli) >= 0.8.1
+BuildRequires:  crate(link-section-0.18) >= 0.18.2
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
