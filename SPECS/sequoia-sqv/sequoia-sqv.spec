@@ -54,6 +54,7 @@ BuildRequires:  crate(ml-kem-0.3) >= 0.3.2
 BuildRequires:  crate(sequoia-openpgp-2/crypto-nettle) >= 2.4.0
 BuildRequires:  crate(ocb3-0.1) >= 0.1.0
 BuildRequires:  crate(openssl-sys-0.9) >= 0.9.117
+BuildRequires:  crate(ossl-1) >= 1.5.3
 
 %description
 A simple OpenPGP signature verification program.
