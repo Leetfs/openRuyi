@@ -74,6 +74,7 @@ BuildRequires:  crate(twofish-0.7) >= 0.7.1
 BuildRequires:  crate(x25519-dalek-2) >= 2.0.1
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(predicates-3/default) >= 3.0.0
+BuildRequires:  crate(link-section-0.18) >= 0.18.2
 
 %description
 A simple OpenPGP signature verification program.
