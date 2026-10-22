@@ -63,6 +63,7 @@ BuildRequires:  crate(serde-yaml-0.9/default) >= 0.9.0
 BuildRequires:  crate(shlex-1/default) >= 1.3.0
 BuildRequires:  crate(tachyonfx-0.25/default) >= 0.25.0
 BuildRequires:  crate(tar-0.4/default) >= 0.4.0
+BuildRequires:  crate(tempfile-3/default) >= 3.0.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
