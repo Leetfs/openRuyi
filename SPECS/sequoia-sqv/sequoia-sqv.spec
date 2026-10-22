@@ -30,6 +30,7 @@ BuildRequires:  crate(clap-complete-4/default) >= 4.0.0
 BuildRequires:  crate(sequoia-man-0.3/default) >= 0.3.0
 BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
+BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 
 %description
 A simple OpenPGP signature verification program.
