@@ -17,6 +17,8 @@ BuildSystem:    rust
 
 # TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
+# Additional dependencies required by OBS builds.
+BuildRequires:  rust
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
