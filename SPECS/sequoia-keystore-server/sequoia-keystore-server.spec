@@ -19,6 +19,7 @@ BuildRequires:  rust
 BuildRequires:  rust-rpm-macros
 BuildRequires:  capnproto >= 0.5.2
 BuildRequires:  pkgconfig(nettle)
+BuildRequires:  clang
 # TakoPack-generated dependencies.
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(clap-4/default) >= 4.0.0
