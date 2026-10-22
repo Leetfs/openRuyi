@@ -15,62 +15,20 @@ VCS:            git:https://gitlab.com/sequoia-pgp/sequoia-keystore
 Source0:        https://static.crates.io/crates/%{name}/%{version}/download#/%{name}-%{version}.tar.gz
 BuildSystem:    rust
 
-BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
-BuildRequires:  pkgconfig(nettle)
-BuildRequires:  clang
-BuildRequires:  capnproto >= 0.5.2
-BuildRequires:  help2man
+BuildRequires:  rust-rpm-macros
+# TakoPack-generated dependencies.
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(clap-4/default) >= 4.0.0
-BuildRequires:  crate(dirs-6/default) >= 6.0.0
+BuildRequires:  crate(clap-4/derive) >= 4.0.0
+BuildRequires:  crate(clap-4/env) >= 4.0.0
+BuildRequires:  crate(clap-4/string) >= 4.0.0
+BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
+BuildRequires:  crate(dirs-5/default) >= 5.0.0
 BuildRequires:  crate(sequoia-directories-0.1/default) >= 0.1.0
 BuildRequires:  crate(sequoia-ipc-0.36) >= 0.36.0
 BuildRequires:  crate(sequoia-keystore-0.7/default) >= 0.7.0
-BuildRequires:  crate(clap-4/derive) >= 4.0.0
-BuildRequires:  crate(aes-0.8) >= 0.8.4
-BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
-BuildRequires:  crate(block-padding-0.3) >= 0.3.3
-BuildRequires:  crate(blowfish-0.9) >= 0.9.1
-BuildRequires:  crate(botan-0.10) >= 0.10.7
-BuildRequires:  crate(camellia-0.1) >= 0.1.0
-BuildRequires:  crate(cast5-0.11) >= 0.11.1
-BuildRequires:  crate(cbc-0.1) >= 0.1.2
-BuildRequires:  crate(cfb-mode-0.8) >= 0.8.2
-BuildRequires:  crate(ctor-1) >= 1.0.7
-BuildRequires:  crate(cx448-0.1) >= 0.1.1
-BuildRequires:  crate(des-0.8) >= 0.8.1
-BuildRequires:  crate(dsa-0.6) >= 0.6.3
-BuildRequires:  crate(eax-0.5) >= 0.5.0
-BuildRequires:  crate(ecb-0.1) >= 0.1.2
-BuildRequires:  crate(ecdsa-0.16) >= 0.16.9
-BuildRequires:  crate(ed25519-2) >= 2.2.3
-BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
-BuildRequires:  crate(hkdf-0.12) >= 0.12.4
-BuildRequires:  crate(idea-0.5) >= 0.5.1
-BuildRequires:  crate(md-5-0.10) >= 0.10.6
-BuildRequires:  crate(ml-dsa-0.1) >= 0.1.1
-BuildRequires:  crate(ml-kem-0.3) >= 0.3.2
-BuildRequires:  crate(sequoia-openpgp-2/crypto-nettle) >= 2.0.0
-BuildRequires:  crate(ocb3-0.1) >= 0.1.0
-BuildRequires:  crate(openssl-sys-0.9) >= 0.9.117
-BuildRequires:  crate(ossl-1) >= 1.5.3
-BuildRequires:  crate(p256-0.13) >= 0.13.2
-BuildRequires:  crate(p384-0.13) >= 0.13.1
-BuildRequires:  crate(p521-0.13) >= 0.13.3
-BuildRequires:  crate(rand-0.10) >= 0.10.1
-BuildRequires:  crate(ripemd-0.1) >= 0.1.3
-BuildRequires:  crate(rsa-0.9) >= 0.9.10
-BuildRequires:  crate(slh-dsa-0.0.3) >= 0.0.3
-BuildRequires:  crate(twofish-0.7) >= 0.7.1
-BuildRequires:  crate(x25519-dalek-2) >= 2.0.1
-BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
-BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
-BuildRequires:  crate(link-section-0.18) >= 0.18.2
-BuildRequires:  crate(linktime-proc-macro-0.2) >= 0.2.0
-BuildRequires:  crate(getrandom-0.4) >= 0.4.2
-BuildRequires:  crate(zeroize-derive-1) >= 1.4.2
-BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
+BuildRequires:  crate(sequoia-openpgp-2) >= 2.0.0
 
 Recommends:     gnupg
 
