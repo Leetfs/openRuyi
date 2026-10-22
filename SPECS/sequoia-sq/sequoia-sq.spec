@@ -19,6 +19,7 @@ BuildSystem:    rust
 BuildRequires:  rust-rpm-macros
 # Additional dependencies required by OBS builds.
 BuildRequires:  rust
+BuildRequires:  crate(aho-corasick-1/default) >= 1.0.0
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
