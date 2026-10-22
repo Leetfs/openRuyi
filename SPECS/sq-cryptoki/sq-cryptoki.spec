@@ -44,6 +44,7 @@ BuildRequires:  crate(num-bigint-dig-0.8) >= 0.8.6
 BuildRequires:  crate(ocb3-0.1) >= 0.1.0
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(aes-0.8) >= 0.8.4
+BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
