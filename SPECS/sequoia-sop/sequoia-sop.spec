@@ -42,6 +42,7 @@ BuildRequires:  crate(des-0.8) >= 0.8.1
 BuildRequires:  crate(dsa-0.6) >= 0.6.3
 BuildRequires:  crate(eax-0.5) >= 0.5.0
 BuildRequires:  crate(ecb-0.1) >= 0.1.2
+BuildRequires:  crate(ecdsa-0.16) >= 0.16.9
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
