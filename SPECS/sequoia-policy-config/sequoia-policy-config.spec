@@ -43,6 +43,7 @@ BuildRequires:  crate(aes-0.8) >= 0.8.4
 BuildRequires:  crate(vcpkg-0.2) >= 0.2.15
 BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 BuildRequires:  pkgconfig(nettle)
+BuildRequires:  clang
 
 %description
 Configure Sequoia using a configuration file.
