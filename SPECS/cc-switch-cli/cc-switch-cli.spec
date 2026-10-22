@@ -67,6 +67,7 @@ BuildRequires:  crate(tempfile-3/default) >= 3.0.0
 BuildRequires:  crate(toml-0.8/default) >= 0.8.0
 BuildRequires:  crate(tower-http-0.5/default) >= 0.5.0
 BuildRequires:  crate(unicode-width-0.1/default) >= 0.1.0
+BuildRequires:  crate(which-6/default) >= 6.0.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
