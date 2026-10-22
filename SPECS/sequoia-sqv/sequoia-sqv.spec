@@ -21,6 +21,7 @@ BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.10
+BuildRequires:  crate(clap-4/default) >= 4.0.0
 
 %description
 A simple OpenPGP signature verification program.
