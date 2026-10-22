@@ -30,6 +30,7 @@ BuildRequires:  crate(sequoia-cryptoki-0.2/default) >= 0.2.0
 BuildRequires:  crate(sequoia-keystore-0.7/default) >= 0.7.0
 BuildRequires:  crate(sequoia-policy-config-0.8/default) >= 0.8.0
 BuildRequires:  crate(terminal-size-0.4/default) >= 0.4.4
+BuildRequires:  crate(textwrap-0.16/default) >= 0.16.2
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
