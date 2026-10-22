@@ -51,6 +51,7 @@ BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
 BuildRequires:  crate(hkdf-0.12) >= 0.12.4
 BuildRequires:  crate(num-bigint-dig-0.8) >= 0.8.6
 BuildRequires:  crate(ocb3-0.1) >= 0.1.0
+BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
