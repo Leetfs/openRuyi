@@ -68,6 +68,7 @@ BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(predicates-3/default) >= 3.0.0
 BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
 BuildRequires:  crate(link-section-0.18) >= 0.18.2
+BuildRequires:  crate(linktime-proc-macro-0.2) >= 0.2.0
 
 %description
 A simple OpenPGP signature verification program.
