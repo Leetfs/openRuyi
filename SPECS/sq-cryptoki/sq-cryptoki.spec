@@ -51,6 +51,7 @@ BuildRequires:  pkgconfig(openssl)
 BuildRequires:  capnproto >= 0.5.2
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  help2man
+BuildRequires:  softhsm
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
