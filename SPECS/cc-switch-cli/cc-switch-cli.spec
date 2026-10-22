@@ -36,6 +36,7 @@ BuildRequires:  crate(anyhow-1/default) >= 1.0.0
 BuildRequires:  crate(async-stream-0.3/default) >= 0.3.0
 BuildRequires:  crate(axum-0.7/default) >= 0.7.0
 BuildRequires:  crate(base64-0.22/default) >= 0.22.0
+BuildRequires:  crate(brotli-7/default) >= 7.0.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
