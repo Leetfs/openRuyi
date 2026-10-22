@@ -70,6 +70,7 @@ BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
 BuildRequires:  crate(link-section-0.18) >= 0.18.2
 BuildRequires:  crate(linktime-proc-macro-0.2) >= 0.2.0
 BuildRequires:  crate(getrandom-0.4) >= 0.4.2
+BuildRequires:  crate(zeroize-derive-1) >= 1.4.2
 
 Recommends:     gnupg
 
