@@ -42,6 +42,7 @@ BuildRequires:  crate(dsa-0.6) >= 0.6.3
 BuildRequires:  crate(eax-0.5) >= 0.5.0
 BuildRequires:  crate(ecb-0.1) >= 0.1.2
 BuildRequires:  crate(ecdsa-0.16) >= 0.16.9
+BuildRequires:  crate(ed25519-2) >= 2.2.3
 
 Recommends:     gnupg
 
