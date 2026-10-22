@@ -72,6 +72,7 @@ BuildRequires:  crate(link-section-0.18) >= 0.18.2
 BuildRequires:  crate(linktime-proc-macro-0.2) >= 0.2.0
 BuildRequires:  crate(block-padding-0.3) >= 0.3.3
 BuildRequires:  crate(prettyplease-0.2) >= 0.2.37
+BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
 
 Requires:       gnupg
 
