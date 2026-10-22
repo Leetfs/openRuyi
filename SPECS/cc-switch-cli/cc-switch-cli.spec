@@ -46,6 +46,7 @@ BuildRequires:  crate(console-0.15/default) >= 0.15.0
 BuildRequires:  crate(dirs-5/default) >= 5.0.0
 BuildRequires:  crate(env-logger-0.11/default) >= 0.11.0
 BuildRequires:  crate(flate2-1/default) >= 1.0.0
+BuildRequires:  crate(futures-0.3/default) >= 0.3.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
