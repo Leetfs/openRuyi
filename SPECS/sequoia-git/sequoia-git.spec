@@ -40,6 +40,7 @@ BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  libfaketime
+BuildRequires:  git-core
 
 %description
 A tool for managing and enforcing a commit signing policy.
