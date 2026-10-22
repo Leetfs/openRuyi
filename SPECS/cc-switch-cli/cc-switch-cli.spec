@@ -104,6 +104,7 @@ BuildRequires:  crate(zip-2/default) >= 2.2.0
 BuildRequires:  crate(zstd-0.13/default) >= 0.13.0
 # Additional dependencies required by OBS builds.
 BuildRequires:  crate(clap-4/default) >= 4.5.0
+BuildRequires:  crate(clap-complete-4/default) >= 4.5.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
