@@ -27,6 +27,7 @@ BuildRequires:  crate(sequoia-policy-config-0.8) >= 0.8.2
 BuildRequires:  crate(sequoia-wot-0.15) >= 0.15.0
 BuildRequires:  crate(sop-0.8/default) >= 0.8.1
 BuildRequires:  crate(aes-0.8) >= 0.8.4
+BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 
 %description
 An implementation of the Stateless OpenPGP Interface using Sequoia.
