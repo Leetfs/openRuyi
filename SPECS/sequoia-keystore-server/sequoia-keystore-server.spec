@@ -38,6 +38,7 @@ BuildRequires:  crate(botan-0.10) >= 0.10.7
 BuildRequires:  crate(camellia-0.1) >= 0.1.0
 BuildRequires:  crate(cast5-0.11) >= 0.11.1
 BuildRequires:  crate(cbc-0.1) >= 0.1.2
+BuildRequires:  crate(cfb-mode-0.8) >= 0.8.2
 
 Recommends:     gnupg
 
