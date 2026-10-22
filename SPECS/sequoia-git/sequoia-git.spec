@@ -17,6 +17,8 @@ BuildSystem:    rust
 
 # TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
+# Additional dependencies required by OBS builds.
+BuildRequires:  rust
 
 %description
 A tool for managing and enforcing a commit signing policy.
