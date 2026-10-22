@@ -21,6 +21,7 @@ BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.0
 BuildRequires:  crate(base64-0.22/default) >= 0.22.1
+BuildRequires:  crate(buffered-reader-1/default) >= 1.4.0
 
 Requires:       gnupg
 
