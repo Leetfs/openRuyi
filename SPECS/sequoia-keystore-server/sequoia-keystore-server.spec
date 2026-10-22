@@ -21,6 +21,7 @@ BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(clap-4/default) >= 4.0.0
+BuildRequires:  crate(dirs-6/default) >= 6.0.0
 
 Recommends:     gnupg
 
