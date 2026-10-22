@@ -35,6 +35,7 @@ BuildRequires:  crate(sequoia-net-0.30) >= 0.30.0
 BuildRequires:  crate(sequoia-policy-config-0.8/default) >= 0.8.0
 BuildRequires:  crate(sqz-0.1/default) >= 0.1.0
 BuildRequires:  crate(subplotlib-0.12/default) >= 0.12.0
+BuildRequires:  crate(assert-cmd-2/default) >= 2.0.0
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
