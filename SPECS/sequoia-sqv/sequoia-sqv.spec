@@ -46,6 +46,7 @@ BuildRequires:  crate(ecb-0.1) >= 0.1.2
 BuildRequires:  crate(ecdsa-0.16) >= 0.16.9
 BuildRequires:  crate(ed25519-2) >= 2.2.3
 BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
+BuildRequires:  crate(hkdf-0.12) >= 0.12.4
 
 %description
 A simple OpenPGP signature verification program.
