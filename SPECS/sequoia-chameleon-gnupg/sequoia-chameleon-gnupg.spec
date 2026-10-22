@@ -71,6 +71,7 @@ BuildRequires:  crate(tokio-1/rt-multi-thread) >= 1.19.0
 BuildRequires:  crate(editdistancek-1/default) >= 1.0.0
 BuildRequires:  crate(histo-1/default) >= 1.0.0
 BuildRequires:  crate(ntest-0.9/default) >= 0.9.0
+BuildRequires:  crate(pty-process-0.4) >= 0.4.0
 
 Requires:       gnupg
 
