@@ -24,6 +24,7 @@ BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
 BuildRequires:  crate(clap-4/default) >= 4.0.0
 BuildRequires:  crate(dirs-6/default) >= 6.0.0
 BuildRequires:  crate(pastey-0.2/default) >= 0.2.0
+BuildRequires:  crate(rpassword-7/default) >= 7.0.0
 
 %description
 Tool for working with PKCS#11 devices (cryptokis) from Sequoia.
