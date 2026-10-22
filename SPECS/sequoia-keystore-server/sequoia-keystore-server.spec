@@ -24,6 +24,7 @@ BuildRequires:  crate(clap-4/default) >= 4.0.0
 BuildRequires:  crate(dirs-6/default) >= 6.0.0
 BuildRequires:  crate(sequoia-directories-0.1/default) >= 0.1.0
 BuildRequires:  crate(sequoia-ipc-0.36) >= 0.36.0
+BuildRequires:  crate(sequoia-keystore-0.7/default) >= 0.7.0
 
 Recommends:     gnupg
 
