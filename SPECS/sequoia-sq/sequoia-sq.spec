@@ -40,6 +40,7 @@ BuildRequires:  crate(clap-complete-4/default) >= 4.0.0
 BuildRequires:  crate(roff-0.2/default) >= 0.2.1
 BuildRequires:  crate(sequoia-man-0.3/default) >= 0.3.0
 BuildRequires:  crate(subplot-build-0.12/default) >= 0.12.0
+BuildRequires:  crate(reqwest-0.12/hickory-dns) >= 0.12.0
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
