@@ -58,6 +58,7 @@ BuildRequires:  crate(ratatui-0.30/default) >= 0.30.0
 BuildRequires:  crate(reqwest-0.12/json) >= 0.12.0
 BuildRequires:  crate(rquickjs-0.8/default) >= 0.8.0
 BuildRequires:  crate(rusqlite-0.31/default) >= 0.31.0
+BuildRequires:  crate(rust-decimal-1) >= 1.33.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
