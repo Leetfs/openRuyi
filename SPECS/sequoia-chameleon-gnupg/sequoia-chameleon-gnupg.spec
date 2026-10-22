@@ -81,6 +81,7 @@ BuildRequires:  crate(cx448-0.1) >= 0.1.1
 BuildRequires:  crate(eax-0.5) >= 0.5.0
 BuildRequires:  crate(ed25519-2) >= 2.2.3
 BuildRequires:  crate(ed25519-dalek-2) >= 2.2.0
+BuildRequires:  crate(hkdf-0.12) >= 0.12.4
 
 Requires:       gnupg
 
