@@ -18,6 +18,7 @@ BuildSystem:    rust
 BuildRequires:  rust
 BuildRequires:  rust-rpm-macros
 BuildRequires:  pkgconfig(nettle)
+BuildRequires:  clang
 # TakoPack-generated dependencies.
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
