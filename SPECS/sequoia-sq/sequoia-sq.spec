@@ -72,6 +72,7 @@ BuildRequires:  crate(ml-dsa-0.1) >= 0.1.1
 BuildRequires:  crate(ml-kem-0.3) >= 0.3.2
 BuildRequires:  crate(ossl-1) >= 1.5.3
 BuildRequires:  crate(p256-0.13) >= 0.13.2
+BuildRequires:  crate(p384-0.13) >= 0.13.1
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
