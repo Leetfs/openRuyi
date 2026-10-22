@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(openssl)
 BuildRequires:  capnproto >= 0.5.2
 BuildRequires:  pkgconfig(sqlite3)
 BuildRequires:  help2man
+BuildRequires:  softhsm
 # TakoPack-generated dependencies.
 BuildRequires:  crate(anyhow-1/default) >= 1.0.18
 BuildRequires:  crate(chrono-0.4/default) >= 0.4.38
