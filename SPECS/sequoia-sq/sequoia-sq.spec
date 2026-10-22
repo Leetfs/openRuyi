@@ -88,6 +88,7 @@ BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  capnproto >= 0.5.2
+BuildRequires:  pkgconfig(sqlite3)
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
