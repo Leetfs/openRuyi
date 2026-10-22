@@ -51,6 +51,7 @@ BuildRequires:  crate(hmac-0.12/default) >= 0.12.0
 BuildRequires:  crate(indexmap-2/default) >= 2.0.0
 BuildRequires:  crate(indicatif-0.17/default) >= 0.17.0
 BuildRequires:  crate(inquire-0.9/default) >= 0.9.0
+BuildRequires:  crate(json-five-0.3/default) >= 0.3.1
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
