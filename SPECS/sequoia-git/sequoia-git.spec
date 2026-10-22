@@ -32,6 +32,7 @@ BuildRequires:  crate(toml-0.8/default) >= 0.8.0
 BuildRequires:  crate(clap-complete-4/default) >= 4.0.0
 BuildRequires:  crate(clap-mangen-0.2/default) >= 0.2.0
 BuildRequires:  crate(sequoia-man-0.3/default) >= 0.3.0
+BuildRequires:  crate(sequoia-openpgp-2/default) >= 2.0.0
 
 %description
 A tool for managing and enforcing a commit signing policy.
