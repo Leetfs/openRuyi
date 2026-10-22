@@ -39,6 +39,7 @@ BuildRequires:  crate(ctor-1) >= 1.0.7
 BuildRequires:  crate(cx448-0.1) >= 0.1.1
 BuildRequires:  crate(des-0.8) >= 0.8.1
 BuildRequires:  crate(dsa-0.6) >= 0.6.3
+BuildRequires:  crate(eax-0.5) >= 0.5.0
 
 Recommends:     gnupg
 
