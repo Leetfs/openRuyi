@@ -65,6 +65,8 @@ BuildRequires:  crate(thiserror-1/default) >= 1.0.0
 BuildRequires:  crate(tokio-1/default) >= 1.13.1
 BuildRequires:  crate(typenum-1) >= 1.0.0
 BuildRequires:  crate(typenum-1/default) >= 1.0.0
+# Additional dependencies required by OBS builds.
+BuildRequires:  crate(culpa-1/default) >= 1.0.2
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
