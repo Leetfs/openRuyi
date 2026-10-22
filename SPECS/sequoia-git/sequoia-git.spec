@@ -21,6 +21,7 @@ BuildRequires:  rust-rpm-macros
 BuildRequires:  rust
 BuildRequires:  crate(anyhow-1/default) >= 1.0.0
 BuildRequires:  crate(buffered-reader-1/default) >= 1.4.0
+BuildRequires:  crate(clap-4/default) >= 4.0.0
 
 %description
 A tool for managing and enforcing a commit signing policy.
