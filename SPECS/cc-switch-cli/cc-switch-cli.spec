@@ -125,6 +125,7 @@ BuildRequires:  crate(winreg-0.52) >= 0.52.0
 BuildRequires:  crate(clap-4/derive) >= 4.5.0
 BuildRequires:  crate(crossbeam-utils-0.8) >= 0.8.21
 BuildRequires:  crate(arbitrary-1/derive) >= 1.4.1
+BuildRequires:  crate(clap-4/wrap-help) >= 4.5.0
 
 %description
 CC Switch CLI provides a terminal interface for managing providers,
