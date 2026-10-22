@@ -76,6 +76,7 @@ BuildRequires:  crate(annotate-snippets-0.11) >= 0.11.5
 BuildRequires:  pkgconfig(openssl)
 BuildRequires:  pkgconfig(nettle)
 BuildRequires:  clang
+BuildRequires:  capnproto >= 0.5.2
 
 Requires:       gnupg
 
