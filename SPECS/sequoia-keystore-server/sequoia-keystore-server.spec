@@ -53,6 +53,7 @@ BuildRequires:  crate(sequoia-openpgp-2/crypto-nettle) >= 2.0.0
 BuildRequires:  crate(ocb3-0.1) >= 0.1.0
 BuildRequires:  crate(openssl-sys-0.9) >= 0.9.117
 BuildRequires:  crate(ossl-1) >= 1.5.3
+BuildRequires:  crate(p256-0.13) >= 0.13.2
 
 Recommends:     gnupg
 
