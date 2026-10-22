@@ -63,6 +63,7 @@ BuildRequires:  crate(slh-dsa-0.0.3) >= 0.0.3
 BuildRequires:  crate(twofish-0.7) >= 0.7.1
 BuildRequires:  crate(x25519-dalek-2) >= 2.0.1
 BuildRequires:  crate(win-crypto-ng-0.5) >= 0.5.1
+BuildRequires:  crate(clap-4/wrap-help) >= 4.0.0
 
 Recommends:     gnupg
 
