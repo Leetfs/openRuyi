@@ -17,6 +17,8 @@ BuildSystem:    rust
 
 # TakoPack-generated dependencies.
 BuildRequires:  rust-rpm-macros
+# Additional dependencies required by OBS builds.
+BuildRequires:  rust
 
 %description
 A simple OpenPGP signature verification program.
