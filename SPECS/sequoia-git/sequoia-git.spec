@@ -30,6 +30,7 @@ BuildRequires:  crate(sequoia-directories-0.1/default) >= 0.1.0
 BuildRequires:  crate(sequoia-net-0.30/default) >= 0.30.0
 BuildRequires:  crate(toml-0.8/default) >= 0.8.0
 BuildRequires:  crate(clap-complete-4/default) >= 4.0.0
+BuildRequires:  crate(clap-mangen-0.2/default) >= 0.2.0
 
 %description
 A tool for managing and enforcing a commit signing policy.
