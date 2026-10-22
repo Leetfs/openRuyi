@@ -53,6 +53,7 @@ BuildRequires:  crate(tar-0.4) >= 0.4.0
 BuildRequires:  crate(clap-4/default) >= 4.4.18
 BuildRequires:  crate(clap-complete-4/default) >= 4.4.9
 BuildRequires:  crate(clap-mangen-0.2/default) >= 0.2.19
+BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 
 Requires:       gnupg
 
