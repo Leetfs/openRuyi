@@ -43,6 +43,7 @@ BuildRequires:  crate(subplot-build-0.12/default) >= 0.12.0
 BuildRequires:  crate(reqwest-0.12/hickory-dns) >= 0.12.0
 BuildRequires:  crate(reqwest-0.12/stream) >= 0.12.0
 BuildRequires:  crate(predicates-3/default) >= 3.1.4
+BuildRequires:  crate(aes-gcm-0.10) >= 0.10.3
 
 Recommends:     gnupg
 Recommends:     sequoia-keystore-server
