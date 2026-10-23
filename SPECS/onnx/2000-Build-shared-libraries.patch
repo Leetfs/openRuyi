@@ -1,36 +1,87 @@
-From e6c8bf2286ee4f4e3f5fd34687ab2c730e8b9754 Mon Sep 17 00:00:00 2001
 From: misaka00251 <liuxin@iscas.ac.cn>
 Date: Wed, 23 Sep 2026 12:20:41 +0800
 Subject: [PATCH] build: build shared onnx libraries
 
-Signed-off-by: misaka00251 <liuxin@iscas.ac.cn>
----
- CMakeLists.txt | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Keep generated protobuf objects in libonnx_proto and link libonnx to it.
+Both libraries can then be loaded together without registering descriptors
+twice. Adapt the source list to ONNX 1.23.2, which adds core sources with
+target_sources() in its subdirectories. Export the C++ entry points when
+building the shared library so the upstream gtests and C++ consumers can
+link against the same implementation.
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 81942ec96..fca259147 100644
+Link the Python binding to these shared libraries as well, so loading it
+alongside a C++ consumer uses one set of Protobuf descriptor registrations.
+Load Protobuf's CMake targets before importing the public ONNX link interface.
+
+Reference: https://github.com/onnx/onnx/issues/6094
+Status: Not submitted upstream.
+Adapted-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Signed-off-by: misaka00251 <liuxin@iscas.ac.cn>
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -412,14 +412,16 @@ if(ONNX_USE_LITE_PROTO)
-     set(LINKED_PROTOBUF_TARGET protobuf::libprotobuf-lite)
-   endif()
- endif()
--add_library(onnx_proto ${ONNX_PROTO_SRCS})
-+add_library(onnx_proto SHARED ${ONNX_PROTO_SRCS})
+@@ -555,27 +555,23 @@
+ # compile them), make onnx_proto depend on onnx_proto_headers so Xcode treats
+ # it as the owner of that custom command instead of erroring out.
+ add_library(onnx_proto ${ONNX_PROTO_SRCS})
 +set_target_properties(onnx_proto PROPERTIES VERSION ${ONNX_VERSION} SOVERSION ${ONNX_VERSION})
  add_onnx_global_defines(onnx_proto)
+ add_dependencies(onnx_proto onnx_proto_gen)
+ add_dependencies(onnx_proto onnx_proto_headers)
  
- # Keep generated protobuf objects in onnx_proto only. Embedding a second copy
- # in onnx causes duplicate descriptor registration when both libraries are
- # loaded in the same process ("File already exists in database").
--add_library(onnx ${ONNX_SRCS})
-+add_library(onnx SHARED ${ONNX_SRCS})
- target_link_libraries(onnx PUBLIC onnx_proto)
+ # Core library. Hand-written sources come from target_sources(onnx ...) in the
+ # subdirectories; the protobuf objects are pulled in from onnx_proto.
+-add_library(onnx $<TARGET_OBJECTS:onnx_proto>)
++add_library(onnx)
+ add_subdirectory(onnx)
+-add_dependencies(onnx onnx_proto)
+-set_target_properties(onnx PROPERTIES CXX_VISIBILITY_PRESET hidden)
++target_link_libraries(onnx PUBLIC onnx_proto)
 +set_target_properties(onnx PROPERTIES VERSION ${ONNX_VERSION} SOVERSION ${ONNX_VERSION})
- set_source_files_properties(${ONNX_SRCS} PROPERTIES CXX_VISIBILITY_PRESET hidden)
++if(NOT BUILD_SHARED_LIBS)
++  set_target_properties(onnx PROPERTIES CXX_VISIBILITY_PRESET hidden)
++endif()
  add_onnx_global_defines(onnx)
  
--- 
-2.55.0
-
+ if(ONNX_BUILD_PYTHON)
+-  if(BUILD_SHARED_LIBS)
+-    # The extension links ONNX internals not on the public ONNX_API surface,
+-    # which a hidden-visibility shared libonnx does not export. The wheel always
+-    # builds onnx statically; a shared libonnx is for C++ use only.
+-    message(FATAL_ERROR
+-      "ONNX_BUILD_PYTHON=ON requires a static onnx; do not combine it with "
+-      "BUILD_SHARED_LIBS=ON. Use ONNX_BUILD_PYTHON=OFF to build a shared libonnx.")
+-  endif()
+   # find system nanobind
+   if(NOT DEFINED nanobind_DIR OR "${nanobind_DIR}" STREQUAL "")
+     execute_process(
+@@ -615,8 +611,12 @@
+   # Force-load the whole (static) archive so the operator schemas' static
+   # initializers are not dropped as apparently-unused. $<LINK_LIBRARY:WHOLE_ARCHIVE,...>
+   # is the portable --whole-archive / -force_load / /WHOLEARCHIVE spelling.
+-  target_link_libraries(onnx_cpp2py_export PRIVATE
+-    $<LINK_LIBRARY:WHOLE_ARCHIVE,onnx>)
++  if(BUILD_SHARED_LIBS)
++    target_link_libraries(onnx_cpp2py_export PRIVATE onnx)
++  else()
++    target_link_libraries(onnx_cpp2py_export PRIVATE
++      $<LINK_LIBRARY:WHOLE_ARCHIVE,onnx>)
++  endif()
+ endif()
+ 
+ add_onnx_compile_options(onnx_proto)
+--- a/cmake/ONNXConfig.cmake.in
++++ b/cmake/ONNXConfig.cmake.in
+@@ -4,9 +4,8 @@
+ # library version information
+ set(ONNX_VERSION "@ONNX_VERSION@")
+ 
+-if(NOT @ONNX_USE_PROTOBUF_SHARED_LIBS@)
+-  find_package(Protobuf REQUIRED CONFIG)
+-endif()
++include(CMakeFindDependencyMacro)
++find_dependency(Protobuf CONFIG)
+ 
+ # import targets
+ include ("${CMAKE_CURRENT_LIST_DIR}/ONNXTargets.cmake")

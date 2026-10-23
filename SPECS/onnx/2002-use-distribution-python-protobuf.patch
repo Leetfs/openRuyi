@@ -1,0 +1,24 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Fri, 23 Oct 2026 03:10:00 +0800
+Subject: [PATCH] build: use distribution Python Protobuf bindings
+
+The upstream build pin requires Protobuf 6.31.1, while openRuyi provides
+7.35.1. Use the same minimum version as the runtime dependency so the
+build can use the distribution code generator bindings.
+
+Reference: https://github.com/onnx/onnx/blob/v1.23.2/pyproject.toml
+Status: Not submitted upstream.
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/pyproject.toml b/pyproject.toml
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ 
+ [build-system]
+-requires = ["scikit-build-core>=0.11", "protobuf==6.31.1"]
++requires = ["scikit-build-core>=0.11", "protobuf>=6.31.1"]
+ build-backend = "scikit_build_core.build"
+ 
+ [project]
