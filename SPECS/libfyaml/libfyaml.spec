@@ -18,7 +18,10 @@ Source1:        LICENSE-GPL-2.0
 Source2:        LICENSE-BSD-2-Clause
 BuildSystem:    autotools
 
-BuildOption(conf):  --enable-static
+# Link private API tests without installing a static library.
+Patch2000:      2000-fix-shared-only-test-linking.patch
+
+BuildOption(conf):  --disable-static
 BuildOption(conf):  --disable-network
 
 BuildRequires:  autoconf
@@ -45,9 +48,6 @@ cp %{SOURCE2} .
 
 %conf -p
 autoreconf -fiv
-
-%install -a
-rm -f %{buildroot}%{_libdir}/libfyaml.a
 
 %files
 %doc README.md AUTHORS
