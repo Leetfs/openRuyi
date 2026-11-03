@@ -1,18 +1,19 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname distlib
 
 Name:           python-%{srcname}
-Version:        0.4.0
+Version:        0.4.3
 Release:        %autorelease
 Summary:        Distribution utilities
 License:        Python-2.0
 URL:            https://github.com/pypa/distlib
-#!RemoteAsset:  sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d
+#!RemoteAsset:  sha256:f152097224a0ae24be5a0f6bae1b9359af82133bce63f98a95f86cae1aede9ed
 Source0:        https://files.pythonhosted.org/packages/source/d/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
