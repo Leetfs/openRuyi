@@ -1,0 +1,110 @@
+# SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
+# SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+#
+# SPDX-License-Identifier: MulanPSL-2.0
+
+%global bootstrap_java %{_datadir}/java/javapackages-bootstrap
+%global bsh_dir %{_datadir}/maven-repository/org/apache-extras/beanshell/bsh/%{version}
+%define bsh_ant %{_libexecdir}/javapackages-bootstrap/ant -Dant.build.javac.source=8 -Dant.build.javac.target=8 -Djunit.jar=%{bootstrap_java}/junit.jar -Dhamcrest.jar=%{bootstrap_java}/hamcrest-core.jar -Dexclude-bsf=bsh/util/BeanShellBSFEngine.java,TestBshBSF.java
+
+Name:           beanshell
+Version:        2.1.1
+Release:        %autorelease
+Summary:        Embeddable Java source interpreter
+License:        Apache-2.0 AND BSD-3-Clause
+URL:            https://beanshell.github.io/
+VCS:            git:https://github.com/beanshell/beanshell
+#!RemoteAsset:  sha256:12dada19d9554e3133d51f809e67d604e400b4c81ac70149db502de873741ec3
+Source0:        https://github.com/beanshell/beanshell/archive/refs/tags/%{version}.tar.gz
+Source1:        check-results.py
+BuildArch:      noarch
+
+BuildRequires:  java-25-openjdk-devel
+BuildRequires:  javapackages-bootstrap
+BuildRequires:  python3
+BuildRequires:  xorg-server-xvfb
+Provides:       mvn(org.apache-extras.beanshell:bsh) == %{version}
+Requires:       java-25-openjdk
+
+%patchlist
+# https://github.com/beanshell/beanshell/commit/4ed14a79a4a9e5de27c2bc0a29d95d1fae86f28d
+1000-report-filtered-junit-methods.patch
+# https://github.com/beanshell/beanshell/commit/b01a7aff570ace1c66eef03133efc30ad67086f1
+1001-import-script-engine-factory-in-test.patch
+# https://github.com/beanshell/beanshell/commit/ca6d368aeef66908e4e9550ed93f23d896d07304
+1002-recognize-binary-number-literals.patch
+# https://github.com/beanshell/beanshell/commit/3afe1c973b012bc78754fbad0e7f7c9e36a82ef4
+1003-select-exported-java-methods.patch
+# https://github.com/beanshell/beanshell/commit/fa7c10c341de6c9cb22c780a209737bcb76adccd
+1004-restore-class-static-initializers.patch
+# https://github.com/beanshell/beanshell/commit/9a3f3e411bd7c651a3642a41cbfdb6687d24bc9f
+1005-honor-nonpublic-member-declarations.patch
+# https://github.com/beanshell/beanshell/commit/c98a9741cd3f2690c89927bfc60eb6849d71aae0
+1006-apply-access-to-public-field-lookup.patch
+# https://github.com/beanshell/beanshell/blob/2.1.1/build.xml
+2000-select-ant-java-level.patch
+# https://github.com/beanshell/beanshell/tree/2.1.1/tests
+2001-isolate-script-test-fixtures.patch
+
+%description
+BeanShell evaluates Java expressions and scripts. Applications can embed
+the interpreter through its Java API or the standard Java scripting
+interface.
+
+%prep
+%autosetup -p1
+cp -p src/bsh/org/objectweb/asm/LICENSE.txt LICENSE.asm
+# Regenerate the lexer and parser from the patched grammar.
+rm -f src/bsh/bsh.jj src/bsh/Parser.java src/bsh/JavaCharStream.java src/bsh/TokenMgrError.java
+rm -f lib/*.jar
+ln -s %{bootstrap_java}/javacc.jar lib/javacc.jar
+ln -s %{bootstrap_java}/junit.jar lib/junit.jar
+ln -s %{bootstrap_java}/hamcrest-core.jar lib/hamcrest-core.jar
+ln -s %{bootstrap_java}/javax.servlet-api.jar lib/servlet.jar
+
+%build
+%{bsh_ant} jarall
+
+%install
+install -Dm644 dist/bsh-%{version}.jar %{buildroot}%{bsh_dir}/bsh-%{version}.jar
+install -Dm644 pom.xml %{buildroot}%{bsh_dir}/bsh-%{version}.pom
+install -d %{buildroot}%{_bindir} %{buildroot}%{_datadir}/maven-metadata
+cat > %{buildroot}%{_bindir}/bsh <<'EOF'
+#!/bin/sh
+exec java -cp %{bsh_dir}/bsh-%{version}.jar bsh.Interpreter "$@"
+EOF
+chmod 755 %{buildroot}%{_bindir}/bsh
+cat > %{buildroot}%{_datadir}/maven-metadata/beanshell.xml <<EOF
+<metadata><artifacts>
+  <artifact><groupId>org.apache-extras.beanshell</groupId><artifactId>bsh</artifactId><version>%{version}</version><path>%{bsh_dir}/bsh-%{version}.jar</path></artifact>
+  <artifact><groupId>org.apache-extras.beanshell</groupId><artifactId>bsh</artifactId><extension>pom</extension><version>%{version}</version><path>%{bsh_dir}/bsh-%{version}.pom</path></artifact>
+</artifacts></metadata>
+EOF
+
+%check
+export DISPLAY=:82
+Xvfb "$DISPLAY" -screen 0 1024x768x24 -nolisten tcp &
+xpid=$!
+trap 'kill "$xpid" 2>/dev/null || :' EXIT
+for attempt in $(seq 1 50); do
+    test -S /tmp/.X11-unix/X82 && break
+    kill -0 "$xpid" || exit 1
+    sleep 0.1
+done
+test -S /tmp/.X11-unix/X82
+printf 'print(6 * 7);\n' > arithmetic.bsh
+java -cp dist/bsh-%{version}.jar bsh.Interpreter arithmetic.bsh | grep -Fx '42'
+%{bsh_ant} -lib %{bootstrap_java}/ant-junit.jar -lib %{bootstrap_java}/ant-junit4.jar \
+    -lib %{bootstrap_java}/junit.jar -lib %{bootstrap_java}/hamcrest-core.jar -Dtest-build-dir=classes compile-tests junit-tests
+%{_bindir}/python3 %{SOURCE1}
+
+%files
+%doc README.md
+%license LICENSE NOTICE LICENSE.asm
+%{_bindir}/bsh
+%{_datadir}/maven-metadata/beanshell.xml
+%{bsh_dir}/
+
+%changelog
+%autochangelog
