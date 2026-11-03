@@ -1,0 +1,28 @@
+{{header}}
+% SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
+% SPDX-License-Identifier: MulanPSL-2.0
+{{object 1 0}}
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+{{object 2 0}}
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+{{object 3 0}}
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 20 20] /Resources << /XObject << /R 5 0 R >> >> /Contents 4 0 R >>
+endobj
+{{object 4 0}}
+<< {{streamlen}} >>
+stream
+/R Do
+endstream
+endobj
+{{object 5 0}}
+<< /Type /XObject /Subtype /Form /BBox [0 0 20 20] /Resources << /XObject << /R 5 0 R >> >> /Filter /ASCIIHexDecode {{streamlen}} >>
+stream
+3020302032302032302072652066202f5220446f202f5220446f0a>
+endstream
+endobj
+{{xref}}
+{{trailer}}
+{{startxref}}
+%%EOF
