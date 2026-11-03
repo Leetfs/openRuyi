@@ -2,17 +2,18 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           meson
-Version:        1.10.2
+Version:        1.12.1
 Release:        %autorelease
 Summary:        High productivity build system
 License:        Apache-2.0
 URL:            https://mesonbuild.com/
 VCS:            git:https://github.com/mesonbuild/meson.git
-#!RemoteAsset:  sha256:7890287d911dd4ee1ebd0efb61ed0321bfcd87c725df923a837cf90c6508f96b
+#!RemoteAsset:  sha256:ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743
 Source0:        https://github.com/mesonbuild/meson/releases/download/%{version}/meson-%{version}.tar.gz
 BuildArch:      noarch
 
@@ -20,6 +21,7 @@ BuildRequires:  pkgconfig(python3)
 BuildRequires:  python3dist(pip)
 BuildRequires:  python3dist(setuptools)
 BuildRequires:  python3dist(wheel)
+BuildRequires:  ninja
 BuildRequires:  expat
 
 Requires:       python3dist(setuptools)
@@ -49,6 +51,10 @@ install -Dpm0644 -t %{buildroot}%{_rpmmacrodir} data/macros.meson
 install -Dpm0644 -t %{buildroot}%{_datadir}/bash-completion/completions/ data/shell-completions/bash/meson
 install -Dpm0644 -t %{buildroot}%{_datadir}/zsh/site-functions/ data/shell-completions/zsh/_meson
 
+%check
+# Check Meson's version-number parsing and comparison used in dependency constraints.
+%{__python3} run_unittests.py InternalTests.test_version_number InternalTests.test_version_compare
+
 %files
 %license COPYING
 %{_bindir}/meson
@@ -63,4 +69,4 @@ install -Dpm0644 -t %{buildroot}%{_datadir}/zsh/site-functions/ data/shell-compl
 %{_datadir}/zsh/site-functions/_meson
 
 %changelog
-%{?autochangelog}
+%autochangelog
