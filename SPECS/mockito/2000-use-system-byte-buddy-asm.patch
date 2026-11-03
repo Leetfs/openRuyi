@@ -1,0 +1,53 @@
+From 554066b4e07cbe072bb2e5c2a77ba358be7007c8 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Tue, 3 Nov 2026 23:45:05 +0800
+Subject: [PATCH] Use ASM from the system Byte Buddy classpath
+
+The source-built Byte Buddy uses org.objectweb.asm in its visitor API.
+Import those same types for the bytecode generator.
+
+Upstream: downstream system Byte Buddy build integration
+Reference: https://github.com/raphw/byte-buddy/blob/byte-buddy-1.17.7/byte-buddy-dep/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../creation/bytebuddy/InlineBytecodeGenerator.java       | 4 ++--
+ .../internal/creation/bytebuddy/MockMethodAdvice.java     | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/main/java/org/mockito/internal/creation/bytebuddy/InlineBytecodeGenerator.java b/src/main/java/org/mockito/internal/creation/bytebuddy/InlineBytecodeGenerator.java
+index ed12d2f..665cb6c 100644
+--- a/src/main/java/org/mockito/internal/creation/bytebuddy/InlineBytecodeGenerator.java
++++ b/src/main/java/org/mockito/internal/creation/bytebuddy/InlineBytecodeGenerator.java
+@@ -18,8 +18,8 @@ import net.bytebuddy.dynamic.ClassFileLocator;
+ import net.bytebuddy.dynamic.scaffold.MethodGraph;
+ import net.bytebuddy.dynamic.scaffold.TypeValidation;
+ import net.bytebuddy.implementation.Implementation;
+-import net.bytebuddy.jar.asm.ClassVisitor;
+-import net.bytebuddy.jar.asm.MethodVisitor;
++import org.objectweb.asm.ClassVisitor;
++import org.objectweb.asm.MethodVisitor;
+ import net.bytebuddy.matcher.ElementMatchers;
+ import net.bytebuddy.pool.TypePool;
+ import net.bytebuddy.utility.OpenedClassReader;
+diff --git a/src/main/java/org/mockito/internal/creation/bytebuddy/MockMethodAdvice.java b/src/main/java/org/mockito/internal/creation/bytebuddy/MockMethodAdvice.java
+index 1dd7441..fdb89bb 100644
+--- a/src/main/java/org/mockito/internal/creation/bytebuddy/MockMethodAdvice.java
++++ b/src/main/java/org/mockito/internal/creation/bytebuddy/MockMethodAdvice.java
+@@ -41,10 +41,10 @@ import net.bytebuddy.implementation.bind.annotation.Argument;
+ import net.bytebuddy.implementation.bind.annotation.This;
+ import net.bytebuddy.implementation.bytecode.StackSize;
+ import net.bytebuddy.implementation.bytecode.assign.Assigner;
+-import net.bytebuddy.jar.asm.Label;
+-import net.bytebuddy.jar.asm.MethodVisitor;
+-import net.bytebuddy.jar.asm.Opcodes;
+-import net.bytebuddy.jar.asm.Type;
++import org.objectweb.asm.Label;
++import org.objectweb.asm.MethodVisitor;
++import org.objectweb.asm.Opcodes;
++import org.objectweb.asm.Type;
+ import net.bytebuddy.pool.TypePool;
+ import net.bytebuddy.utility.OpenedClassReader;
+ 
+-- 
+2.54.0
+
