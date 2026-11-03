@@ -1,0 +1,31 @@
+From fec8f55cb9e8391ffc8edd8e2990a2588941098b Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 15:11:17 +0800
+Subject: [PATCH] Measure the compression of centered CJK punctuation across
+ both advances
+
+The fullwidth comma can share its reduction with the preceding glyph when centered. Preserve the 14-character line, the unchanged 720-twip base advance, the 221-twip total reduction, and a narrower comma. With compression disabled the same document fits only 13 characters and the comma occupies the full 720 twips.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sw/qa/core/text/text.cxx | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/sw/qa/core/text/text.cxx b/sw/qa/core/text/text.cxx
+index a2f6b97..12891e7 100644
+--- a/sw/qa/core/text/text.cxx
++++ b/sw/qa/core/text/text.cxx
+@@ -1648,8 +1648,11 @@ CPPUNIT_TEST_FIXTURE(SwCoreTextTest, testTdf129810)
+ 
+             // Assert we are using the expected width for uncompressed chars
+             CPPUNIT_ASSERT_EQUAL(sal_Int32(720), sal_Int32(pDXArray[0]));
+-            // Assert we are using the expected width for compressed chars
+-            CPPUNIT_ASSERT_EQUAL(sal_Int32(499), sal_Int32(pDXArray[6] - pDXArray[5]));
++            // The comma can be centered by sharing its compression with the
++            // preceding glyph. In both cases the two 720-twip advances lose
++            // the same 221 twips, and the fullwidth comma itself is narrower.
++            CPPUNIT_ASSERT_DOUBLES_EQUAL(1219.0, pDXArray[6] - pDXArray[4], 1.0);
++            CPPUNIT_ASSERT_LESS(720.0, pDXArray[6] - pDXArray[5]);
+             break;
+         }
+     }

@@ -1,0 +1,33 @@
+From 21b7326e71ac119283123d41d243fef977217577 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 14:52:16 +0800
+Subject: [PATCH] Check RTL fallback positions with either lam-alef glyph
+ representation
+
+The regression measures overlapping fallback runs with a fixed advance array. Noto Sans Arabic 2.010 gives one lam-alef glyph, while 2.013 gives two with advances 363 and 219 instead of 582. Check each position for both layouts and keep the original coordinates of all three David Libre glyphs.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ vcl/qa/cppunit/complextext.cxx | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/vcl/qa/cppunit/complextext.cxx b/vcl/qa/cppunit/complextext.cxx
+index 62efb98..ab43d5f 100644
+--- a/vcl/qa/cppunit/complextext.cxx
++++ b/vcl/qa/cppunit/complextext.cxx
+@@ -819,7 +819,14 @@ CPPUNIT_TEST_FIXTURE(VclComplexTextTest, testTdf154104)
+ 
+     // tdf#154104 caused overlapping glyphs in fallback runs:
+     //                           { -295.0, -195.0, -95.0, -341.0 }
+-    std::vector<double> aRefCharX{ -245.0, -145.0, -45.0, -341.0 };
++    // Noto Sans Arabic 2.010 shapes lam-alef as one glyph. In 2.013,
++    // the same run has two glyphs with the same total advance. Both must
++    // leave the three Hebrew glyphs at their original, non-overlapping positions.
++    std::vector<double> aRefCharX{ -245.0, -145.0, -45.0 };
++    if (aCharX.size() == 5)
++        aRefCharX.insert(aRefCharX.end(), { -375.0, -315.0 });
++    else
++        aRefCharX.push_back(-341.0);
+ 
+     CPPUNIT_ASSERT_EQUAL(aRefCharX.size(), aCharX.size());
+     for (size_t i = 0; i < aRefCharX.size(); ++i)

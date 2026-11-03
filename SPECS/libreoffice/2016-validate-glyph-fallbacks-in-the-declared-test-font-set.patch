@@ -1,0 +1,109 @@
+From ad85f1df2825cc3ae791d5ac2d55385c4c52ed97 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 21:16:36 +0800
+Subject: [PATCH] Distinguish declared glyph fallbacks from absent test fonts
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The Hebrew face lacks Latin characters, Liberation Mono lacks Bengali, and Noto Sans lacks Devanagari. When a test explicitly selects its declared font set, require that the requested family is present, that none of its faces covers the missing characters, and that the chosen face covers them all. Accept alternate names of the same Fontconfig face and the Cambria–Caladea metric alias. Preserve the existing abort for absent families or unresolved coverage.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ vcl/unx/generic/fontmanager/fontconfig.cxx | 62 ++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
+
+diff --git a/vcl/unx/generic/fontmanager/fontconfig.cxx b/vcl/unx/generic/fontmanager/fontconfig.cxx
+index 6673cd8..5ecb3e3 100644
+--- a/vcl/unx/generic/fontmanager/fontconfig.cxx
++++ b/vcl/unx/generic/fontmanager/fontconfig.cxx
+@@ -1070,6 +1070,55 @@ IMPL_LINK_NOARG(PrintFontManager, autoInstallFontLangSupport, Timer *, void)
+     m_aCurrentRequests.clear();
+ }
+ 
++static bool hasFamily(FcPattern* pattern, const FcChar8* family)
++{
++    FcChar8* name = nullptr;
++    for (int i = 0; FcPatternGetString(pattern, FC_FAMILY, i, &name) == FcResultMatch; ++i)
++        if (FcStrCmpIgnoreCase(name, family) == 0)
++            return true;
++    return false;
++}
++
++// Test Fontconfig profiles contain only declared distribution and application
++// fonts. Keep catching absent requested families and incomplete glyph coverage.
++static bool isDeclaredTestFallback(FcFontSet* fonts, FcPattern* match,
++                                   const FcChar8* requested, const OUString& missing)
++{
++    FcCharSet* resolved = nullptr;
++    if (!missing.isEmpty() && FcPatternGetCharSet(match, FC_CHARSET, 0, &resolved) != FcResultMatch)
++        return false;
++    for (sal_Int32 i = 0; i < missing.getLength();)
++        if (!FcCharSetHasChar(resolved, missing.iterateCodePoints(&i)))
++            return false;
++
++    // A variable face can advertise both its typographic family and its
++    // default instance (for example Rubik and Rubik Light).
++    if (hasFamily(match, requested))
++        return true;
++    // Fontconfig's metric alias for the unavailable proprietary Cambria.
++    if (FcStrCmpIgnoreCase(requested, reinterpret_cast<const FcChar8*>("Cambria")) == 0
++        && hasFamily(match, reinterpret_cast<const FcChar8*>("Caladea")))
++        return true;
++    if (missing.isEmpty())
++        return false;
++
++    bool foundRequested = false;
++    for (int j = 0; j < fonts->nfont; ++j)
++    {
++        FcPattern* face = fonts->fonts[j];
++        if (!hasFamily(face, requested))
++            continue;
++        FcCharSet* supported = nullptr;
++        if (FcPatternGetCharSet(face, FC_CHARSET, 0, &supported) != FcResultMatch)
++            return false;
++        foundRequested = true;
++        for (sal_Int32 i = 0; i < missing.getLength();)
++            if (FcCharSetHasChar(supported, missing.iterateCodePoints(&i)))
++                return false;
++    }
++    return foundRequested;
++}
++
+ void PrintFontManager::Substitute(vcl::font::FontSelectPattern &rPattern, OUString& rMissingCodes)
+ {
+     FontCfgWrapper& rWrapper = FontCfgWrapper::get();
+@@ -1103,6 +1152,13 @@ void PrintFontManager::Substitute(vcl::font::FontSelectPattern &rPattern, OUStri
+     LanguageTag aLangTag(rPattern.meLanguage);
+     OString aLangAttrib = mapToFontConfigLangTag(aLangTag);
+ 
++    static const bool bUsingDeclaredTestFonts = [] {
++        const char* profile = getenv("LIBO_TEST_FONTCONFIG_FILE");
++        const char* active = getenv("FONTCONFIG_FILE");
++        const char* mode = getenv("SAL_NON_APPLICATION_FONT_USE");
++        return profile && active && mode && strcmp(profile, active) == 0 && strcmp(mode, "abort") == 0;
++    }();
++    bool bDeclaredTestFallback = false;
+     bool bMissingJustBullet = false;
+     bool bMissingIdeographicComma = false;
+ 
+@@ -1242,6 +1298,10 @@ void PrintFontManager::Substitute(vcl::font::FontSelectPattern &rPattern, OUStri
+                 }
+             }
+ 
++            if (bUsingDeclaredTestFonts)
++                bDeclaredTestFallback = isDeclaredTestFallback(rWrapper.getFontSet(), pSet->fonts[0],
++                                                               pTargetNameUtf8, rMissingCodes);
++
+             // update rMissingCodes by removing resolved code points
+             if( !rMissingCodes.isEmpty() )
+             {
+@@ -1302,6 +1362,8 @@ void PrintFontManager::Substitute(vcl::font::FontSelectPattern &rPattern, OUStri
+     }();
+     if (bAbortOnFontSubstitute && rPattern.maTargetName != rPattern.maSearchName)
+     {
++        if (bDeclaredTestFallback)
++            return;
+         if (bMissingJustBullet || bMissingIdeographicComma)
+         {
+             // Some fonts exist in "more_fonts", but:

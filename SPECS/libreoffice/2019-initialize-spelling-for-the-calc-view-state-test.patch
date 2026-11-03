@@ -1,0 +1,33 @@
+From f9555d8a7a35cc6c54cc309576559323c0fe0e4f Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 21:38:22 +0800
+Subject: [PATCH] Initialize spelling when testing Calc view render state
+
+The S flag records whether the current tiled view has a spell-check context. Supply the public per-view SpellOnline initialization property to both views before checking their default and dark render states.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sc/qa/unit/tiledrendering/tiledrendering.cxx | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/sc/qa/unit/tiledrendering/tiledrendering.cxx b/sc/qa/unit/tiledrendering/tiledrendering.cxx
+index 2279daa..0a2dd40 100644
+--- a/sc/qa/unit/tiledrendering/tiledrendering.cxx
++++ b/sc/qa/unit/tiledrendering/tiledrendering.cxx
+@@ -2797,12 +2797,16 @@ CPPUNIT_TEST_FIXTURE(ScTiledRenderingTest, testGetViewRenderState)
+     aColorConfig.AddScheme(u"Light"_ustr);
+ 
+     ScModelObj* pModelObj = createDoc("empty.ods");
++    const auto aViewOptions = comphelper::InitPropertySequence(
++        { { ".uno:SpellOnline", uno::Any(true) } });
++    pModelObj->initializeForTiledRendering(aViewOptions);
+     int nFirstViewId = SfxLokHelper::getCurrentView();
+     ScTestViewCallback aView1;
+ 
+     CPPUNIT_ASSERT_EQUAL("S;Default"_ostr, pModelObj->getViewRenderState());
+     // Create a second view
+     SfxLokHelper::createView();
++    pModelObj->initializeForTiledRendering(aViewOptions);
+     ScTestViewCallback aView2;
+     CPPUNIT_ASSERT_EQUAL("S;Default"_ostr, pModelObj->getViewRenderState());
+     // Set second view to dark scheme

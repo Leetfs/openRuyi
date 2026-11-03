@@ -1,0 +1,52 @@
+From 4477de2af176211f833209df3c82797bde794ccc Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 14:52:16 +0800
+Subject: [PATCH] Use the supported AFDKO makeotf when reconstructing PDF fonts
+
+AFDKO 5 ships a makeotfexe compatibility command that reports its replacement without producing an OpenType font. Prefer the public makeotf command, which accepts the font, CMap, menu and feature arguments used by Draw. Keep the older executable as a fallback. Treat the AFDKO Italic style as normal weight, matching the source PDF, and check its weight next to its slant.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ configure.ac                 | 2 +-
+ sd/qa/unit/export-tests.cxx  | 1 +
+ svx/source/svdraw/svdpdf.cxx | 2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 4641ba7..4de0303 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -13180,7 +13180,7 @@ if test "$ENABLE_PDFIUM" = "TRUE"; then
+             if test -z "$TX"; then
+                 AC_MSG_ERROR([install 'tx' from Adobe Font Development Kit for OpenType (AFDKO)])
+             fi
+-            AC_PATH_PROGS(MAKEOTF, makeotfexe makeotf)
++            AC_PATH_PROGS(MAKEOTF, makeotf makeotfexe)
+             if test -z "$MAKEOTF"; then
+                 AC_MSG_ERROR([install 'makeotf' from Adobe Font Development Kit for OpenType (AFDKO)])
+             fi
+diff --git a/sd/qa/unit/export-tests.cxx b/sd/qa/unit/export-tests.cxx
+index 5330fde..6a75d23 100644
+--- a/sd/qa/unit/export-tests.cxx
++++ b/sd/qa/unit/export-tests.cxx
+@@ -1142,6 +1142,7 @@ CPPUNIT_TEST_FIXTURE(SdExportTest, testExplodedPdfFont)
+         OUString sItalic = getXPath(pXml, "//font[2]", "italic");
+         // was "none" before
+         CPPUNIT_ASSERT_EQUAL(u"normal"_ustr, sItalic);
++        CPPUNIT_ASSERT_EQUAL(u"normal"_ustr, getXPath(pXml, "//font[2]", "weight"));
+         // check that the others remain as expected
+         OUString sFontName = getXPath(pXml, "//font[2]", "name");
+         CPPUNIT_ASSERT_EQUAL(u"Liberation Serif"_ustr, sFontName);
+diff --git a/svx/source/svdraw/svdpdf.cxx b/svx/source/svdraw/svdpdf.cxx
+index 6b80f57..3133593 100644
+--- a/svx/source/svdraw/svdpdf.cxx
++++ b/svx/source/svdraw/svdpdf.cxx
+@@ -212,7 +212,7 @@ bool writeFontFile(const OUString& fileUrl, const std::vector<uint8_t>& rFontDat
+ 
+ FontWeight toOfficeWeight(std::string_view style)
+ {
+-    if (o3tl::equalsIgnoreAsciiCase(style, "Regular"))
++    if (o3tl::equalsIgnoreAsciiCase(style, "Regular") || o3tl::equalsIgnoreAsciiCase(style, "Italic"))
+         return WEIGHT_NORMAL;
+     else if (o3tl::equalsIgnoreAsciiCase(style, "Bold"))
+         return WEIGHT_BOLD;
