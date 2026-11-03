@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global crate_name lru
-%global full_version 0.18.0
+%global full_version 0.18.5
 %global pkgname lru-0.18
 
 Name:           rust-lru-0.18
-Version:        0.18.0
+Version:        0.18.5
 Release:        %autorelease
 Summary:        Rust crate "lru"
 License:        MIT
 URL:            https://github.com/jeromefroe/lru-rs
-#!RemoteAsset:  sha256:8a860605968fce16869fd239cf4237a82f3ac470723415db603b0e8b6c8d4fb9
+#!RemoteAsset:  sha256:ef9ac18847474e638e3702b76c65d4eb93428471a74778ef0f1be711717f89b5
 Source:         https://static.crates.io/crates/%{crate_name}/%{full_version}/download#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    rustcrates
@@ -28,7 +28,8 @@ Source code for takopackized Rust crate "lru"
 %package     -n %{name}+hashbrown
 Summary:        LRU cache implementation - feature "hashbrown" and 1 more
 Requires:       crate(%{pkgname}) = %{version}
-Requires:       crate(hashbrown-0.17/default) >= 0.17.0
+Requires:       crate(hashbrown-0.17/default-hasher) >= 0.17.0
+Requires:       crate(hashbrown-0.17/inline-more) >= 0.17.0
 Provides:       crate(%{pkgname}/default) = %{version}
 Provides:       crate(%{pkgname}/hashbrown) = %{version}
 
@@ -41,6 +42,8 @@ Additionally, this package also provides the "default" feature.
 Summary:        LRU cache implementation - feature "nightly"
 Requires:       crate(%{pkgname}) = %{version}
 Requires:       crate(%{pkgname}/hashbrown) = %{version}
+Requires:       crate(hashbrown-0.17/default-hasher) >= 0.17.0
+Requires:       crate(hashbrown-0.17/inline-more) >= 0.17.0
 Requires:       crate(hashbrown-0.17/nightly) >= 0.17.0
 Provides:       crate(%{pkgname}/nightly) = %{version}
 
