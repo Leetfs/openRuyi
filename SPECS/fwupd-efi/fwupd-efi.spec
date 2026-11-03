@@ -1,17 +1,18 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Xiang W <wangxiang@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           fwupd-efi
-Version:        1.8
+Version:        1.9
 Release:        %autorelease
 Summary:        Firmware update EFI binaries
 License:        LGPL-2.1-only
 URL:            https://github.com/fwupd/fwupd-efi
 VCS:            git@github.com:fwupd/fwupd-efi.git
-#!RemoteAsset:  sha256:c9f1f9b9b967ea50eb0b478f0d7693d6673d4cd76c8e7eb80c55fc44ec928925
+#!RemoteAsset:  sha256:b1a92713659b5ffe6adae7a53adae6f353f07cfcc668736d38d217ec53fa022b
 Source0:        https://github.com/fwupd/fwupd-efi/archive/refs/tags/%{version}.tar.gz
 BuildSystem:    meson
 
