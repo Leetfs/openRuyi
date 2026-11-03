@@ -1,18 +1,19 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: zhangjinqiang <jinqiang.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname numcodecs
 
 Name:           python-%{srcname}
-Version:        0.16.5
+Version:        0.17.1
 Release:        %autorelease
 Summary:        Buffer compression and transformation codecs
 License:        MIT
 URL:            https://github.com/zarr-developers/numcodecs
-#!RemoteAsset:  sha256:0d0fb60852f84c0bd9543cc4d2ab9eefd37fc8efcc410acd4777e62a1d300318
+#!RemoteAsset:  sha256:5069dc01b0087c6135cbb3b043707aaf927c992fcd325248d15d907c51dd3747
 Source0:        https://files.pythonhosted.org/packages/source/n/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildSystem:    pyproject
 
@@ -50,7 +51,7 @@ Numcodecs provides buffer compression and transformation codecs for use
 in data storage and communication applications.
 
 %generate_buildrequires
-%pyproject_buildrequires
+%pyproject_buildrequires -p
 
 %files -f %{pyproject_files}
 %doc README.rst
