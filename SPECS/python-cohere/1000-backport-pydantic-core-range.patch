@@ -1,0 +1,30 @@
+From 8400ca42adb96022ec1f6b23dfd1538eccf1b759 Mon Sep 17 00:00:00 2001
+From: "fern-api[bot]" <115122769+fern-api[bot]@users.noreply.github.com>
+Date: Wed, 4 Nov 2026 01:57:13 +0800
+Subject: [PATCH] Accept compatible Pydantic Core 2.x releases
+
+Backport only the upstream pydantic-core dependency range. The other SDK
+regeneration changes are independent of this package metadata change.
+
+Upstream-Commit: https://github.com/cohere-ai/cohere-python/commit/b751bc1ad568b13a557c90d2e8d57972e078f05a
+Upstream-Status: Backport
+---
+ pyproject.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index cb51483..e1f09d6 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -44,7 +44,7 @@ httpx = ">=0.21.2"
+ httpx-aiohttp = { version = "0.1.8", optional = true}
+ oci = { version = "^2.165.0", optional = true}
+ pydantic = ">= 1.9.2"
+-pydantic-core = ">=2.18.2,<2.44.0"
++pydantic-core = ">=2.18.2,<3.0.0"
+ requests = "^2.0.0"
+ tokenizers = ">=0.15,<1"
+ types-requests = "^2.0.0"
+-- 
+2.54.0
+
