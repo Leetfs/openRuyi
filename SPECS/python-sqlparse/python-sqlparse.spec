@@ -8,12 +8,12 @@
 %global srcname sqlparse
 
 Name:           python-%{srcname}
-Version:        0.6.0
+Version:        0.6.1
 Release:        %autorelease
 Summary:        Non-validating SQL parser
 License:        BSD-3-Clause
 URL:            https://github.com/andialbrecht/sqlparse
-#!RemoteAsset:  sha256:113c35c75365ab9cc9c7231d68c6428fb11c085fc8e9eb1ad659b7ddbf6cd2b9
+#!RemoteAsset:  sha256:ca722573f848ff2d30e40ea30f53a104b7dea7635ea9285891263eb2c58fb6e7
 Source0:        https://files.pythonhosted.org/packages/source/s/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
@@ -35,6 +35,7 @@ provides support for parsing, splitting and formatting SQL statements.
 %pyproject_buildrequires
 
 %check -a
+# Exercise statement splitting, token grouping and the parser's denial-of-service regressions.
 %pytest -v tests
 
 %files -f %{pyproject_files}
