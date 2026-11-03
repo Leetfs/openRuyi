@@ -2,19 +2,21 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
 # SPDX-FileContributor: Zitao Zhou <zitao.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname virtualenv
 
 Name:           python-%{srcname}
-Version:        21.7.4
+Version:        21.15.2
 Release:        %autorelease
 Summary:        Tool to create isolated Python environments
 License:        MIT
 URL:            https://github.com/pypa/virtualenv
-#!RemoteAsset:  sha256:c9d960c95fa458171e58222a5ccab7465298e4b6559977865e627c4719f1e825
+#!RemoteAsset:  sha256:dbd886e6e5689eb4dde6a9bbc478ad14b4fc8ed0852690d8273ccfb8c467f635
 Source0:        https://files.pythonhosted.org/packages/source/v/%{srcname}/%{srcname}-%{version}.tar.gz
+Source1:        rpm-test-fixtures.py
 BuildArch:      noarch
 BuildSystem:    pyproject
 
@@ -22,7 +24,8 @@ BuildSystem:    pyproject
 Patch2000:      2000-use-system-wheels.patch
 
 BuildOption(install):  -l %{srcname}
-# Exclude broken modules from import tests
+# activate_this is executed inside a created environment; the Windows helpers
+# require platform-specific APIs.
 BuildOption(check):  -e '*activate_this' -e '*windows*'
 
 BuildRequires:  pyproject-rpm-macros
@@ -65,6 +68,10 @@ rm -f src/virtualenv/seed/wheels/embed/wheel-*
 %pyproject_buildrequires
 
 %check -a
+# Exercise module startup without the distro console-script safe-path flag.
+%global __pytest %{__python3} -m pytest
+# Adapt the seed-wheel fixtures to the system wheels used by the packaged virtualenv.
+%{__python3} %{SOURCE1} %{SOURCE0}
 # Skip tests that require internet access & bundled wheels & automatic updates
 %pytest -W ignore::DeprecationWarning \
     -vv -k "not test_download_ and \
