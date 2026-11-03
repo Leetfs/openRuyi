@@ -1,0 +1,64 @@
+From 8a94b5b79fd9a3f39523cfe25d774cdd91cc7fad Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 02:48:41 +0800
+Subject: [PATCH] Reset Turtle input state when reusing a parser for another
+ document
+
+---
+ src/turtle_parser.y       |  2 ++
+ tests/bugs/reuse-turtle.c | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
+ create mode 100644 tests/bugs/reuse-turtle.c
+
+diff --git a/src/turtle_parser.y b/src/turtle_parser.y
+index 1474a3d..3b2bed9 100644
+--- a/src/turtle_parser.y
++++ b/src/turtle_parser.y
+@@ -1811,6 +1811,8 @@ raptor_turtle_parse_start(raptor_parser *rdf_parser)
+     turtle_parser->buffer_length = 0;
+   }
+   
++  turtle_parser->consumed = 0;
++  turtle_parser->error_count = 0;
+   turtle_parser->lineno = 1;
+ 
+   return 0;
+diff --git a/tests/bugs/reuse-turtle.c b/tests/bugs/reuse-turtle.c
+new file mode 100644
+index 0000000..f1449d9
+--- /dev/null
++++ b/tests/bugs/reuse-turtle.c
+@@ -0,0 +1,30 @@
++/* SPDX-License-Identifier: Apache-2.0 */
++#include <raptor2.h>
++
++static void count(void *data, raptor_statement *statement)
++{
++  (void)statement;
++  ++*(int *)data;
++}
++
++int main(void)
++{
++  const unsigned char doc[] = "@prefix s: <urn:example:> .\ns:a s:b s:c .\n";
++  raptor_world *world = raptor_new_world();
++  if (!world || raptor_world_open(world)) return 1;
++  raptor_parser *parser = raptor_new_parser(world, "turtle");
++  raptor_uri *base = raptor_new_uri(world, (const unsigned char *)"urn:example:document");
++  if (!parser || !base) return 1;
++  int count_triples = 0;
++  raptor_parser_set_statement_handler(parser, &count_triples, count);
++  for (int i = 0; i != 3; ++i) {
++    if (raptor_parser_parse_start(parser, base) ||
++        raptor_parser_parse_chunk(parser, doc, sizeof(doc) - 1, 1) ||
++        count_triples != i + 1)
++      return 1;
++  }
++  raptor_free_parser(parser);
++  raptor_free_uri(base);
++  raptor_free_world(world);
++  return 0;
++}
+-- 
+2.54.0
+

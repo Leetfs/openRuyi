@@ -1,0 +1,149 @@
+From 0f9d4f7216fa310b1583b44321c2e6ff27c552de Mon Sep 17 00:00:00 2001
+From: Dave Beckett <dave@dajobe.org>
+Date: Thu, 6 Feb 2025 21:10:38 -0800
+Subject: [PATCH] Tests for Github issue 70
+
+Tests for https://github.com/dajobe/raptor/issues/70
+A) Integer Underflow in raptor_uri_normalize_path()
+B) Heap read buffer overflow in raptor_ntriples_parse_term_internal()
+---
+ tests/bugs/issue70a.c | 58 ++++++++++++++++++++++++++++++++++++++++
+ tests/bugs/issue70b.c | 61 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 119 insertions(+)
+ create mode 100644 tests/bugs/issue70a.c
+ create mode 100644 tests/bugs/issue70b.c
+
+diff --git a/tests/bugs/issue70a.c b/tests/bugs/issue70a.c
+new file mode 100644
+index 00000000..f5798ef1
+--- /dev/null
++++ b/tests/bugs/issue70a.c
+@@ -0,0 +1,58 @@
++/* -*- Mode: c; c-basic-offset: 2 -*-
++ *
++ * issue70a.c - Raptor test for GitHub issue 70 first part
++ * Integer Underflow in raptor_uri_normalize_path()
++ *
++ */
++
++#ifdef HAVE_CONFIG_H
++#include <raptor_config.h>
++#endif
++
++#include <string.h>
++
++/* Raptor includes */
++#include "raptor2.h"
++#include "raptor_internal.h"
++
++
++int
++main(int argc, const char** argv)
++{
++  const char *program = raptor_basename(argv[0]);
++  const unsigned char* base_uri=      (const unsigned char*)"http:o/www.w3.org/2001/sw/DataA#cess/df1.ttl";
++  const unsigned char* reference_uri= (const unsigned char*)".&/../?D/../../1999/02/22-rdf-syntax-ns#";
++#define BUFFER_LEN 84
++  unsigned char buffer[BUFFER_LEN + 1];
++  size_t buffer_length = BUFFER_LEN + 1;
++  int failures = 0;
++#define EXPECTED_RESULT "http:?D/../../1999/02/22-rdf-syntax-ns#"
++#define EXPECTED_RESULT_LEN 39UL
++  int result;
++  size_t result_len;
++
++  buffer[0] = '\0';
++
++  /* Crash used to happens here if RAPTOR_DEBUG > 3
++   * raptor_rfc2396.c:398:raptor_uri_normalize_path: fatal error: Path length 0 does not match calculated -5.
++   */
++  result = raptor_uri_resolve_uri_reference(base_uri, reference_uri,
++                                            buffer, buffer_length);
++  result_len = strlen((const char*)buffer);
++
++  if(strcmp((const char*)buffer, EXPECTED_RESULT) ||
++     result_len != EXPECTED_RESULT_LEN) {
++    fprintf(stderr, "%s: raptor_uri_resolve_uri_reference() failed with result %d\n", program, result);
++    fprintf(stderr, "%s: Base URI: '%s' (%lu)\n",
++            program, base_uri, strlen((const char*)base_uri));
++    fprintf(stderr, "%s: Ref  URI: '%s' (%lu)\n", reference_uri,
++            program, strlen((const char*)reference_uri));
++    fprintf(stderr, "%s: Result buffer: '%s' (%lu)\n", program,
++            buffer, strlen((const char*)buffer));
++    fprintf(stderr, "%s: Expected: '%s' (%lu)\n", program,
++            EXPECTED_RESULT, EXPECTED_RESULT_LEN);
++    failures++;
++  }
++
++  return failures;
++}
+diff --git a/tests/bugs/issue70b.c b/tests/bugs/issue70b.c
+new file mode 100644
+index 00000000..2f1eb3d0
+--- /dev/null
++++ b/tests/bugs/issue70b.c
+@@ -0,0 +1,61 @@
++/* -*- Mode: c; c-basic-offset: 2 -*-
++ *
++ * issue70.c - Raptor test for GitHub issue 70 second part
++ * Heap read buffer overflow in raptor_ntriples_parse_term_internal()
++ *
++ * N-Triples test content: "_:/exaple/o"
++ */
++
++#ifdef HAVE_CONFIG_H
++#include <raptor_config.h>
++#endif
++
++#include <string.h>
++
++/* Raptor includes */
++#include "raptor2.h"
++#include "raptor_internal.h"
++
++
++int
++main(int argc, const char** argv)
++{
++  const char *program = raptor_basename(argv[0]);
++  const unsigned char* ntriples_content = (const unsigned char*)"_:/exaple/o\n";
++#define NTRIPLES_CONTENT_LEN 12
++  const unsigned char* base_uri_string = (const unsigned char*)"http:o/www.w3.org/2001/sw/DataA#cess/df1.ttl";
++  int failures = 0;
++  raptor_world* world = NULL;
++  raptor_uri* base_uri = NULL;
++  raptor_parser* parser = NULL;
++  int result;
++
++  world = raptor_new_world();
++  if(!world)
++    goto cleanup;
++  base_uri = raptor_new_uri(world, base_uri_string);
++  if(!base_uri)
++    goto cleanup;
++  parser = raptor_new_parser(world, "ntriples");
++  if(!parser)
++    goto cleanup;
++
++  (void)raptor_parser_parse_start(parser, base_uri);
++  result = raptor_parser_parse_chunk(parser,
++                                     ntriples_content,
++                                     NTRIPLES_CONTENT_LEN, /* is_end */ 1);
++
++  if(result) {
++    fprintf(stderr, "%s: parsing '%s' N-Triples content failed with result %d\n", program, ntriples_content, result);
++    fprintf(stderr, "%s: Base URI: '%s' (%lu)\n",
++            program, base_uri_string, strlen((const char*)base_uri_string));
++    failures++;
++  }
++
++  cleanup:
++  raptor_free_parser(parser);
++  raptor_free_uri(base_uri);
++  raptor_free_world(world);
++
++  return failures;
++}
+-- 
+2.54.0
+
