@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.osgi.service.component
+Bundle-Version: 1.5.1
+Bundle-Name: org.osgi:org.osgi.service.component
+Bundle-Vendor: Eclipse Foundation
+Bundle-License: Apache-2.0
+Automatic-Module-Name: org.osgi.service.component
+Export-Package: org.osgi.service.component;version="1.5.1";uses:="org.
+ osgi.framework",org.osgi.service.component.propertytypes;version="1.5
+ ",org.osgi.service.component.runtime;version="1.5";uses:="org.osgi.fr
+ amework,org.osgi.service.component.runtime.dto,
+ org.osgi.util.promise",org.osgi.service.component.runtime.dto;version
+ ="1.5";uses:="org.osgi.dto,org.osgi.framework.dto"
+Import-Package: org.osgi.dto;version="[1.0,2)",
+ org.osgi.framework;version="[1.8,2)",
+ org.osgi.framework.dto;version="[1.8,2)",
+ org.osgi.service.component.runtime.dto;version="[1.5,2)",
+ org.osgi.util.promise;version="[1.0,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE/compact1)(versi
+ on=1.8))"

@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.osgi.namespace.implementation
+Bundle-Version: 1.0.0.201505202024
+Bundle-Vendor: OSGi Alliance http://www.osgi.org/
+Bundle-License: http://opensource.org/licenses/apache2.0.php; link="http://www.apache.org/licenses/LICENSE-2.0"; description="Apache License, Version 2.0"
+Export-Package: org.osgi.namespace.implementation;version="1.0";uses:="org.osgi.resource"
+Import-Package: org.osgi.resource;version="[1.0,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"

@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.osgi.service.repository
+Bundle-Version: 1.1.0.201505202024
+Bundle-Name: org.osgi:org.osgi.service.repository
+Bundle-Vendor: OSGi Alliance http://www.osgi.org/
+Bundle-License: http://opensource.org/licenses/apache2.0.php; link="ht
+ tp://www.apache.org/licenses/LICENSE-2.0"; description="Apache Licens
+ e, Version 2.0"
+Export-Package: org.osgi.service.repository;version="1.1";uses:="org.o
+ sgi.resource,org.osgi.util.promise"
+Import-Package: org.osgi.resource;version="[1.0,2)",org.osgi.util.prom
+ ise;version="[1.0,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"

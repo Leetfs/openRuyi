@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.osgi.service.event
+Bundle-Version: 1.4.1.202109301733
+Bundle-Name: org.osgi:org.osgi.service.event
+Bundle-Description: OSGi Companion Code for org.osgi.service.event Version 1.4.1
+Bundle-Vendor: Eclipse Foundation
+Bundle-License: Apache-2.0;description="This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0.";link="https://opensource.org/licenses/Apache-2.0"
+Export-Package: org.osgi.service.event;version="1.4.1";uses:="org.osgi.framework",org.osgi.service.event.annotations;version="1.4.1",org.osgi.service.event.propertytypes;version="1.4.0"
+Import-Package: org.osgi.framework;version="[1.8,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE/compact1)(version=1.8))"

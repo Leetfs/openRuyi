@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.osgi.util.function
+Bundle-Version: 1.2.0
+Bundle-Name: org.osgi:org.osgi.util.function
+Bundle-Vendor: Eclipse Foundation
+Bundle-License: Apache-2.0
+Automatic-Module-Name: org.osgi.util.function
+Export-Package: org.osgi.util.function;version="1.2"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE/compact1)(versi
+ on=1.8))"

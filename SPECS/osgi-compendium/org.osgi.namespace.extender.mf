@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.osgi.namespace.extender
+Bundle-Version: 1.0.1
+Bundle-Name: org.osgi:org.osgi.namespace.extender
+Bundle-Vendor: OSGi Alliance http://www.osgi.org/
+Bundle-License: http://opensource.org/licenses/apache2.0.php; link="h
+ ttp://www.apache.org/licenses/LICENSE-2.0"; description="Apache Lice
+ nse, Version 2.0"
+Export-Package: org.osgi.namespace.extender;version="1.0.1";uses:="or
+ g.osgi.resource"
+Import-Package: org.osgi.resource;version="[1.0,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))
+ "
