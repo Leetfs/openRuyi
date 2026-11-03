@@ -1,0 +1,457 @@
+From c7cfa2f817905f7e70999d2a233ae4c22046e1ec Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 14:31:57 +0800
+Subject: [PATCH] Resolve optional Eclipse tools in their execution context
+
+HelpIndexBuilder runs inside the requested Eclipse application. Load its
+class from that framework and preserve the exception thrown by the
+indexing implementation, so schema conversion can build independently
+of the Eclipse help server.
+
+Resolve the standalone director archive only when standalone mode is
+selected. Reuse cached archives and the active Maven session's offline
+policy and plugin repositories. The internal director uses its existing
+provisioning services.
+
+Load the optional Snappy archiver when its format is selected. ZIP and
+tar.gz product archives use the installed archive implementations.
+
+Report bundle resolution requirements when a local p2 repository fixture
+cannot be read.
+
+Upstream: no
+Reference: https://github.com/eclipse-tycho/tycho/tree/tycho-5.0.3
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ p2-maven-plugin/pom.xml                       |  12 ++
+ .../resources/META-INF/sisu/connect.bundles   |   3 +-
+ .../PlexusFrameworkConnectServiceFactory.java |   2 +-
+ .../RemoteAgentCompositeLoadingTest.java      |  33 ++++-
+ .../tycho-document-bundle-plugin/pom.xml      |   5 -
+ .../runner/BuildHelpIndexRunner.java          |  22 +++-
+ tycho-p2-director-plugin/pom.xml              |  13 +-
+ .../p2/director/ProductArchiverMojo.java      |  10 +-
+ .../StandaloneDirectorRuntimeFactory.java     |  38 +++++-
+ .../StandaloneDirectorRuntimeFactoryTest.java | 121 ++++++++++++++++++
+ 10 files changed, 231 insertions(+), 28 deletions(-)
+ create mode 100644 tycho-p2-director-plugin/src/test/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactoryTest.java
+
+diff --git a/p2-maven-plugin/pom.xml b/p2-maven-plugin/pom.xml
+index f33ecde..b94a4b4 100644
+--- a/p2-maven-plugin/pom.xml
++++ b/p2-maven-plugin/pom.xml
+@@ -188,6 +188,18 @@
+ 			<version>1.5.1</version>
+ 		</dependency>
+ 		<!-- others -->
++        <!-- The OSGi repository factories and Maven resolver need these providers. -->
++        <dependency>
++            <groupId>org.tukaani</groupId>
++            <artifactId>xz</artifactId>
++            <version>1.12</version>
++        </dependency>
++        <dependency>
++            <groupId>org.apache.maven.resolver</groupId>
++            <artifactId>maven-resolver-named-locks</artifactId>
++            <version>1.9.27</version>
++        </dependency>
++
+ 		<dependency>
+ 			<groupId>org.bouncycastle</groupId>
+ 			<artifactId>bcpg-jdk18on</artifactId>
+diff --git a/p2-maven-plugin/src/main/resources/META-INF/sisu/connect.bundles b/p2-maven-plugin/src/main/resources/META-INF/sisu/connect.bundles
+index c7680b6..86dc5b1 100644
+--- a/p2-maven-plugin/src/main/resources/META-INF/sisu/connect.bundles
++++ b/p2-maven-plugin/src/main/resources/META-INF/sisu/connect.bundles
+@@ -52,4 +52,5 @@ org.sat4j.pb
+ org.tukaani.xz
+ bcpg
+ bcprov
+-bcutil
+\ No newline at end of file
++bcutil
++org.apache.maven.resolver.named.locks
+diff --git a/sisu-osgi/sisu-osgi-connect/src/main/java/org/eclipse/sisu/osgi/connect/PlexusFrameworkConnectServiceFactory.java b/sisu-osgi/sisu-osgi-connect/src/main/java/org/eclipse/sisu/osgi/connect/PlexusFrameworkConnectServiceFactory.java
+index 18d4e70..d301f0c 100644
+--- a/sisu-osgi/sisu-osgi-connect/src/main/java/org/eclipse/sisu/osgi/connect/PlexusFrameworkConnectServiceFactory.java
++++ b/sisu-osgi/sisu-osgi-connect/src/main/java/org/eclipse/sisu/osgi/connect/PlexusFrameworkConnectServiceFactory.java
+@@ -126,7 +126,7 @@ public class PlexusFrameworkConnectServiceFactory implements Initializable, Disp
+ 		Logger fwLogger = new PlexusConnectFramework(null, log, this, realm, false, storagePath);
+ 		Map<String, String> p = readProperties(realm, fwLogger);
+ 		p.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
+-				"javax.security.auth.x500;version=\"1.3.0\", org.slf4j;version=\"1.7.37\"");
++				"javax.security.auth.x500;version=\"1.3.0\", org.slf4j;version=\"1.7.37\", org.slf4j.spi;version=\"1.7.37\"");
+ 		p.put("osgi.framework.useSystemProperties", "false");
+ 		p.put("osgi.parentClassloader", "fwk");
+ 		p.put(Constants.FRAMEWORK_STORAGE, storagePath + File.separator + "storage");
+diff --git a/tycho-core/src/test/java/org/eclipse/tycho/p2resolver/RemoteAgentCompositeLoadingTest.java b/tycho-core/src/test/java/org/eclipse/tycho/p2resolver/RemoteAgentCompositeLoadingTest.java
+index 640510d..9c54a15 100644
+--- a/tycho-core/src/test/java/org/eclipse/tycho/p2resolver/RemoteAgentCompositeLoadingTest.java
++++ b/tycho-core/src/test/java/org/eclipse/tycho/p2resolver/RemoteAgentCompositeLoadingTest.java
+@@ -13,11 +13,17 @@
+ package org.eclipse.tycho.p2resolver;
+ 
+ import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertNotNull;
+ import static org.junit.Assert.assertThrows;
+ 
+-import java.io.IOException;
+-
+ import org.eclipse.core.runtime.NullProgressMonitor;
++import org.eclipse.core.runtime.IExtensionRegistry;
++import org.eclipse.sisu.equinox.EquinoxServiceFactory;
++import org.osgi.framework.Bundle;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.FrameworkUtil;
++import org.osgi.framework.wiring.BundleRevision;
++import org.osgi.framework.wiring.FrameworkWiring;
+ import org.eclipse.equinox.p2.core.IProvisioningAgent;
+ import org.eclipse.equinox.p2.core.ProvisionException;
+ import org.eclipse.equinox.p2.repository.artifact.IArtifactRepositoryManager;
+@@ -45,7 +51,7 @@ public class RemoteAgentCompositeLoadingTest extends TychoPlexusTestCase {
+     }
+ 
+     @Test
+-    public void testLoadingCompositeRepositoryWithMissingChildFailsByDefault() throws IOException {
++    public void testLoadingCompositeRepositoryWithMissingChildFailsByDefault() throws Exception {
+         /*
+          * In Tycho, we want composite repositories to fail if they have missing children (and don't
+          * explicitly specify the "p2.atomic.composite.loading" property).
+@@ -54,6 +60,27 @@ public class RemoteAgentCompositeLoadingTest extends TychoPlexusTestCase {
+                 () -> subject.getService(IArtifactRepositoryManager.class).loadRepository(
+                         ResourceUtil.resourceFile("repositories/composite/missingChildAndAtomicUnset").toURI(),
+                         new NullProgressMonitor()));
++        if (e.getStatus().getCode() != ProvisionException.REPOSITORY_FAILED_READ) {
++            Bundle system = FrameworkUtil.getBundle(BundleContext.class);
++            assertNotNull("OSGi Connect system bundle", system);
++            FrameworkWiring wiring = system.adapt(FrameworkWiring.class);
++            for (Bundle bundle : system.getBundleContext().getBundles()) {
++                System.err.println("P2 bundle " + bundle.getSymbolicName() + " " + bundle.getVersion()
++                        + " state=" + bundle.getState());
++                if (bundle.getState() == Bundle.INSTALLED) {
++                    for (var requirement : bundle.adapt(BundleRevision.class).getDeclaredRequirements(null)) {
++                        System.err.println("P2 requirement " + requirement + " providers="
++                                + wiring.findProviders(requirement));
++                    }
++                }
++            }
++            IExtensionRegistry registry = lookup(EquinoxServiceFactory.class, "connect")
++                    .getService(IExtensionRegistry.class);
++            System.err.println("P2 metadata factories="
++                    + (registry == null ? "no registry" : java.util.Arrays.toString(registry
++                            .getConfigurationElementsFor(
++                                    "org.eclipse.equinox.p2.metadata.repository.metadataRepositories"))));
++        }
+         assertEquals(ProvisionException.REPOSITORY_FAILED_READ, e.getStatus().getCode());
+     }
+ 
+diff --git a/tycho-extras/tycho-document-bundle-plugin/pom.xml b/tycho-extras/tycho-document-bundle-plugin/pom.xml
+index bfb4dbe..df2376b 100644
+--- a/tycho-extras/tycho-document-bundle-plugin/pom.xml
++++ b/tycho-extras/tycho-document-bundle-plugin/pom.xml
+@@ -56,11 +56,6 @@
+ 			<groupId>org.eclipse.tycho</groupId>
+ 			<artifactId>tycho-core</artifactId>
+ 		</dependency>
+-		<dependency>
+-			<groupId>org.eclipse.platform</groupId>
+-			<artifactId>org.eclipse.help.base</artifactId>
+-			<version>4.6.0</version>
+-		</dependency>
+ 		<dependency>
+ 			<groupId>org.eclipse.pde</groupId>
+ 			<artifactId>org.eclipse.pde.core</artifactId>
+diff --git a/tycho-extras/tycho-document-bundle-plugin/src/main/java/org/eclipse/tycho/extras/docbundle/runner/BuildHelpIndexRunner.java b/tycho-extras/tycho-document-bundle-plugin/src/main/java/org/eclipse/tycho/extras/docbundle/runner/BuildHelpIndexRunner.java
+index e2ff606..dc99914 100644
+--- a/tycho-extras/tycho-document-bundle-plugin/src/main/java/org/eclipse/tycho/extras/docbundle/runner/BuildHelpIndexRunner.java
++++ b/tycho-extras/tycho-document-bundle-plugin/src/main/java/org/eclipse/tycho/extras/docbundle/runner/BuildHelpIndexRunner.java
+@@ -14,9 +14,9 @@ package org.eclipse.tycho.extras.docbundle.runner;
+ 
+ import java.io.File;
+ import java.io.Serializable;
++import java.lang.reflect.InvocationTargetException;
+ import java.util.concurrent.Callable;
+ 
+-import org.eclipse.help.search.HelpIndexBuilder;
+ 
+ /**
+  * Executes the indexing code inside the OSGi framework, so be careful to only
+@@ -35,10 +35,22 @@ public class BuildHelpIndexRunner implements Callable<Serializable>, Serializabl
+ 
+ 	@Override
+ 	public Serializable call() throws Exception {
+-		HelpIndexBuilder builder = new HelpIndexBuilder();
+-		builder.setManifest(manifest);
+-		builder.setDestination(outputDirectory);
+-		builder.execute(null);
++		Class<?> builderType = Class.forName("org.eclipse.help.search.HelpIndexBuilder");
++		Class<?> monitorType = Class.forName("org.eclipse.core.runtime.IProgressMonitor");
++		try {
++			Object builder = builderType.getConstructor().newInstance();
++			builderType.getMethod("setManifest", File.class).invoke(builder, manifest);
++			builderType.getMethod("setDestination", File.class).invoke(builder, outputDirectory);
++			builderType.getMethod("execute", monitorType).invoke(builder, new Object[] { null });
++		} catch (InvocationTargetException e) {
++			if (e.getCause() instanceof Exception exception) {
++				throw exception;
++			}
++			if (e.getCause() instanceof Error error) {
++				throw error;
++			}
++			throw e;
++		}
+ 		return null;
+ 	}
+ 
+diff --git a/tycho-p2-director-plugin/pom.xml b/tycho-p2-director-plugin/pom.xml
+index 69e40b4..270b81c 100644
+--- a/tycho-p2-director-plugin/pom.xml
++++ b/tycho-p2-director-plugin/pom.xml
+@@ -51,13 +51,6 @@
+ 			<artifactId>tycho-testing-harness</artifactId>
+ 			<scope>test</scope>
+ 		</dependency>
+-		<dependency>
+-			<groupId>org.eclipse.tycho</groupId>
+-			<artifactId>tycho-bundles-external</artifactId>
+-			<!-- use a fixed version here for now, this is only used when working with a standalone director -->
+-			<version>2.7.5</version>
+-			<type>zip</type>
+-		</dependency>
+ 		<dependency>
+ 			<groupId>org.apache.commons</groupId>
+ 			<artifactId>commons-compress</artifactId>
+@@ -101,6 +94,12 @@
+ 			<groupId>org.apache.maven</groupId>
+ 			<artifactId>maven-archiver</artifactId>
+ 		</dependency>
++		<dependency>
++			<groupId>org.mockito</groupId>
++			<artifactId>mockito-core</artifactId>
++			<version>4.11.0</version>
++			<scope>test</scope>
++		</dependency>
+ 	</dependencies>
+ 
+ 	<build>
+diff --git a/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/ProductArchiverMojo.java b/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/ProductArchiverMojo.java
+index 8a77d56..83d7936 100644
+--- a/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/ProductArchiverMojo.java
++++ b/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/ProductArchiverMojo.java
+@@ -35,7 +35,6 @@ import org.codehaus.plexus.archiver.Archiver;
+ import org.codehaus.plexus.archiver.ArchiverException;
+ import org.codehaus.plexus.archiver.bzip2.BZip2Archiver;
+ import org.codehaus.plexus.archiver.gzip.GZipArchiver;
+-import org.codehaus.plexus.archiver.snappy.SnappyArchiver;
+ import org.codehaus.plexus.archiver.tar.TarArchiver;
+ import org.codehaus.plexus.archiver.tar.TarArchiver.TarCompressionMethod;
+ import org.codehaus.plexus.archiver.tar.TarLongFileMode;
+@@ -75,7 +74,14 @@ public final class ProductArchiverMojo extends AbstractProductMojo {
+         });
+         ThreadLocal<Archiver> bzip2Format = ThreadLocal.withInitial(() -> new BZip2Archiver());
+         ThreadLocal<Archiver> gzipFormat = ThreadLocal.withInitial(() -> new GZipArchiver());
+-        ThreadLocal<Archiver> snappyFormat = ThreadLocal.withInitial(() -> new SnappyArchiver());
++        ThreadLocal<Archiver> snappyFormat = ThreadLocal.withInitial(() -> {
++            try {
++                return Archiver.class.cast(Class.forName("org.codehaus.plexus.archiver.snappy.SnappyArchiver")
++                        .getConstructor().newInstance());
++            } catch (ReflectiveOperationException e) {
++                throw new ArchiverException("Could not create the Snappy archiver", e);
++            }
++        });
+         ThreadLocal<Archiver> xzFormat = ThreadLocal.withInitial(() -> new XZArchiver());
+ 
+         productArchivers = Map.of(ZIP_ARCHIVE_FORMAT, zipFormat, //
+diff --git a/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactory.java b/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactory.java
+index 98f9a7c..6704d18 100644
+--- a/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactory.java
++++ b/tycho-p2-director-plugin/src/main/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactory.java
+@@ -18,6 +18,10 @@ import java.util.Arrays;
+ 
+ import org.apache.maven.artifact.Artifact;
+ import org.apache.maven.artifact.repository.ArtifactRepository;
++import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
++import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
++import org.apache.maven.execution.MavenSession;
++import org.apache.maven.plugin.LegacySupport;
+ import org.apache.maven.plugin.MojoExecutionException;
+ import org.apache.maven.repository.RepositorySystem;
+ import org.codehaus.plexus.component.annotations.Component;
+@@ -34,6 +38,9 @@ public class StandaloneDirectorRuntimeFactory {
+     @Requirement
+     private RepositorySystem repositorySystem;
+ 
++    @Requirement
++    private LegacySupport context;
++
+     @Requirement
+     DirectorRuntime bootstrapDirector;
+ 
+@@ -78,10 +85,33 @@ public class StandaloneDirectorRuntimeFactory {
+         }
+     }
+ 
+-    private File getDirectorRepositoryZip(ArtifactRepository localMavenRepository) {
+-        // this artifact is a dependency of the Mojo, so we expect it in the local Maven repo
++    private File getDirectorRepositoryZip(ArtifactRepository localMavenRepository) throws MojoExecutionException {
+         Artifact artifact = repositorySystem.createArtifact("org.eclipse.tycho", "tycho-bundles-external", "2.7.5",
+-                "eclipse-repository");
+-        return new File(localMavenRepository.getBasedir(), localMavenRepository.pathOf(artifact));
++                "zip");
++        File cached = new File(localMavenRepository.getBasedir(), localMavenRepository.pathOf(artifact));
++        if (cached.isFile()) {
++            return cached;
++        }
++        MavenSession session = context.getSession();
++        if (session == null) {
++            throw new MojoExecutionException("No Maven session for resolving the standalone director repository");
++        }
++        ArtifactResolutionRequest request = new ArtifactResolutionRequest();
++        request.setArtifact(artifact);
++        request.setResolveRoot(true);
++        request.setResolveTransitively(false);
++        request.setOffline(session.isOffline());
++        request.setLocalRepository(localMavenRepository);
++        request.setRemoteRepositories(session.getCurrentProject().getPluginArtifactRepositories());
++        ArtifactResolutionResult result = repositorySystem.resolve(request);
++        if (result.hasExceptions()) {
++            throw new MojoExecutionException("Could not resolve the standalone director repository",
++                    result.getExceptions().get(0));
++        }
++        File resolved = artifact.getFile();
++        if (resolved == null || !resolved.isFile()) {
++            throw new MojoExecutionException("The standalone director repository was not resolved");
++        }
++        return resolved;
+     }
+ }
+diff --git a/tycho-p2-director-plugin/src/test/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactoryTest.java b/tycho-p2-director-plugin/src/test/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactoryTest.java
+new file mode 100644
+index 0000000..23c3bb8
+--- /dev/null
++++ b/tycho-p2-director-plugin/src/test/java/org/eclipse/tycho/plugins/p2/director/runtime/StandaloneDirectorRuntimeFactoryTest.java
+@@ -0,0 +1,121 @@
++/*******************************************************************************
++ * Copyright (c) 2026 openRuyi Project Contributors.
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which accompanies this distribution.
++ * SPDX-License-Identifier: EPL-2.0
++ *******************************************************************************/
++package org.eclipse.tycho.plugins.p2.director.runtime;
++
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertThrows;
++import static org.junit.Assert.assertTrue;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.verify;
++import static org.mockito.Mockito.verifyNoInteractions;
++import static org.mockito.Mockito.when;
++
++import java.lang.reflect.Field;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.List;
++
++import org.apache.maven.artifact.Artifact;
++import org.apache.maven.artifact.DefaultArtifact;
++import org.apache.maven.artifact.handler.DefaultArtifactHandler;
++import org.apache.maven.artifact.repository.ArtifactRepository;
++import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
++import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
++import org.apache.maven.execution.MavenSession;
++import org.apache.maven.plugin.LegacySupport;
++import org.apache.maven.plugin.MojoExecutionException;
++import org.apache.maven.project.MavenProject;
++import org.apache.maven.repository.RepositorySystem;
++import org.junit.Before;
++import org.junit.Rule;
++import org.junit.Test;
++import org.junit.rules.TemporaryFolder;
++import org.mockito.ArgumentCaptor;
++
++public class StandaloneDirectorRuntimeFactoryTest {
++    @Rule
++    public TemporaryFolder folder = new TemporaryFolder();
++
++    private Path temporary;
++
++    private StandaloneDirectorRuntimeFactory factory;
++    private RepositorySystem repositorySystem;
++    private LegacySupport context;
++    private ArtifactRepository localRepository;
++    private Artifact artifact;
++    private Method resolve;
++
++    @Before
++    public void prepare() throws Exception {
++        temporary = folder.getRoot().toPath();
++        repositorySystem = mock(RepositorySystem.class);
++        context = mock(LegacySupport.class);
++        localRepository = mock(ArtifactRepository.class);
++        artifact = new DefaultArtifact("org.eclipse.tycho", "tycho-bundles-external", "2.7.5", "compile", "zip",
++                null, new DefaultArtifactHandler("zip"));
++        when(repositorySystem.createArtifact("org.eclipse.tycho", "tycho-bundles-external", "2.7.5", "zip"))
++                .thenReturn(artifact);
++        when(localRepository.getBasedir()).thenReturn(temporary.toString());
++        when(localRepository.pathOf(artifact)).thenReturn("repository.zip");
++        factory = new StandaloneDirectorRuntimeFactory();
++        inject("repositorySystem", repositorySystem);
++        inject("context", context);
++        resolve = StandaloneDirectorRuntimeFactory.class.getDeclaredMethod("getDirectorRepositoryZip",
++                ArtifactRepository.class);
++        resolve.setAccessible(true);
++    }
++
++    private void inject(String name, Object value) throws Exception {
++        Field field = StandaloneDirectorRuntimeFactory.class.getDeclaredField(name);
++        field.setAccessible(true);
++        field.set(factory, value);
++    }
++
++    private void offlineSession() {
++        MavenSession session = mock(MavenSession.class);
++        MavenProject project = mock(MavenProject.class);
++        when(context.getSession()).thenReturn(session);
++        when(session.isOffline()).thenReturn(true);
++        when(session.getCurrentProject()).thenReturn(project);
++        when(project.getPluginArtifactRepositories()).thenReturn(List.of());
++    }
++
++    @Test
++    public void usesCachedRepositoryWithoutResolution() throws Exception {
++        Path archive = Files.createFile(temporary.resolve("repository.zip"));
++        assertEquals(archive.toFile(), resolve.invoke(factory, localRepository));
++        verifyNoInteractions(context);
++    }
++
++    @Test
++    public void resolvesOnlyWhenSelectedAndPreservesOfflineMode() throws Exception {
++        offlineSession();
++        Path archive = Files.createFile(temporary.resolve("resolved.zip"));
++        when(repositorySystem.resolve(any(ArtifactResolutionRequest.class))).thenAnswer(invocation -> {
++            artifact.setFile(archive.toFile());
++            return new ArtifactResolutionResult();
++        });
++        assertEquals(archive.toFile(), resolve.invoke(factory, localRepository));
++        ArgumentCaptor<ArtifactResolutionRequest> request = ArgumentCaptor.forClass(ArtifactResolutionRequest.class);
++        verify(repositorySystem).resolve(request.capture());
++        assertTrue(request.getValue().isOffline());
++        assertEquals(localRepository, request.getValue().getLocalRepository());
++    }
++
++    @Test
++    public void rejectsAnUnresolvedRepository() throws Exception {
++        offlineSession();
++        when(repositorySystem.resolve(any(ArtifactResolutionRequest.class)))
++                .thenReturn(new ArtifactResolutionResult());
++        InvocationTargetException exception = assertThrows(InvocationTargetException.class,
++                () -> resolve.invoke(factory, localRepository));
++        assertTrue(exception.getCause() instanceof MojoExecutionException);
++    }
++}
+-- 
+2.54.0
+

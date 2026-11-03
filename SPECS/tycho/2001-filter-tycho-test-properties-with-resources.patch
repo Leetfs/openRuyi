@@ -1,0 +1,94 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Filter test configuration with the Maven Resources Plugin
+
+Filter the two baseTest.properties fixtures in process-test-resources.
+Map localRepository to the settings value read by the original filter.
+
+Upstream: downstream adaptation to distribution Maven plugins
+Reference: https://github.com/eclipse-tycho/tycho/blob/tycho-5.0.3/tycho-extras/tycho-p2-extras-plugin/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/tycho-extras/tycho-p2-extras-plugin/pom.xml b/tycho-extras/tycho-p2-extras-plugin/pom.xml
+--- a/tycho-extras/tycho-p2-extras-plugin/pom.xml
++++ b/tycho-extras/tycho-p2-extras-plugin/pom.xml
+@@ -27,6 +27,7 @@
+ 		<maven>${minimal-maven-version}</maven>
+ 	</prerequisites>
+ 	<properties>
++		<localRepository>${settings.localRepository}</localRepository>
+ 		<tycho-build-version>${project.version}</tycho-build-version>
+ 	</properties>
+ 
+@@ -94,18 +95,24 @@
+ 				<artifactId>plexus-component-metadata</artifactId>
+ 			</plugin>
+ 			<plugin>
+-				<groupId>org.sonatype.plugins</groupId>
+-				<artifactId>maven-properties-plugin</artifactId>
+-				<version>0.0.2</version>
++				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-resources-plugin</artifactId>
++				<version>3.5.0</version>
+ 				<executions>
+ 					<execution>
+ 						<phase>process-test-resources</phase>
+ 						<goals>
+-							<goal>filter-file</goal>
++							<goal>copy-resources</goal>
+ 						</goals>
+ 						<configuration>
+-							<in>src/test/resources/baseTest.properties</in>
+-							<outDir>target/test-classes/</outDir>
++							<outputDirectory>target/test-classes</outputDirectory>
++							<resources>
++								<resource>
++									<directory>src/test/resources</directory>
++									<filtering>true</filtering>
++									<includes><include>baseTest.properties</include></includes>
++								</resource>
++							</resources>
+ 						</configuration>
+ 					</execution>
+ 				</executions>
+diff --git a/tycho-its/pom.xml b/tycho-its/pom.xml
+--- a/tycho-its/pom.xml
++++ b/tycho-its/pom.xml
+@@ -23,6 +23,7 @@
+ 	<name>Tycho Integration Tests</name>
+ 
+ 	<properties>
++		<localRepository>${settings.localRepository}</localRepository>
+ 		<tycho-build-version>${project.version}</tycho-build-version>
+ 		<maven-dir>${project.build.directory}/apache-maven-${maven-version}</maven-dir>
+ 		<itest-forkcount>1</itest-forkcount>
+@@ -41,18 +42,24 @@
+ 
+ 		<plugins>
+ 			<plugin>
+-				<groupId>org.sonatype.plugins</groupId>
+-				<artifactId>maven-properties-plugin</artifactId>
+-				<version>0.0.2</version>
++				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-resources-plugin</artifactId>
++				<version>3.5.0</version>
+ 				<executions>
+ 					<execution>
+ 						<phase>process-test-resources</phase>
+ 						<goals>
+-							<goal>filter-file</goal>
++							<goal>copy-resources</goal>
+ 						</goals>
+ 						<configuration>
+-							<in>src/test/resources/baseTest.properties</in>
+-							<outDir>target/test-classes/</outDir>
++							<outputDirectory>target/test-classes</outputDirectory>
++							<resources>
++								<resource>
++									<directory>src/test/resources</directory>
++									<filtering>true</filtering>
++									<includes><include>baseTest.properties</include></includes>
++								</resource>
++							</resources>
+ 						</configuration>
+ 					</execution>
+ 				</executions>

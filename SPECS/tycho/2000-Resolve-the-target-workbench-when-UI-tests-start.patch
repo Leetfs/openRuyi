@@ -1,0 +1,54 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Resolve the target workbench when UI tests start
+
+The OSGi test booter wires the workbench as an optional bundle. Its only
+use of PlatformUI is the public accessor for the target's TestableObject.
+Look up that accessor in the UI entry point so the booter can be built
+before any workbench exists. Keep the bundle wiring and harness API used
+by the target Eclipse application.
+
+Upstream: downstream distribution bootstrap
+Reference: https://github.com/eclipse-tycho/tycho/blob/14bb695163b412b2a18258983e535b831db4bf21/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/src/main/java/org/eclipse/tycho/surefire/osgibooter/AbstractUITestApplication.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/pom.xml b/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/pom.xml
+--- a/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/pom.xml
++++ b/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/pom.xml
+@@ -36,16 +36,6 @@
+ 			<groupId>org.eclipse.platform</groupId>
+ 			<artifactId>org.eclipse.e4.ui.workbench3</artifactId>
+ 			<version>0.18.0</version>
+-			<exclusions>
+-				<exclusion>
+-					<groupId>*</groupId>
+-					<artifactId>*</artifactId>
+-				</exclusion>
+-			</exclusions>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.eclipse.platform</groupId>
+-			<artifactId>org.eclipse.ui.workbench</artifactId>
+ 			<exclusions>
+ 				<exclusion>
+ 					<groupId>*</groupId>
+diff --git a/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/src/main/java/org/eclipse/tycho/surefire/osgibooter/AbstractUITestApplication.java b/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/src/main/java/org/eclipse/tycho/surefire/osgibooter/AbstractUITestApplication.java
+--- a/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/src/main/java/org/eclipse/tycho/surefire/osgibooter/AbstractUITestApplication.java
++++ b/tycho-surefire/org.eclipse.tycho.surefire.osgibooter/src/main/java/org/eclipse/tycho/surefire/osgibooter/AbstractUITestApplication.java
+@@ -19,7 +19,6 @@
+ import org.eclipse.core.runtime.IConfigurationElement;
+ import org.eclipse.core.runtime.IExtension;
+ import org.eclipse.core.runtime.Platform;
+-import org.eclipse.ui.PlatformUI;
+ import org.eclipse.ui.testing.ITestHarness;
+ import org.eclipse.ui.testing.TestableObject;
+ 
+@@ -118,7 +117,8 @@
+     protected Object run(String[] args) throws Exception {
+         if (args != null)
+             fArgs = args;
+-        fTestableObject = PlatformUI.getTestableObject();
++        fTestableObject = (TestableObject) Class.forName("org.eclipse.ui.PlatformUI")
++                .getMethod("getTestableObject").invoke(null);
+         fTestableObject.setTestHarness(this);
+         try {
+             Object application = getApplicationToRun(args);
