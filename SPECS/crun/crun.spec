@@ -11,12 +11,12 @@
 %bcond system_yajl 0
 
 Name:           crun
-Version:        1.28
+Version:        1.30.1
 Release:        %autorelease
 Summary:        OCI runtime written in C
 License:        GPL-2.0-only
 URL:            https://github.com/containers/crun
-#!RemoteAsset:  sha256:eb8fe73ffe44d868b14bb94fa6c295bd57e8bf023de43b61579da826c07cc406
+#!RemoteAsset:  sha256:99d036d95113552b6df66c7c879432835504bf0e525fc0372745071df129527b
 Source0:        https://github.com/containers/crun/releases/download/%{version}/crun-%{version}.tar.gz
 BuildSystem:    autotools
 
@@ -72,7 +72,8 @@ crun is a fast and low-memory OCI Container Runtime written in C.
 rm -rf %{buildroot}%{_libdir}/*.a
 
 %check
-# just skip tests as the env is not support.
+# The OCI integration tests create container namespaces and mount cgroups;
+# the OBS build environment does not provide that runtime setup.
 
 %files
 %license COPYING
