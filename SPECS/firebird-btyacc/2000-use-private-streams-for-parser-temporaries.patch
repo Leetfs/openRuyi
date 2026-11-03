@@ -1,0 +1,153 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] btyacc: keep parser scratch files open for their full lifetime
+
+Reserve each POSIX scratch file atomically, unlink its directory entry,
+and read back through the same stream. This avoids following names in
+TMPDIR between creation, writing and reading. The C runtime supplies
+auto-removed scratch files on Windows.
+
+Upstream-Status: Pending
+Upstream: https://github.com/FirebirdSQL/firebird/blob/v3.0.14/extern/btyacc/main.c
+---
+diff --git a/extern/btyacc/main.c b/extern/btyacc/main.c
+--- a/extern/btyacc/main.c
++++ b/extern/btyacc/main.c
+@@ -11,7 +11,6 @@
+ #if defined(_MSC_VER) && _MSC_VER >= 1500
+ // ISO C++ conformant names
+ #define unlink _unlink
+-#define mktemp _mktemp
+ #define strdup _strdup
+ #endif
+ 
+@@ -84,17 +83,14 @@
+ 	if (action_file) 
+ 	{ 
+ 		fclose(action_file); 
+-		unlink(action_file_name); 
+ 	}
+ 	if (text_file) 
+ 	{ 
+ 		fclose(text_file); 
+-		unlink(text_file_name); 
+ 	}
+ 	if (union_file) 
+ 	{ 
+ 		fclose(union_file); 
+-		unlink(union_file_name); 
+ 	}
+ 	exit(k);
+ }
+@@ -341,19 +337,6 @@
+ 	text_file_name[len + 5] = 't';
+ 	union_file_name[len + 5] = 'u';
+ 
+-	if(mktemp(action_file_name) == NULL) {
+-		fprintf(stderr, "btyacc: Cannot create temporary file\n");
+-		exit(1);
+-	}
+-	if(mktemp(text_file_name) == NULL) {
+-		fprintf(stderr, "btyacc: Cannot create temporary file\n");
+-		exit(1);
+-	}
+-	if(mktemp(union_file_name) == NULL) {
+-		fprintf(stderr, "btyacc: Cannot create temporary file\n");
+-		exit(1);
+-	}
+-
+ 	len = strlen(file_prefix);
+ 
+ 	output_file_name = MALLOC(len + 7);
+@@ -393,6 +376,28 @@
+ }
+ 
+ 
++static FILE *open_temp_file(char *name)
++{
++#if defined(WIN32) || defined(__MSDOS__)
++	return tmpfile();
++#else
++	int fd = mkstemp(name);
++	FILE *stream;
++
++	if (fd < 0)
++		return NULL;
++	if (unlink(name) < 0) {
++		close(fd);
++		return NULL;
++	}
++	stream = fdopen(fd, "w+");
++	if (stream == NULL)
++		close(fd);
++	return stream;
++#endif
++}
++
++
+ void open_files()
+ {
+ 	create_file_names();
+@@ -404,11 +409,11 @@
+ 			open_error(input_file_name);
+ 	}
+ 
+-	action_file = fopen(action_file_name, "w");
++	action_file = open_temp_file(action_file_name);
+ 		if (action_file == 0)
+ 			open_error(action_file_name);
+ 
+-	text_file = fopen(text_file_name, "w");
++	text_file = open_temp_file(text_file_name);
+ 	if (text_file == 0)
+ 		open_error(text_file_name);
+ 
+@@ -424,7 +429,7 @@
+ 		defines_file = fopen(defines_file_name, "w");
+ 		if (defines_file == 0)
+ 			open_error(defines_file_name);
+-		union_file = fopen(union_file_name, "w");
++		union_file = open_temp_file(union_file_name);
+ 		if (union_file ==  0)
+ 			open_error(union_file_name);
+ 	}
+diff --git a/extern/btyacc/output.c b/extern/btyacc/output.c
+--- a/extern/btyacc/output.c
++++ b/extern/btyacc/output.c
+@@ -864,9 +864,8 @@
+     fprintf(defines_file, "#ifndef _yacc_defines_yystype\n");
+     fprintf(defines_file, "#define _yacc_defines_yystype\n");
+ 
+-	fclose(union_file);
+-	union_file = fopen(union_file_name, "r");
+-	if (union_file == NULL) open_error(union_file_name);
++	if (fseek(union_file, 0, SEEK_SET) != 0)
++	    open_error(union_file_name);
+ 	while ((c = getc(union_file)) != EOF) {
+ 	  putc(c, defines_file);
+ 	}
+@@ -891,10 +890,8 @@
+     register int state;	/* 0=middle of line, 1=start of line, 2=seen '#' */
+ 
+     state = 1;
+-    fclose(text_file);
+-    text_file = fopen(text_file_name, "r");
+-    if (text_file == NULL)
+-	open_error(text_file_name);
++    if (fseek(text_file, 0, SEEK_SET) != 0)
++        open_error(text_file_name);
+     in = text_file;
+     if ((c = getc(in)) == EOF)
+ 	return;
+@@ -1211,10 +1208,8 @@
+     register int state;	/* 0=middle of line, 1=start of line, 2=seen '#' */
+ 
+     state = 1;
+-    fclose(action_file);
+-    action_file = fopen(action_file_name, "r");
+-    if (action_file == NULL)
+-	open_error(action_file_name);
++    if (fseek(action_file, 0, SEEK_SET) != 0)
++        open_error(action_file_name);
+ 
+     if ((c = getc(action_file)) == EOF)
+ 	return;
