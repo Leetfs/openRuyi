@@ -1,0 +1,91 @@
+From 18d862dbdcf4923e0b227f0a4464d81a1999b604 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 01:36:57 +0800
+Subject: [PATCH] Use JUnit's Java null assertions in Java tests
+
+These tests call the one-argument null assertions for their side effects.
+JUnit provides the same checks in its Java Assertions class, which is
+available when Jupiter is built without Kotlin bindings.
+
+Upstream: downstream build integration
+Reference: https://github.com/apache/maven/tree/maven-3.9.16/maven-core/src/test
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../maven/project/inheritance/t12/ProjectInheritanceTest.java   | 2 +-
+ .../java/org/apache/maven/lifecycle/MavenExecutionPlanTest.java | 2 +-
+ .../apache/maven/project/DefaultMavenProjectBuilderTest.java    | 2 +-
+ .../maven/project/canonical/CanonicalProjectBuilderTest.java    | 2 +-
+ .../test/java/org/apache/maven/settings/SettingsUtilsTest.java  | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/maven-compat/src/test/java/org/apache/maven/project/inheritance/t12/ProjectInheritanceTest.java b/maven-compat/src/test/java/org/apache/maven/project/inheritance/t12/ProjectInheritanceTest.java
+index 7e127c4..473e178 100644
+--- a/maven-compat/src/test/java/org/apache/maven/project/inheritance/t12/ProjectInheritanceTest.java
++++ b/maven-compat/src/test/java/org/apache/maven/project/inheritance/t12/ProjectInheritanceTest.java
+@@ -27,8 +27,8 @@ import org.apache.maven.project.inheritance.AbstractProjectInheritanceTestCase;
+ import org.codehaus.plexus.testing.PlexusTest;
+ import org.junit.jupiter.api.Test;
+ 
++import static org.junit.jupiter.api.Assertions.assertNotNull;
+ import static org.junit.jupiter.api.Assertions.assertNull;
+-import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
+ 
+ /**
+  * Verifies that plugin execution sections in the parent POM that have
+diff --git a/maven-core/src/test/java/org/apache/maven/lifecycle/MavenExecutionPlanTest.java b/maven-core/src/test/java/org/apache/maven/lifecycle/MavenExecutionPlanTest.java
+index 750c156..55ef6df 100644
+--- a/maven-core/src/test/java/org/apache/maven/lifecycle/MavenExecutionPlanTest.java
++++ b/maven-core/src/test/java/org/apache/maven/lifecycle/MavenExecutionPlanTest.java
+@@ -26,8 +26,8 @@ import org.apache.maven.model.Plugin;
+ import org.junit.jupiter.api.Test;
+ 
+ import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertNotNull;
+ import static org.junit.jupiter.api.Assertions.assertNull;
+-import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
+ 
+ /**
+  * @author Kristian Rosenvold
+diff --git a/maven-core/src/test/java/org/apache/maven/project/DefaultMavenProjectBuilderTest.java b/maven-core/src/test/java/org/apache/maven/project/DefaultMavenProjectBuilderTest.java
+index 79f1494..5f1df6c 100644
+--- a/maven-core/src/test/java/org/apache/maven/project/DefaultMavenProjectBuilderTest.java
++++ b/maven-core/src/test/java/org/apache/maven/project/DefaultMavenProjectBuilderTest.java
+@@ -35,8 +35,8 @@ import static org.hamcrest.Matchers.containsString;
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertFalse;
+ import static org.junit.jupiter.api.Assertions.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertNull;
+ import static org.junit.jupiter.api.Assertions.fail;
+-import static org.junit.jupiter.api.AssertionsKt.assertNull;
+ 
+ @PlexusTest
+ public class DefaultMavenProjectBuilderTest extends AbstractMavenProjectTestCase {
+diff --git a/maven-core/src/test/java/org/apache/maven/project/canonical/CanonicalProjectBuilderTest.java b/maven-core/src/test/java/org/apache/maven/project/canonical/CanonicalProjectBuilderTest.java
+index ef5eba7..90f6a76 100644
+--- a/maven-core/src/test/java/org/apache/maven/project/canonical/CanonicalProjectBuilderTest.java
++++ b/maven-core/src/test/java/org/apache/maven/project/canonical/CanonicalProjectBuilderTest.java
+@@ -30,7 +30,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
+ import org.junit.jupiter.api.Test;
+ 
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+-import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertNotNull;
+ 
+ /**
+  * @author Jason van Zyl
+diff --git a/maven-core/src/test/java/org/apache/maven/settings/SettingsUtilsTest.java b/maven-core/src/test/java/org/apache/maven/settings/SettingsUtilsTest.java
+index bee4949..01edeb1 100644
+--- a/maven-core/src/test/java/org/apache/maven/settings/SettingsUtilsTest.java
++++ b/maven-core/src/test/java/org/apache/maven/settings/SettingsUtilsTest.java
+@@ -26,7 +26,7 @@ import java.util.Random;
+ import org.junit.jupiter.api.Test;
+ 
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+-import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
++import static org.junit.jupiter.api.Assertions.assertNotNull;
+ 
+ public class SettingsUtilsTest {
+ 
+-- 
+2.54.0
+

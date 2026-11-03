@@ -1,0 +1,59 @@
+From e35a205663bdd7198c8eeeab20b341e1d5bea3d2 Mon Sep 17 00:00:00 2001
+From: Michael Simacek <msimacek@redhat.com>
+Date: Tue, 6 Jun 2017 13:47:43 +0200
+Subject: [PATCH] Invoke logback via reflection
+
+Logback supplies an optional SLF4J binding. Resolve the level and logger
+classes when that binding is selected, so that the default Maven build
+does not need a specific Logback implementation on its class path.
+
+Upstream: downstream Fedora and openSUSE build integration
+Reference: https://src.fedoraproject.org/rpms/maven/blob/f45/f/0002-Invoke-logback-via-reflection.patch
+Reference: https://api.opensuse.org/public/source/openSUSE:Factory/maven/0002-Invoke-logback-via-reflection.patch?rev=68fe8ec44372e329dc3007cd811baa73
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../cli/logging/impl/LogbackConfiguration.java | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/maven-embedder/src/main/java/org/apache/maven/cli/logging/impl/LogbackConfiguration.java b/maven-embedder/src/main/java/org/apache/maven/cli/logging/impl/LogbackConfiguration.java
+index 4dc5a37..a977ba0 100644
+--- a/maven-embedder/src/main/java/org/apache/maven/cli/logging/impl/LogbackConfiguration.java
++++ b/maven-embedder/src/main/java/org/apache/maven/cli/logging/impl/LogbackConfiguration.java
+@@ -31,21 +31,29 @@ import org.slf4j.LoggerFactory;
+ public class LogbackConfiguration extends BaseSlf4jConfiguration {
+     @Override
+     public void setRootLoggerLevel(Level level) {
+-        ch.qos.logback.classic.Level value;
++        String value;
+         switch (level) {
+             case DEBUG:
+-                value = ch.qos.logback.classic.Level.DEBUG;
++                value = "DEBUG";
+                 break;
+ 
+             case INFO:
+-                value = ch.qos.logback.classic.Level.INFO;
++                value = "INFO";
+                 break;
+ 
+             default:
+-                value = ch.qos.logback.classic.Level.ERROR;
++                value = "ERROR";
+                 break;
+         }
+-        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(value);
++        Logger logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
++        try {
++            Class<?> levelClass = Class.forName("ch.qos.logback.classic.Level");
++            Object logbackLevel = levelClass.getField(value).get(null);
++            Class<?> loggerClass = Class.forName("ch.qos.logback.classic.Logger");
++            loggerClass.getMethod("setLevel", new Class<?>[] {levelClass}).invoke(logger, new Object[] {logbackLevel});
++        } catch (Exception e) {
++            throw new RuntimeException("Failed to initialize logback configuration", e);
++        }
+     }
+ 
+     @Override
+-- 
+2.54.0
+

@@ -1,0 +1,78 @@
+From 08f1df3c0c1ed72869f0e8ed9cb5735100a6d3d5 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 01:34:51 +0800
+Subject: [PATCH] Accept a supplied SCM revision for source archive builds
+
+The release archives do not contain Git metadata. Query the working copy
+when buildNumber is unset so that an archive builder can supply the tag
+revision directly to the filtered build.properties resource used by mvn.
+
+Upstream: downstream build integration
+Reference: https://github.com/apache/maven/blob/maven-3.9.16/maven-core/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ maven-core/pom.xml | 48 ++++++++++++++++++++++++++++++----------------
+ 1 file changed, 31 insertions(+), 17 deletions(-)
+
+diff --git a/maven-core/pom.xml b/maven-core/pom.xml
+index c7bf450..0b5d3eb 100644
+--- a/maven-core/pom.xml
++++ b/maven-core/pom.xml
+@@ -229,23 +229,37 @@ under the License.
+           </execution>
+         </executions>
+       </plugin>
+-      <plugin>
+-        <groupId>org.codehaus.mojo</groupId>
+-        <artifactId>buildnumber-maven-plugin</artifactId>
+-        <executions>
+-          <execution>
+-            <id>create-buildnumber</id>
+-            <goals>
+-              <goal>create</goal>
+-            </goals>
+-            <configuration>
+-              <doCheck>false</doCheck>
+-              <doUpdate>false</doUpdate>
+-              <revisionOnScmFailure>NON_CANONICAL</revisionOnScmFailure>
+-            </configuration>
+-          </execution>
+-        </executions>
+-      </plugin>
+     </plugins>
+   </build>
++  <profiles>
++    <profile>
++      <id>read-source-revision</id>
++      <activation>
++        <property>
++          <name>!buildNumber</name>
++        </property>
++      </activation>
++      <build>
++        <plugins>
++          <plugin>
++            <groupId>org.codehaus.mojo</groupId>
++            <artifactId>buildnumber-maven-plugin</artifactId>
++            <executions>
++              <execution>
++                <id>create-buildnumber</id>
++                <goals>
++                  <goal>create</goal>
++                </goals>
++                <configuration>
++                  <doCheck>false</doCheck>
++                  <doUpdate>false</doUpdate>
++                  <revisionOnScmFailure>NON_CANONICAL</revisionOnScmFailure>
++                </configuration>
++              </execution>
++            </executions>
++          </plugin>
++        </plugins>
++      </build>
++    </profile>
++  </profiles>
+ </project>
+-- 
+2.54.0
+
