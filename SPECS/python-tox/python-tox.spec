@@ -1,19 +1,20 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: HNO3Miracle <xiangao.or@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname tox
 
 Name:           python-%{srcname}
-Version:        4.24.1
+Version:        4.67.7
 Release:        %autorelease
 Summary:        Virtual environments management and test command line tool
 License:        MIT
 URL:            https://tox.wiki
 VCS:            git:https://github.com/tox-dev/tox.git
-#!RemoteAsset:  sha256:083a720adbc6166fff0b7d1df9d154f9d00bfccb9403b8abf6bc0ee435d6a62e
+#!RemoteAsset:  sha256:a153a70dc7d31560e3b365b6ad945a6868ee9b3785295bc6385d960ac4308840
 Source0:        https://files.pythonhosted.org/packages/source/t/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
@@ -47,9 +48,9 @@ can use for:
 %pyproject_buildrequires
 
 %files -f %{pyproject_files}
-%doc README.md
 %license LICENSE
 %{_bindir}/tox
+%{_mandir}/man1/tox.1*
 
 %changelog
 %autochangelog
