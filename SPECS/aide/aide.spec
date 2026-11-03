@@ -1,16 +1,17 @@
 # SPDX-FileCopyrightText: (C) 2025 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: BH1SCW <kongfanjun@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           aide
-Version:        0.19.3
+Version:        0.19.5
 Release:        %autorelease
 Summary:        Intrusion detection environment
 License:        GPL-2.0-or-later
 URL:            https://github.com/aide/aide
-#!RemoteAsset:  sha256:6513170bb5b8c22802dd1b72f02d8aa9f432aef2b4470522db03e755212a3f47
+#!RemoteAsset:  sha256:6b004557e9493048ceb5fa84fb44b904c16e23bed8850dc21316e7c44247a350
 Source0:        https://github.com/aide/aide/releases/download/v%{version}/%{name}-%{version}.tar.gz
 Source1:        aide.conf
 Source2:        README.quickstart
@@ -66,9 +67,9 @@ mkdir -p %{buildroot}%{_localstatedir}/log/aide
 mkdir -p -m0700 %{buildroot}%{_localstatedir}/lib/aide
 
 %files
-%license COPYING
 %doc AUTHORS ChangeLog NEWS README
 %doc README.quickstart
+%license COPYING
 %{_sbindir}/aide
 %{_mandir}/man1/*.1*
 %{_mandir}/man5/*.5*
