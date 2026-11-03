@@ -1,0 +1,31 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 04 Nov 2026 05:38:07 +0800
+Subject: [PATCH] Build the Ant propertyfile task
+
+JNA uses propertyfile to store the version and checksum of its JNI headers.
+Include the task and its layout-preserving properties implementation in the
+bootstrap Ant library.
+
+Upstream: pending
+Reference: https://github.com/fedora-java/javapackages-bootstrap/blob/f7f74e76145c0dc4ea4d0d1967ef678ffaa7cf87/project/ant.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/project/ant.xml b/project/ant.xml
+--- a/project/ant.xml
++++ b/project/ant.xml
+@@ -52,7 +52,6 @@
+         <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/Javah</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/Native2Ascii</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/NetRexxC</excludeSourceClass>
+-        <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/PropertyFile</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/RenameExtensions</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/Rpm</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/taskdefs/optional/SchemaValidate</excludeSourceClass>
+@@ -311,7 +310,6 @@
+         <excludeSourceClass>org/apache/tools/ant/util/CollectionUtils</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/util/DOMUtils</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/util/FirstMatchMapper</excludeSourceClass>
+-        <excludeSourceClass>org/apache/tools/ant/util/LayoutPreservingProperties</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/util/LazyHashtable</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/util/Native2AsciiUtils</excludeSourceClass>
+         <excludeSourceClass>org/apache/tools/ant/util/PackageNameMapper</excludeSourceClass>

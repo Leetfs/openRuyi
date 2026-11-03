@@ -1,0 +1,35 @@
+From 881382c4b88f2d035b1160ce430e5bd7de6d6f55 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 03:40:36 +0800
+Subject: [PATCH] Write the Maven Plugin Plugin artifact ID into its descriptor
+
+The plugin tools module combines several libraries with the Maven plugin.
+PDC defaults the descriptor artifact ID to the aggregate module name.
+Supply the plugin's published ID so Maven can execute the descriptor
+and helpmojo goals under org.apache.maven.plugins:maven-plugin-plugin.
+
+Upstream: pending
+Reference: https://github.com/fedora-java/javapackages-bootstrap/blob/f7f74e76145c0dc4ea4d0d1967ef678ffaa7cf87/project/maven-plugin-tools.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ project/maven-plugin-tools.xml | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/project/maven-plugin-tools.xml b/project/maven-plugin-tools.xml
+index fec649b..2fdd086 100644
+--- a/project/maven-plugin-tools.xml
++++ b/project/maven-plugin-tools.xml
+@@ -42,7 +42,9 @@
+         <gleanFromXML>maven-script/maven-script-ant/src/main/resources/META-INF/plexus/components.xml</gleanFromXML>
+         <gleanFromXML>maven-plugin-plugin/src/main/filtered-resources/META-INF/plexus/components.xml</gleanFromXML>
+       </plexus>
+-      <pdc/>
++      <pdc>
++        <artifactId>maven-plugin-plugin</artifactId>
++      </pdc>
+     </build>
+   </module>
+ </project>
+-- 
+2.54.0
+
