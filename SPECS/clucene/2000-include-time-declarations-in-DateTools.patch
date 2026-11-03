@@ -1,0 +1,26 @@
+From decde0966e5b090330cfbece599be3b22e259538 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 02:29:02 +0800
+Subject: [PATCH] DateTools: include the C time functions used by date
+ conversion
+
+---
+ src/core/CLucene/document/DateTools.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/core/CLucene/document/DateTools.cpp b/src/core/CLucene/document/DateTools.cpp
+index f99ab254..4823c86a 100644
+--- a/src/core/CLucene/document/DateTools.cpp
++++ b/src/core/CLucene/document/DateTools.cpp
+@@ -9,6 +9,8 @@
+ #include "DateTools.h"
+ #include "CLucene/util/Misc.h"
+ 
++#include <time.h>
++
+ CL_NS_USE(util)
+ CL_NS_DEF(document)
+ 
+-- 
+2.54.0
+
