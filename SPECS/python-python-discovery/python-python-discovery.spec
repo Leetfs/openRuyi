@@ -9,17 +9,18 @@
 %global pypi_name python-discovery
 
 Name:           python-python-discovery
-Version:        1.6.1
+Version:        1.9.0
 Release:        %autorelease
 Summary:        Python interpreter discovery
 License:        MIT
 URL:            https://github.com/tox-dev/python-discovery
-#!RemoteAsset:  sha256:cf87d3627dfb4412437fdd5b13eae402607722998d21567993aedbc59b23c15e
+#!RemoteAsset:  sha256:88beb57e51b919c30f303b053ec41359298ca349192035b0a802c76347ae96d7
 Source0:        https://files.pythonhosted.org/packages/source/p/%{pypi_name}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
 
 BuildOption(install):  -l %{srcname} +auto
+# The Windows interpreter-discovery helpers require Windows APIs during import.
 BuildOption(check):  -e 'python_discovery._windows.*'
 
 BuildRequires:  pyproject-rpm-macros
