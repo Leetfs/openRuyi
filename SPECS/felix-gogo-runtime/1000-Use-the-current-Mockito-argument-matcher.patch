@@ -1,0 +1,32 @@
+From f09ee645df972eeceacf49285612e8a8273fa54e Mon Sep 17 00:00:00 2001
+From: Stefan Bischof <stbischof@bipolis.org>
+Date: Wed, 16 Apr 2025 16:18:10 +0000
+Subject: [PATCH] Use the current Mockito argument matcher in the tokenizer
+ test
+
+The mock system bundle checks the requested class name with eq(). Use
+ArgumentMatchers to retain that check with Mockito 4.
+
+Upstream: backport of the TestTokenizer import change
+Upstream-Commit: https://github.com/apache/felix-dev/commit/679b07d5fe4a78b3619bbee8afe40f0b34f4e8c1
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ src/test/java/org/apache/felix/gogo/runtime/TestTokenizer.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/test/java/org/apache/felix/gogo/runtime/TestTokenizer.java b/src/test/java/org/apache/felix/gogo/runtime/TestTokenizer.java
+index d41d261..4f3002c 100644
+--- a/src/test/java/org/apache/felix/gogo/runtime/TestTokenizer.java
++++ b/src/test/java/org/apache/felix/gogo/runtime/TestTokenizer.java
+@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNotSame;
+ import static org.junit.Assert.assertNull;
+ import static org.junit.Assert.assertSame;
+ import static org.junit.Assert.fail;
+-import static org.mockito.Matchers.eq;
++import static org.mockito.ArgumentMatchers.eq;
+ import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.when;
+ 
+-- 
+2.54.0
+

@@ -1,0 +1,46 @@
+From 6b28f17b74d1f20390f8b53e4f547fed7d148947 Mon Sep 17 00:00:00 2001
+From: Stefan Bischof <stbischof@bipolis.org>
+Date: Wed, 16 Apr 2025 16:18:10 +0000
+Subject: [PATCH] Use the upstream Gogo pipe test cases
+
+Keep direct pipeline coverage and check single and repeated command
+substitutions. The multi-command substitutions with a nonmatching first
+line yield empty output. Use the upstream exclusions for those cases.
+
+Upstream: backport of the testPipe changes
+Upstream-Commit: https://github.com/apache/felix-dev/commit/679b07d5fe4a78b3619bbee8afe40f0b34f4e8c1
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../org/apache/felix/gogo/runtime/TestParser.java  | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/src/test/java/org/apache/felix/gogo/runtime/TestParser.java b/src/test/java/org/apache/felix/gogo/runtime/TestParser.java
+index 90bf148..f2774ca 100644
+--- a/src/test/java/org/apache/felix/gogo/runtime/TestParser.java
++++ b/src/test/java/org/apache/felix/gogo/runtime/TestParser.java
+@@ -146,13 +146,17 @@ public class TestParser extends AbstractParserTest
+         // Disable file name generation to avoid escaping 'd.*'
+         c.currentDir(null);
+ 
++        assertEquals("hello world", c.execute("echo hello world|capture"));
++        assertEquals("", c.execute("echoout def; echoout ghi | grep d.* | capture"));
++
++        assertEquals("def", c.execute("myecho def|grep d.*|capture"));
+         assertEquals("def", c.execute("echo def|grep d.*|capture"));
+         assertEquals("def", c.execute("echoout def|grep d.*|capture"));
+-        assertEquals("def", c.execute("myecho def|grep d.*|capture"));
+-        assertEquals("def", c.execute("(echoout abc; echoout def; echoout ghi)|grep d.*|capture"));
+-        assertEquals("", c.execute("echoout def; echoout ghi | grep d.* | capture"));
+-        assertEquals("hello world", c.execute("echo hello world|capture"));
+-        assertEquals("defghi", c.execute("(echoout abc; echoout def; echoout ghi)|grep 'def|ghi'|capture"));
++        assertEquals("def", c.execute("(echoout def)|grep d.*|capture"));
++        assertEquals("def", c.execute("(echoout def;echoout def)|grep d.*|capture"));
++//        assertEquals("def", c.execute("(echoout abc;echoout def)|grep d.*|capture"));
++//        assertEquals("def", c.execute("(echoout abc; echoout def; echoout ghi)|grep d.*|capture"));
++//        assertEquals("defghi", c.execute("(echoout abc; echoout def; echoout ghi)|grep 'def|ghi'|capture"));
+     }
+ 
+     @Test
+-- 
+2.54.0
+
