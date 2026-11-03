@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: (C) 2026 Institute of Software, Chinese Academy of Sciences (ISCAS)
 # SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
 # SPDX-FileContributor: purofle <yuguo.or@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -8,12 +9,12 @@
 %global pypi_name typing_inspection
 
 Name:           python-typing-inspection
-Version:        0.4.2
+Version:        0.4.4
 Release:        %autorelease
 Summary:        Runtime typing introspection tools
 License:        MIT
 URL:            https://github.com/pydantic/typing-inspection
-#!RemoteAsset:  sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464
+#!RemoteAsset:  sha256:547274fa6b0a561ccf549cc9524b999a578e737d015d8709d021f9d0d13bea47
 Source0:        https://files.pythonhosted.org/packages/source/t/%{srcname}/%{pypi_name}-%{version}.tar.gz
 BuildArch:      noarch
 BuildSystem:    pyproject
