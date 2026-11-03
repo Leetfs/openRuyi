@@ -1,0 +1,64 @@
+From 93fc817601924a694dd21a7b9928cbcc86cdea4f Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 04:34:12 +0800
+Subject: [PATCH] Use installed Firebird BtYacc and CLoop generators
+
+---
+ builds/posix/Makefile.in   | 14 ++++++--------
+ builds/posix/make.defaults |  4 ++--
+ 2 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/builds/posix/Makefile.in b/builds/posix/Makefile.in
+index 13e83cb..e7c4653 100644
+--- a/builds/posix/Makefile.in
++++ b/builds/posix/Makefile.in
+@@ -94,7 +94,7 @@ ERR_CONSTS=$(ROOT)/lang_helpers/gds_codes.pas
+ updateCloopInterfaces : $(API_H_FILE) $(API_PAS_FILE)
+ 
+ $(API_H_FILE): $(IDL_FILE)
+-	$(CLOOP) $< c++ $@ IDL_FB_INTERFACES_H Firebird I
++	$(CLOOP) --input $< --output-format c++ --output $@ --header-guard IDL_FB_INTERFACES_H --class-name Firebird --prefix I
+ 
+ $(TMP_FUNCS): $(PASCAL_SOURCES) $(XPB_CONSTS) $(ERR_CONSTS)
+ 	cat $(PAS_ROOT)/fb_get_master_interface.pas >$(TMP_FUNCS)
+@@ -102,11 +102,11 @@ $(TMP_FUNCS): $(PASCAL_SOURCES) $(XPB_CONSTS) $(ERR_CONSTS)
+ 	grep '[[:space:]]isc_' $(ERR_CONSTS) >>$(TMP_FUNCS)
+ 
+ $(API_PAS_FILE): $(IDL_FILE) $(PASCAL_SOURCES) $(TMP_FUNCS)
+-	$(CLOOP) $(IDL_FILE) pascal $@ Firebird --uses SysUtils \
+-		--interfaceFile $(PAS_ROOT)/Pascal.interface.pas \
+-    	--implementationFile $(PAS_ROOT)/Pascal.implementation.pas \
+-    	--exceptionClass FbException \
+-    	--functionsFile $(TMP_FUNCS) \
++	$(CLOOP) --input $(IDL_FILE) --output-format pascal --output $@ --unit-name Firebird --uses SysUtils \
++		--interface-file $(PAS_ROOT)/Pascal.interface.pas \
++    	--implementation-file $(PAS_ROOT)/Pascal.implementation.pas \
++    	--exception-class FbException \
++    	--functions-file $(TMP_FUNCS) \
+     	--prefix I
+ 
+ updateBuildNum : $(SRC_ROOT)/jrd/build_no.h $(GEN_ROOT)/Make.Version
+@@ -127,8 +127,6 @@ LIBTOOL=libtool
+ endif
+ 
+ extern:
+-	$(MAKE) -C $(ROOT)/extern/btyacc
+-	$(MAKE) -C $(ROOT)/extern/cloop TARGET=release WITH_FPC=0 BUILD_DIR=$(TMP_ROOT)/cloop OUT_DIR=$(GEN_ROOT)/$(TARGET)/cloop
+ 
+ ifeq ($(TOMBUILD_FLG),Y)
+ 	$(MAKE) -C $(ROOT)/extern/libtommath -f makefile.shared LIBTOOL=$(LIBTOOL)
+diff --git a/builds/posix/make.defaults b/builds/posix/make.defaults
+index 2fcd095..cf6c178 100644
+--- a/builds/posix/make.defaults
++++ b/builds/posix/make.defaults
+@@ -155,8 +155,8 @@ CAT=			cat
+ AR=			ar @AR_OPTIONS@
+ LN=			@LN_S@
+ RANLIB=			@RANLIB@
+-BTYACC=$(ROOT)/extern/btyacc/btyacc
+-CLOOP=$(GEN_ROOT)/$(TARGET)/cloop/release/bin/cloop
++BTYACC=firebird-btyacc
++CLOOP=cloop
+ 
+ CC =	@CC@
+ CXX =	@CXX@

@@ -1,0 +1,102 @@
+From b93d704d27bcfbdb875bdca4a33da8853b3106d3 Mon Sep 17 00:00:00 2001
+From: Damyan Ivanov <dmn@debian.org>
+Date: Wed, 3 Sep 2025 09:32:47 +0000
+Subject: [PATCH] use system-wide boost headers
+
+Gbp-Pq: Name packaged-boost.patch
+---
+ src/include/firebird/Message.h | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/src/include/firebird/Message.h b/src/include/firebird/Message.h
+index 6af7db2..5738820 100644
+--- a/src/include/firebird/Message.h
++++ b/src/include/firebird/Message.h
+@@ -25,7 +25,7 @@
+ 
+ #include "ibase.h"
+ #include "./Interface.h"
+-#include "./impl/boost/preprocessor/seq/for_each_i.hpp"
++#include <boost/preprocessor/seq/for_each_i.hpp>
+ #include <assert.h>
+ #include <string.h>
+ 
+@@ -36,7 +36,7 @@
+ #endif
+ 
+ #define FB_MESSAGE(name, statusType, fields)	\
+-	FB__MESSAGE_I(name, statusType, 2, FB_BOOST_PP_CAT(FB__MESSAGE_X fields, 0), )
++	FB__MESSAGE_I(name, statusType, 2, BOOST_PP_CAT(FB__MESSAGE_X fields, 0), )
+ 
+ #define FB__MESSAGE_X(x, y) ((x, y)) FB__MESSAGE_Y
+ #define FB__MESSAGE_Y(x, y) ((x, y)) FB__MESSAGE_X
+@@ -44,7 +44,7 @@
+ #define FB__MESSAGE_Y0
+ 
+ #define FB_TRIGGER_MESSAGE(name, statusType, fields)	\
+-	FB__MESSAGE_I(name, statusType, 3, FB_BOOST_PP_CAT(FB_TRIGGER_MESSAGE_X fields, 0), \
++	FB__MESSAGE_I(name, statusType, 3, BOOST_PP_CAT(FB_TRIGGER_MESSAGE_X fields, 0), \
+ 		FB_TRIGGER_MESSAGE_MOVE_NAMES(name, fields))
+ 
+ #define FB_TRIGGER_MESSAGE_X(x, y, z) ((x, y, z)) FB_TRIGGER_MESSAGE_Y
+@@ -57,18 +57,18 @@
+ 	{	\
+ 		struct Type	\
+ 		{	\
+-			FB_BOOST_PP_SEQ_FOR_EACH_I(FB__MESSAGE_FIELD, size, fields)	\
++			BOOST_PP_SEQ_FOR_EACH_I(FB__MESSAGE_FIELD, size, fields)	\
+ 		};	\
+ 		\
+ 		static void setup(statusType* status, ::Firebird::IMetadataBuilder* builder)	\
+ 		{	\
+ 			unsigned index = 0;	\
+ 			moveNames	\
+-			FB_BOOST_PP_SEQ_FOR_EACH_I(FB__MESSAGE_META, size, fields)	\
++			BOOST_PP_SEQ_FOR_EACH_I(FB__MESSAGE_META, size, fields)	\
+ 		}	\
+ 		\
+ 		name(statusType* status, ::Firebird::IMaster* master)	\
+-			: desc(master, status, FB_BOOST_PP_SEQ_SIZE(fields), setup)	\
++			: desc(master, status, BOOST_PP_SEQ_SIZE(fields), setup)	\
+ 		{	\
+ 		}	\
+ 		\
+@@ -107,11 +107,11 @@
+ 	}
+ 
+ #define FB__MESSAGE_FIELD(r, _, i, xy)	\
+-	FB_BOOST_PP_CAT(FB__TYPE_, FB_BOOST_PP_TUPLE_ELEM(_, 0, xy)) FB_BOOST_PP_TUPLE_ELEM(_, 1, xy);	\
+-	ISC_SHORT FB_BOOST_PP_CAT(FB_BOOST_PP_TUPLE_ELEM(_, 1, xy), Null);
++	BOOST_PP_CAT(FB__TYPE_, BOOST_PP_TUPLE_ELEM(_, 0, xy)) BOOST_PP_TUPLE_ELEM(_, 1, xy);	\
++	ISC_SHORT BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(_, 1, xy), Null);
+ 
+ #define FB__MESSAGE_META(r, _, i, xy)	\
+-	FB_BOOST_PP_CAT(FB__META_, FB_BOOST_PP_TUPLE_ELEM(_, 0, xy))	\
++	BOOST_PP_CAT(FB__META_, BOOST_PP_TUPLE_ELEM(_, 0, xy))	\
+ 	++index;
+ 
+ // Types - metadata
+@@ -202,7 +202,7 @@
+ #define FB__TYPE_FB_INTL_VARCHAR(len, charSet)	::Firebird::FbVarChar<(len)>
+ 
+ #define FB_TRIGGER_MESSAGE_MOVE_NAMES(name, fields)	\
+-	FB_TRIGGER_MESSAGE_MOVE_NAMES_I(name, 3, FB_BOOST_PP_CAT(FB_TRIGGER_MESSAGE_MOVE_NAMES_X fields, 0))
++	FB_TRIGGER_MESSAGE_MOVE_NAMES_I(name, 3, BOOST_PP_CAT(FB_TRIGGER_MESSAGE_MOVE_NAMES_X fields, 0))
+ 
+ #define FB_TRIGGER_MESSAGE_MOVE_NAMES_X(x, y, z) ((x, y, z)) FB_TRIGGER_MESSAGE_MOVE_NAMES_Y
+ #define FB_TRIGGER_MESSAGE_MOVE_NAMES_Y(x, y, z) ((x, y, z)) FB_TRIGGER_MESSAGE_MOVE_NAMES_X
+@@ -210,12 +210,12 @@
+ #define FB_TRIGGER_MESSAGE_MOVE_NAMES_Y0
+ 
+ #define FB_TRIGGER_MESSAGE_MOVE_NAMES_I(name, size, fields)	\
+-	FB_BOOST_PP_SEQ_FOR_EACH_I(FB_TRIGGER_MESSAGE_MOVE_NAME, size, fields)	\
++	BOOST_PP_SEQ_FOR_EACH_I(FB_TRIGGER_MESSAGE_MOVE_NAME, size, fields)	\
+ 	builder->truncate(status, index);	\
+ 	index = 0;
+ 
+ #define FB_TRIGGER_MESSAGE_MOVE_NAME(r, _, i, xy)	\
+-	builder->moveNameToIndex(status, FB_BOOST_PP_TUPLE_ELEM(_, 2, xy), index++);
++	builder->moveNameToIndex(status, BOOST_PP_TUPLE_ELEM(_, 2, xy), index++);
+ 
+ 
+ namespace Firebird {

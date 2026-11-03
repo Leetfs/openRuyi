@@ -1,0 +1,52 @@
+From 2c017481ad96acb5faa8780110e823bc9a9e8e43 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Caol=C3=A1n=20McNamara?= <caolan.mcnamara@collabora.com>
+Date: Wed, 4 Nov 2026 04:34:12 +0800
+Subject: [PATCH] Check the backup difference file against DatabaseAccess
+
+Backport the Firebird 3 patch from LibreOffice commit 736210ff4ced4919c9d045032833b060f3fb4bb5. Firebird pull request 9089 tracks the upstream implementation.
+---
+ src/jrd/nbak.cpp | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/src/jrd/nbak.cpp b/src/jrd/nbak.cpp
+index 3201778..893922a 100644
+--- a/src/jrd/nbak.cpp
++++ b/src/jrd/nbak.cpp
+@@ -35,6 +35,7 @@
+ #include "lck.h"
+ #include "cch.h"
+ #include "lck_proto.h"
++#include "jrd_proto.h"
+ #include "pag_proto.h"
+ #include "err_proto.h"
+ #include "cch_proto.h"
+@@ -224,6 +225,14 @@ void BackupManager::generateFilename()
+ void BackupManager::openDelta(thread_db* tdbb)
+ {
+ 	fb_assert(!diff_file);
++
++	// Verify difference file path against DatabaseAccess entry of firebird.conf
++	if (!JRD_verify_database_access(diff_name))
++	{
++		ERR_post(Arg::Gds(isc_conf_access_denied) << Arg::Str("difference file") <<
++													 Arg::Str(diff_name));
++	}
++
+ 	diff_file = PIO_open(tdbb, diff_name, diff_name);
+ 
+ 	if (database->dbb_flags & (DBB_force_write | DBB_no_fs_cache))
+@@ -283,6 +292,14 @@ void BackupManager::beginBackup(thread_db* tdbb)
+ 	{
+ 		// Create file
+ 		NBAK_TRACE(("Creating difference file %s", diff_name.c_str()));
++
++		// Verify difference file path against DatabaseAccess entry of firebird.conf
++		if (!JRD_verify_database_access(diff_name))
++		{
++			ERR_post(Arg::Gds(isc_conf_access_denied) << Arg::Str("difference file") <<
++														 Arg::Str(diff_name));
++		}
++
+ 		diff_file = PIO_create(tdbb, diff_name, true, false);
+ 	}
+ 	catch (const Firebird::Exception&)
