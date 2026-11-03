@@ -6,12 +6,12 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           libheif
-Version:        1.23.6
+Version:        1.23.7
 Release:        %autorelease
 Summary:        HEIF and AVIF file format decoder and encoder
 License:        LGPL-3.0-or-later and MIT
 URL:            https://github.com/strukturag/libheif
-#!RemoteAsset:  sha256:c9a00b0452f5c16d72ef71e5e40c0e90fbe2ad37148d27a1b2f9bb21546f5f03
+#!RemoteAsset:  sha256:90e389caad285ca4946461d56d1c115e56bcbb5141d9038050282af91064fbc7
 Source0:        https://github.com/strukturag/libheif/archive/refs/tags/v%{version}.tar.gz
 BuildSystem:    cmake
 
