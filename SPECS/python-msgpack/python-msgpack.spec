@@ -2,18 +2,19 @@
 # SPDX-FileCopyrightText: (C) 2025, 2026 openRuyi Project Contributors
 # SPDX-FileContributor: Yifan Xu <xuyifan@iscas.ac.cn>
 # SPDX-FileContributor: Zitao Zhou <zitao.oerv@isrc.iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
 %global srcname msgpack
 
 Name:           python-%{srcname}
-Version:        1.2.1
+Version:        1.2.4
 Release:        %autorelease
 Summary:        Python MessagePack (de)serializer
 License:        Apache-2.0
 URL:            https://msgpack.org/
-#!RemoteAsset:  sha256:04c721c2c7448767e9e3f2520a475663d8ee0f09c31890f6d2bd70fd636a9647
+#!RemoteAsset:  sha256:475c44e12f2a5de766a8448783f149c9b33f3f49b88953c6cd739a77d93c732c
 Source0:        https://files.pythonhosted.org/packages/source/m/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildSystem:    pyproject
 
