@@ -1,0 +1,31 @@
+From c737237d8a70fd605dbb04affa26e2881b807373 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Tue, 3 Nov 2026 23:24:01 +0800
+Subject: [PATCH] Use BeanShell 2.1.1 for the expression rule
+
+Select the 2.x maintenance release of the same BeanShell artifact for
+EvaluateBeanshell. Its Interpreter API evaluates the rule expression.
+
+Upstream-Status: Downstream (distribution dependency)
+Upstream: https://github.com/apache/maven-enforcer/blob/enforcer-3.6.2/enforcer-rules/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ enforcer-rules/pom.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/enforcer-rules/pom.xml b/enforcer-rules/pom.xml
+index 92bd35e..51c5d9d 100644
+--- a/enforcer-rules/pom.xml
++++ b/enforcer-rules/pom.xml
+@@ -115,7 +115,7 @@
+     <dependency>
+       <groupId>org.apache-extras.beanshell</groupId>
+       <artifactId>bsh</artifactId>
+-      <version>2.0b6</version>
++      <version>2.1.1</version>
+     </dependency>
+     <dependency>
+       <groupId>org.hamcrest</groupId>
+-- 
+2.54.0
+
