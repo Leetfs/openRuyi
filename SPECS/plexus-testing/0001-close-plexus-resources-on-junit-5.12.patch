@@ -1,0 +1,32 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Release extension resources when running on JUnit 5.12
+
+JUnit 5.12 closes Store.CloseableResource entries when a test finishes.
+Register the container and thread-local cleanup with that interface so
+that the next test starts with its own base directory.
+
+Upstream: downstream compatibility with JUnit 5.12
+Reference: https://junit.org/junit5/docs/5.13.0/user-guide/#extensions-keeping-state
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/main/java/org/codehaus/plexus/testing/PlexusExtension.java b/src/main/java/org/codehaus/plexus/testing/PlexusExtension.java
+--- a/src/main/java/org/codehaus/plexus/testing/PlexusExtension.java
++++ b/src/main/java/org/codehaus/plexus/testing/PlexusExtension.java
+@@ -64,7 +64,7 @@
+  */
+ public class PlexusExtension implements BeforeEachCallback, AfterEachCallback {
+ 
+-    private static class PlexusClosableWrapper implements AutoCloseable {
++    private static class PlexusClosableWrapper implements ExtensionContext.Store.CloseableResource {
+         private final PlexusContainer container;
+ 
+         PlexusClosableWrapper(PlexusContainer container) {
+@@ -108,7 +108,7 @@
+         // must be done hear as this method is always executed
+         extensionContextThreadLocal.set(context);
+         context.getStore(PLEXUS_EXTENSION)
+-                .put("threadLocalCloseable", (AutoCloseable) extensionContextThreadLocal::remove);
++                .put("threadLocalCloseable", (ExtensionContext.Store.CloseableResource) extensionContextThreadLocal::remove);
+ 
+         // ----------------------------------------------------------------------------
+         // Context Setup
