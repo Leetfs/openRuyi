@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: (C) 2025 openRuyi Project Contributors
 # SPDX-FileContributor: Zheng Junjie <zhengjunjie@iscas.ac.cn>
 # SPDX-FileContributor: misaka00251 <liuxin@iscas.ac.cn>
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
@@ -22,13 +23,13 @@ Name:           python-%{srcname}-bootstrap
 %else
 Name:           python-%{srcname}
 %endif
-Version:        25.0
+Version:        26.3
 Release:        %autorelease
 Summary:        Core utilities for Python packages
 License:        BSD-2-Clause OR Apache-2.0
 URL:            https://github.com/pypa/packaging
-#!RemoteAsset:  sha256:15b6ba95eb12d8f99dcf215ea37cbea16812ef28358e8ef3d9344acb827acac1
-Source:         %{url}/archive/%{version}/%{srcname}-%{version}.tar.gz
+#!RemoteAsset:  sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79
+Source:         https://files.pythonhosted.org/packages/source/p/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
 
 BuildRequires:  pyproject-rpm-macros
@@ -80,7 +81,7 @@ echo '%{python3_sitelib}/packaging*' > %{pyproject_files}
 %endif
 
 %files -f %{pyproject_files}
-%doc README.rst CHANGELOG.rst CONTRIBUTING.rst
+%doc README.rst CHANGELOG.rst
 %license LICENSE LICENSE.APACHE LICENSE.BSD
 
 %changelog
