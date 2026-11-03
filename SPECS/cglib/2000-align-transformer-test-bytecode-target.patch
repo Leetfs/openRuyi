@@ -1,0 +1,37 @@
+From 0a8bbc82feab81d6926c2b70c1af5cf146106a39 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 01:08:32 +0800
+Subject: [PATCH] Compile transformer fixtures at the configured class-file
+ level
+
+CGLIB 3.2 generates field initialization hooks for the Java 8 class
+format. The parent explicitly sets testSource and testTarget to the
+running JDK specification version; on JDK 25 this makes the JVM reject a
+static final field write before the transformation tests start. Use the
+same selected source and target levels for library classes and fixtures.
+
+Upstream: downstream build integration
+Reference: https://github.com/cglib/cglib/blob/RELEASE_3_2_9/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ pom.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/pom.xml b/pom.xml
+index 521819d..6e8988b 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -118,8 +118,8 @@
+                         <source>${java.version.source}</source>
+                         <target>${java.version.target}</target>
+                         <compilerArgument>${java.compiler.argument}</compilerArgument>
+-                        <testSource>${java.specification.version}</testSource>
+-                        <testTarget>${java.specification.version}</testTarget>
++                        <testSource>${java.version.source}</testSource>
++                        <testTarget>${java.version.target}</testTarget>
+                         <testCompilerArgument>${java.test.compiler.argument}</testCompilerArgument>
+                     </configuration>
+                 </plugin>
+-- 
+2.54.0
+

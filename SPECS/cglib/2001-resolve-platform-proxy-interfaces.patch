@@ -1,0 +1,66 @@
+From bca2c881ee485803394140109448e06cd19046a7 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 01:14:08 +0800
+Subject: [PATCH] Use a loader that can see both the proxy factory and platform
+ interfaces
+
+On modular JDKs java.sql interfaces are defined by the platform loader.
+That loader cannot resolve CGLIB's Factory while defining an application
+proxy. Use the CGLIB defining loader when the default cannot resolve the
+factory and the fallback sees the same superclass and interface objects.
+Keep the selected loader otherwise.
+
+Upstream: downstream modular JDK integration
+Reference: https://github.com/cglib/cglib/blob/RELEASE_3_2_9/cglib/src/test/java/net/sf/cglib/proxy/TestEnhancer.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../java/net/sf/cglib/proxy/Enhancer.java     | 33 +++++++++++++++----
+ 1 file changed, 27 insertions(+), 6 deletions(-)
+
+diff --git a/cglib/src/main/java/net/sf/cglib/proxy/Enhancer.java b/cglib/src/main/java/net/sf/cglib/proxy/Enhancer.java
+index 5889323..1610514 100644
+--- a/cglib/src/main/java/net/sf/cglib/proxy/Enhancer.java
++++ b/cglib/src/main/java/net/sf/cglib/proxy/Enhancer.java
+@@ -493,12 +493,33 @@ public class Enhancer extends AbstractClassGenerator
+     }
+ 
+     protected ClassLoader getDefaultClassLoader() {
+-        if (superclass != null) {
+-            return superclass.getClassLoader();
+-        } else if (interfaces != null) {
+-            return interfaces[0].getClassLoader();
+-        } else {
+-            return null;
++        Class anchor = superclass != null ? superclass :
++            (interfaces != null && interfaces.length > 0 ? interfaces[0] : null);
++        ClassLoader selected = anchor == null ? null : anchor.getClassLoader();
++        ClassLoader library = Enhancer.class.getClassLoader();
++        if (selected == null || selected == library || isVisible(Factory.class, selected)) {
++            return selected;
++        }
++        // Platform modules such as java.sql cannot see application callbacks.
++        // Change loaders only if every supplied type keeps its class identity.
++        if (superclass != null && !isVisible(superclass, library)) {
++            return selected;
++        }
++        if (interfaces != null) {
++            for (int i = 0; i < interfaces.length; i++) {
++                if (!isVisible(interfaces[i], library)) {
++                    return selected;
++                }
++            }
++        }
++        return library;
++    }
++
++    private static boolean isVisible(Class type, ClassLoader loader) {
++        try {
++            return Class.forName(type.getName(), false, loader) == type;
++        } catch (ClassNotFoundException e) {
++            return false;
+         }
+     }
+ 
+-- 
+2.54.0
+

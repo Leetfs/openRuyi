@@ -1,0 +1,63 @@
+From 92648fba6561a05b79135d20ecf677954571e237 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 01:14:08 +0800
+Subject: [PATCH] Check the non-public String methods present on the test JVM
+
+The private JDK implementation no longer has getChars(char[], int).
+Check the original FastClass visibility contract against the actual
+package-private instance methods of bootstrap-loaded String, and require
+at least one method to be exercised.
+
+Upstream: downstream JDK test integration
+Reference: https://github.com/cglib/cglib/blob/RELEASE_3_2_9/cglib/src/test/java/net/sf/cglib/reflect/TestFastClass.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../net/sf/cglib/reflect/TestFastClass.java   | 24 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/cglib/src/test/java/net/sf/cglib/reflect/TestFastClass.java b/cglib/src/test/java/net/sf/cglib/reflect/TestFastClass.java
+index 9fe838c..bc4585b 100644
+--- a/cglib/src/test/java/net/sf/cglib/reflect/TestFastClass.java
++++ b/cglib/src/test/java/net/sf/cglib/reflect/TestFastClass.java
+@@ -19,6 +19,7 @@ import java.io.IOException;
+ import java.lang.reflect.Constructor;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
+ import java.util.ArrayList;
+ 
+ import junit.framework.Test;
+@@ -656,15 +657,22 @@ public class TestFastClass extends net.sf.cglib.CodeGenTestCase {
+     }
+ 
+     public void testPackagePrivateMethod_bootstrapClassLoader() throws Exception {
+-        // String has a package private method getChars (used by AbstractStringBuilder), previous
+-        // versions of fastclass would try to call it and it would result in an
+-        // IllegalAccessException at runtime.
++        // FastClass must not expose package-private bootstrap methods.
+         FastClass fc = FastClass.create(String.class);
+-        Method method = String.class.getDeclaredMethod("getChars", char[].class, int.class);
+-        try {
+-            fc.getMethod(method);
+-            fail();
+-        } catch (IllegalArgumentException iae) {}
++        int checked = 0;
++        for (Method method : String.class.getDeclaredMethods()) {
++            int modifiers = method.getModifiers();
++            if ((modifiers & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC)) != 0
++                    || method.isSynthetic()) {
++                continue;
++            }
++            try {
++                fc.getMethod(method);
++                fail("Exposed package-private String method: " + method);
++            } catch (IllegalArgumentException expected) {}
++            checked++;
++        }
++        assertTrue("Expected a package-private String instance method", checked > 0);
+     }
+     
+ }
+-- 
+2.54.0
+
