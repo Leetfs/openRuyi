@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Eclipse SDK
+Comment=Develop Java applications and Eclipse plug-ins
+Exec=eclipse
+Icon=eclipse
+Terminal=false
+Categories=Development;IDE;Java;
