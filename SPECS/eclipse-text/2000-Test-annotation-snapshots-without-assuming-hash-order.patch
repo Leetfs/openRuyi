@@ -1,0 +1,61 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 04 Nov 2026 05:41:39 +0800
+Subject: [PATCH] Test annotation snapshots without assuming hash order
+
+AnnotationMap copies the keys of a HashMap into its iterator. The last key
+need not be the last annotation inserted. Remove an annotation which the
+iterator has not visited and verify both the live model and the snapshot.
+
+Upstream: pending
+Reference: https://github.com/eclipse-platform/eclipse.platform.ui/blob/dbc9a7b3d16053c6eb75a25755f920ef69ea4b3b/tests/org.eclipse.text.tests/src/org/eclipse/text/tests/Bug401391Test.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/tests/org.eclipse.text.tests/src/org/eclipse/text/tests/Bug401391Test.java b/tests/org.eclipse.text.tests/src/org/eclipse/text/tests/Bug401391Test.java
+--- a/tests/org.eclipse.text.tests/src/org/eclipse/text/tests/Bug401391Test.java
++++ b/tests/org.eclipse.text.tests/src/org/eclipse/text/tests/Bug401391Test.java
+@@ -17,12 +17,12 @@
+ import static org.junit.jupiter.api.Assertions.assertEquals;
+ import static org.junit.jupiter.api.Assertions.assertNotNull;
+ import static org.junit.jupiter.api.Assertions.assertNull;
+-import static org.junit.jupiter.api.Assertions.assertSame;
+ import static org.junit.jupiter.api.Assertions.assertTrue;
+ 
+ import java.lang.reflect.Field;
+ import java.util.AbstractMap;
+ import java.util.AbstractSet;
++import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.Map;
+ import java.util.Set;
+@@ -140,18 +140,22 @@
+ 
+ 	@Test
+ 	public void testRemoveAnnotationWhileIterating() throws Exception {
+-		Annotation removeWhileIterating = new Annotation(false);
+-		fFirstInnerModel.addAnnotation(removeWhileIterating, new Position(5, 2));
++		Annotation existing = fFirstInnerModel.getAnnotationIterator().next();
++		Annotation added = new Annotation(false);
++		fFirstInnerModel.addAnnotation(added, new Position(5, 2));
+ 		Iterator<Annotation> iter = fAnnotationModel.getAnnotationIterator();
+ 		assertTrue(iter.hasNext());
+-		iter.next();
+-		assertTrue(iter.hasNext());
+-		iter.next();
+-		fFirstInnerModel.removeAnnotation(removeWhileIterating);
++		Annotation first = iter.next();
++		Annotation removed = first == added ? existing : added;
++		fFirstInnerModel.removeAnnotation(removed);
++		assertNull(fFirstInnerModel.getPosition(removed));
+ 		assertEquals(2, count(fAnnotationModel.getAnnotationIterator()));
+-		assertTrue(iter.hasNext());
+-		// Traverses a copy of the model at the time the iterator was created
+-		assertSame(removeWhileIterating, iter.next());
++
++		// The existing iterator still includes the unvisited annotation that was removed.
++		var remaining = new ArrayList<Annotation>();
++		iter.forEachRemaining(remaining::add);
++		assertEquals(2, remaining.size());
++		assertTrue(remaining.contains(removed));
+ 	}
+ 
+ 	private int count(Iterator<?> iter) {

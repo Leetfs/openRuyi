@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.eclipse.platform</groupId>
+  <artifactId>org.eclipse.core.commands</artifactId>
+  <version>3.12.500</version>
+  <name>Commands</name>
+  <description>Commands</description>
+  <url>https://github.com/eclipse-platform/eclipse.platform.ui/</url>
+  <organization>
+    <name>Eclipse Foundation</name>
+    <url>https://www.eclipse.org</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>EPL-2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <url>https://github.com/eclipse-platform/eclipse.platform.ui/graphs/contributors</url>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/eclipse-platform/eclipse.platform.ui.git</connection>
+    <developerConnection>scm:git:https://github.com/eclipse-platform/eclipse.platform.ui.git</developerConnection>
+    <tag>1a4d1a8e3168d76935c4f3407a8bf7b6e271d28f</tag>
+    <url>https://github.com/eclipse-platform/eclipse.platform.ui/tree/1a4d1a8e3168d76935c4f3407a8bf7b6e271d28f/bundles/org.eclipse.core.commands</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/eclipse-platform/eclipse.platform.ui/issues</url>
+  </issueManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.platform</groupId>
+      <artifactId>org.eclipse.equinox.common</artifactId>
+      <version>3.20.300</version>
+      <optional>false</optional>
+    </dependency>
+  </dependencies>
+</project>
