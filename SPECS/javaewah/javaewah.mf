@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: com.googlecode.javaewah.JavaEWAH
+Bundle-Name: JavaEWAH
+Bundle-Version: 1.2.3
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Export-Package: com.googlecode.javaewah;uses:="com.googlecode.javaewa
+ h.symmetric";version="1.2.3",com.googlecode.javaewah.datastructure;u
+ ses:="com.googlecode.javaewah";version="1.2.3",com.googlecode.javaew
+ ah.symmetric;uses:="com.googlecode.javaewah,com.googlecode.javaewah.
+ datastructure";version="1.2.3"
+Import-Package: com.googlecode.javaewah,com.googlecode.javaewah.datas
+ tructure
+Multi-Release: true
