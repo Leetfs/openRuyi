@@ -1,0 +1,8 @@
+<project name="OpenPGP libraries" basedir="." default="openpgp">
+  <import file="ant/jdk18+.xml"/>
+  <target name="openpgp" depends="init">
+    <ant antfile="ant/bc+-build.xml" dir="." target="build-provider"/>
+    <ant antfile="ant/bc+-build.xml" dir="." target="build-util"/>
+    <ant antfile="ant/bc+-build.xml" dir="." target="build-pg"/>
+  </target>
+</project>

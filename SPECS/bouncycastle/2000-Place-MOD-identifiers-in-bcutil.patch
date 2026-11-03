@@ -1,0 +1,41 @@
+From b34c3d1a297e150ebc5eb1f710ba90bc2f6863d8 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 03:10:04 +0800
+Subject: [PATCH] Keep the MOD object identifiers in the utility artifact
+
+The util module exports org.bouncycastle.asn1.mod in its Java 9 module
+descriptor. The Gradle source set and published source JAR place
+ModObjectIdentifiers there, while the Ant source collector puts the
+package into the provider. Adjust both Ant file sets to match the module
+descriptor and avoid splitting the package between JARs.
+
+Upstream: downstream Ant build integration
+Reference: https://github.com/bcgit/bc-java/blob/r1rv86/util/src/main/jdk1.9/module-info.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ ant/bc+-build.xml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ant/bc+-build.xml b/ant/bc+-build.xml
+index 339f93a..64dabe5 100644
+--- a/ant/bc+-build.xml
++++ b/ant/bc+-build.xml
+@@ -415,6 +415,7 @@
+                  <exclude name="org/bouncycastle/asn1/kisa/**" />
+                  <exclude name="org/bouncycastle/asn1/microsoft/**" />
+                  <exclude name="org/bouncycastle/asn1/misc/**" />
++                 <exclude name="org/bouncycastle/asn1/mod/**" />
+                  <exclude name="org/bouncycastle/asn1/mozilla/**" />
+                  <exclude name="org/bouncycastle/asn1/nsri/**" />
+                  <exclude name="org/bouncycastle/asn1/ntt/**" />
+@@ -838,6 +839,7 @@
+                  <include name="org/bouncycastle/asn1/kisa/**" />
+                  <include name="org/bouncycastle/asn1/microsoft/**" />
+                  <include name="org/bouncycastle/asn1/misc/**" />
++                 <include name="org/bouncycastle/asn1/mod/**" />
+                  <include name="org/bouncycastle/asn1/mozilla/**" />
+                  <include name="org/bouncycastle/asn1/nsri/**" />
+                  <include name="org/bouncycastle/asn1/ntt/**" />
+-- 
+2.54.0
+
