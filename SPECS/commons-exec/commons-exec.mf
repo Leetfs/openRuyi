@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.apache.commons.commons-exec
+Bundle-Name: Apache Commons Exec
+Bundle-Version: 1.6.0
+Bundle-Vendor: The Apache Software Foundation
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Export-Package: org.apache.commons.exec;version="1.6.0",org.apache.co
+ mmons.exec.environment;version="1.6.0";uses:="org.apache.commons.exe
+ c",org.apache.commons.exec.launcher;version="1.6.0";uses:="org.apach
+ e.commons.exec",org.apache.commons.exec.util;version="1.6.0"
+Import-Package: java.io,java.lang,java.lang.invoke,java.nio.charset,j
+ ava.nio.file,java.nio.file.attribute,java.time,java.time.temporal,ja
+ va.util,java.util.concurrent,java.util.concurrent.atomic,java.util.f
+ unction,java.util.stream
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))
+ "
+Multi-Release: true

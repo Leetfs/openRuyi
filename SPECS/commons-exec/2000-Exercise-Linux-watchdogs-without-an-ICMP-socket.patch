@@ -1,0 +1,37 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Exercise Linux watchdogs without an ICMP socket
+
+The watchdog tests need a process that survives until the timeout. On a
+Linux build worker without ICMP socket access, ping exits before the
+watchdog fires. Keep the shell child in the script case and use a process
+that writes to its pipe before waiting in the direct command case.
+
+Upstream: pending
+Reference: https://github.com/apache/commons-exec/blob/4a27212367272c91da8dc01732f9c20be964de48/src/test/java/org/apache/commons/exec/issues/Exec41Test.java
+---
+--- a/src/test/scripts/ping.sh
++++ b/src/test/scripts/ping.sh
+@@ -21,7 +21,10 @@
+ 
+ echo "[ping.sh] Blocking for $1 seconds ..."
+ # see EXEC-52 - option must appear after the hostname!
+-if test "$(uname -s)" = "HP-UX"
++if test "$(uname -s)" = "Linux"
++then
++        sleep "$1"
++elif test "$(uname -s)" = "HP-UX"
+ then
+         ping 127.0.0.1 -n $1
+ else
+--- a/src/test/java/org/apache/commons/exec/issues/Exec41Test.java
++++ b/src/test/java/org/apache/commons/exec/issues/Exec41Test.java
+@@ -99,6 +99,9 @@
+ 
+         if (OS.isFamilyWindows()) {
+             cmdLine = CommandLine.parse("ping.exe -n 10 -w 1000 127.0.0.1");
++        } else if ("Linux".equals(SystemProperties.getOsName())) {
++            // Exercise the pipe and watchdog without requiring ICMP socket permissions.
++            cmdLine = new CommandLine("sh").addArgument("-c").addArgument("echo watchdog; exec sleep 10", false);
+         } else if ("HP-UX".equals(SystemProperties.getOsName())) {
+             // see EXEC-52 - option must appear after the hostname!
+             cmdLine = CommandLine.parse("ping 127.0.0.1 -n 10");
