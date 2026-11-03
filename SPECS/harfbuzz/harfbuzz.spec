@@ -10,12 +10,12 @@
 %bcond gtk_doc 0
 
 Name:           harfbuzz
-Version:        14.0.0
+Version:        15.0.0
 Release:        %autorelease
 Summary:        Text shaping library
 License:        MIT-Modern-Variant
 URL:            https://github.com/harfbuzz/harfbuzz/
-#!RemoteAsset:  sha256:d4aa312728136e3dc7c3cda47b871614ce0d12bbb19f9dcac2ea70de836dc307
+#!RemoteAsset:  sha256:968536e9abd782f07f7954044c0c4020199fcdd39b41d221ec42d2a3be4a44df
 Source0:        %{url}/releases/download/%{version}/harfbuzz-%{version}.tar.xz
 BuildSystem:    meson
 
@@ -50,8 +50,8 @@ The %{name}-devel package contains libraries and header files for
 developing applications that use %{name}.
 
 %files
-%license COPYING
 %doc NEWS AUTHORS README.md
+%license COPYING
 %{_libdir}/libharfbuzz.so.0*
 %{_libdir}/libharfbuzz-gobject.so.0*
 %{_libdir}/libharfbuzz-subset.so.0*
