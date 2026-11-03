@@ -1,0 +1,41 @@
+From 65dbe727e60f67a84f4548ff0d1404a94a7c6edb Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 01:58:39 +0800
+Subject: [PATCH] Use the bootstrap bundle plugin to process Resolver's Bnd
+ instructions
+
+The Felix bundle plugin can run the existing Bnd library over compiled
+classes. Read the release's instructions from a per-module file so the
+API, implementation and their dependencies retain the upstream symbolic
+names, package exports and import version ranges.
+
+Upstream: downstream build integration
+Reference: https://github.com/apache/maven-resolver/blob/maven-resolver-1.9.27/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ pom.xml | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/pom.xml b/pom.xml
+index 18e5308..e5142e1 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -458,6 +458,15 @@
+             </excludes>
+           </configuration>
+         </plugin>
++        <plugin>
++          <groupId>org.apache.felix</groupId>
++          <artifactId>maven-bundle-plugin</artifactId>
++          <configuration>
++            <instructions>
++              <_include>${project.basedir}/bootstrap.bnd</_include>
++            </instructions>
++          </configuration>
++        </plugin>
+         <plugin>
+           <groupId>biz.aQute.bnd</groupId>
+           <artifactId>bnd-maven-plugin</artifactId>
+-- 
+2.54.0
+
