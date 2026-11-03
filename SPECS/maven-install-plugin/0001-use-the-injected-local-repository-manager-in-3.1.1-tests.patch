@@ -1,0 +1,65 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Use the container-injected Resolver factory in install tests
+
+Resolver 1.9 initializes the enhanced local repository manager with its
+path and tracking components through Plexus. Use the same factory as a
+Maven session when preparing each test's isolated local repository.
+
+Upstream: downstream adaptation for Maven Resolver 1.9
+Reference: https://github.com/apache/maven-install-plugin/tree/maven-install-plugin-3.1.1/src/test/java/org/apache/maven/plugins/install
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/test/java/org/apache/maven/plugins/install/InstallFileMojoTest.java b/src/test/java/org/apache/maven/plugins/install/InstallFileMojoTest.java
+--- a/src/test/java/org/apache/maven/plugins/install/InstallFileMojoTest.java
++++ b/src/test/java/org/apache/maven/plugins/install/InstallFileMojoTest.java
+@@ -30,9 +30,8 @@
+ import org.codehaus.plexus.util.FileUtils;
+ import org.codehaus.plexus.util.xml.XmlStreamReader;
+ import org.eclipse.aether.DefaultRepositorySystemSession;
+-import org.eclipse.aether.internal.impl.EnhancedLocalRepositoryManagerFactory;
++import org.eclipse.aether.spi.localrepo.LocalRepositoryManagerFactory;
+ import org.eclipse.aether.repository.LocalRepository;
+-import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+ 
+ import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.when;
+@@ -338,10 +337,10 @@
+         return parameter.replace('.', '/');
+     }
+ 
+-    private MavenSession createMavenSession(String localRepositoryBaseDir) throws NoLocalRepositoryManagerException {
++    private MavenSession createMavenSession(String localRepositoryBaseDir) throws Exception {
+         MavenSession session = mock(MavenSession.class);
+         DefaultRepositorySystemSession repositorySession = new DefaultRepositorySystemSession();
+-        repositorySession.setLocalRepositoryManager(new EnhancedLocalRepositoryManagerFactory()
++        repositorySession.setLocalRepositoryManager(getContainer().lookup(LocalRepositoryManagerFactory.class, "enhanced")
+                 .newInstance(repositorySession, new LocalRepository(localRepositoryBaseDir)));
+         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest();
+         buildingRequest.setRepositorySession(repositorySession);
+diff --git a/src/test/java/org/apache/maven/plugins/install/InstallMojoTest.java b/src/test/java/org/apache/maven/plugins/install/InstallMojoTest.java
+--- a/src/test/java/org/apache/maven/plugins/install/InstallMojoTest.java
++++ b/src/test/java/org/apache/maven/plugins/install/InstallMojoTest.java
+@@ -39,9 +39,8 @@
+ import org.codehaus.plexus.util.FileUtils;
+ import org.eclipse.aether.DefaultRepositorySystemSession;
+ import org.eclipse.aether.artifact.DefaultArtifact;
+-import org.eclipse.aether.internal.impl.EnhancedLocalRepositoryManagerFactory;
++import org.eclipse.aether.spi.localrepo.LocalRepositoryManagerFactory;
+ import org.eclipse.aether.repository.LocalRepository;
+-import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+ 
+ import static org.mockito.ArgumentMatchers.any;
+ import static org.mockito.Mockito.mock;
+@@ -338,10 +337,10 @@
+         return parameter.replace('.', '/');
+     }
+ 
+-    private MavenSession createMavenSession() throws NoLocalRepositoryManagerException {
++    private MavenSession createMavenSession() throws Exception {
+         MavenSession session = mock(MavenSession.class);
+         DefaultRepositorySystemSession repositorySession = new DefaultRepositorySystemSession();
+-        repositorySession.setLocalRepositoryManager(new EnhancedLocalRepositoryManagerFactory()
++        repositorySession.setLocalRepositoryManager(getContainer().lookup(LocalRepositoryManagerFactory.class, "enhanced")
+                 .newInstance(repositorySession, new LocalRepository(LOCAL_REPO)));
+         ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest();
+         buildingRequest.setRepositorySession(repositorySession);
