@@ -6,13 +6,13 @@
 # SPDX-License-Identifier: MulanPSL-2.0
 
 Name:           imagemagick
-Version:        7.1.2.34
+Version:        7.1.2.35
 Release:        %autorelease
 Summary:        An X application for displaying and manipulating images
 License:        ImageMagick
 URL:            https://github.com/ImageMagick/ImageMagick
-#!RemoteAsset:  sha256:f5163a573a1c1bff16358d0a592b2fb168ad0fd3b9dc5ff57dc7820eebc5cf79
-Source:         https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.2-34.tar.gz
+#!RemoteAsset:  sha256:40b6fefa88fe16ca5a4b3d3db5133eaebfb0157f21f98530bde8aec5dd5b0776
+Source:         https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.2-35.tar.gz
 BuildSystem:    autotools
 
 BuildOption(conf):  --enable-shared
