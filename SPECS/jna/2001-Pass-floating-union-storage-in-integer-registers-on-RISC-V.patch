@@ -1,0 +1,101 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Pass scalar floating union storage in integer registers on RISC-V
+
+Selecting the largest floating member as the libffi type makes libffi
+flatten the union as a floating-point structure. On the RISC-V hardware
+floating-point ABI this shifts both the union and subsequent arguments
+into the wrong registers. Use an integer of the same size for a union
+represented by float or double. Exercise both widths and the neighboring
+arguments through the library proxy and direct native calls.
+
+Upstream: pending
+Reference: https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/9b2767e2a8851709608c4e1452998ad232d6278b/riscv-cc.adoc
+Reference: https://github.com/libffi/libffi/blob/v3.8.0/src/riscv/ffi.c
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/com/sun/jna/Structure.java b/src/com/sun/jna/Structure.java
+--- a/src/com/sun/jna/Structure.java
++++ b/src/com/sun/jna/Structure.java
+@@ -2152,7 +2152,13 @@
+                         size = sf.size;
+                     }
+                 }
+-                if ((Platform.isIntel() && Platform.is64Bit() && !Platform.isWindows())
++                if (Platform.isRISCV() && isFloatType(unionType)) {
++                    // The RISC-V psABI passes unions through the integer calling convention,
++                    // including unions whose members are all floating-point scalars.
++                    Pointer storage = unionType.getPointer().equals(FFITypes.ffi_type_float)
++                        ? FFITypes.ffi_type_uint32 : FFITypes.ffi_type_uint64;
++                    unionType = ffiTypeInfo.get(storage);
++                } else if ((Platform.isIntel() && Platform.is64Bit() && !Platform.isWindows())
+                     || Platform.isARM() || Platform.isLoongArch()) {
+                     // System V x86-64 ABI requires, that in a union aggregate,
+                     // that contains Integer and Double members, the parameters
+diff --git a/native/testlib.c b/native/testlib.c
+--- a/native/testlib.c
++++ b/native/testlib.c
+@@ -963,6 +963,14 @@
+   return cp;
+ }
+ 
++typedef union { float value; } FloatUnion;
++typedef union { float narrow; double value; } DoubleUnion;
++
++EXPORT double checkFloatingUnions(int first, FloatUnion single, float middle,
++                                 DoubleUnion wide, int last) {
++    return first + 10 * single.value + 100 * middle + 1000 * wide.value + 10000 * last;
++}
++
+ typedef union _MixedUnion1 {
+   int intValue;
+   double doubleValue;
+diff --git a/test/com/sun/jna/ArgumentsMarshalTest.java b/test/com/sun/jna/ArgumentsMarshalTest.java
+--- a/test/com/sun/jna/ArgumentsMarshalTest.java
++++ b/test/com/sun/jna/ArgumentsMarshalTest.java
+@@ -145,6 +145,17 @@
+             public TestCallback cb;
+         }
+         void setCallbackInStruct(CbStruct cbstruct);
++
++        class FloatUnion extends Union implements Structure.ByValue {
++            public float value;
++        }
++
++        class DoubleUnion extends Union implements Structure.ByValue {
++            public float narrow;
++            public double value;
++        }
++
++        double checkFloatingUnions(int first, FloatUnion single, float middle, DoubleUnion wide, int last);
+ 
+         class MixedUnion1 extends Union {
+             public static class ByValue extends MixedUnion1
+@@ -694,6 +705,16 @@
+         assertEquals("Auto read should be disabled", EXPECTED, s.field);
+     }
+ 
++    public void testFloatingUnionCallstack() {
++        TestLibrary.FloatUnion single = new TestLibrary.FloatUnion();
++        single.setType("value");
++        single.value = 2;
++        TestLibrary.DoubleUnion wide = new TestLibrary.DoubleUnion();
++        wide.setType("value");
++        wide.value = 4;
++        assertEquals(54321d, lib.checkFloatingUnions(1, single, 3, wide, 5), 0d);
++    }
++
+     public void testUnionCallstack() {
+         MixedUnion1.ByValue union1 = new MixedUnion1.ByValue();
+         MixedUnion1.ByValue union2 = new MixedUnion1.ByValue();
+diff --git a/test/com/sun/jna/DirectArgumentsMarshalTest.java b/test/com/sun/jna/DirectArgumentsMarshalTest.java
+--- a/test/com/sun/jna/DirectArgumentsMarshalTest.java
++++ b/test/com/sun/jna/DirectArgumentsMarshalTest.java
+@@ -123,6 +123,8 @@
+         @Override
+         public native void setCallbackInStruct(CbStruct s);
+ 
++        @Override
++        public native double checkFloatingUnions(int first, FloatUnion single, float middle, DoubleUnion wide, int last);
+         @Override
+         public native int stringifyMixedUnion1(
+             byte[] buffer, int bufferLength,

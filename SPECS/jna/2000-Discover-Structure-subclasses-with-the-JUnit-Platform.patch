@@ -1,0 +1,61 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 04 Nov 2026 06:14:44 +0800
+Subject: [PATCH] Discover Structure subclasses with the JUnit Platform
+
+Use the JUnit classpath scanner for field-order tests. Include the
+superclass chain so structures such as Union remain visible when the
+selected classpath root contains only platform mappings.
+
+Upstream: pending
+Reference: https://github.com/java-native-access/jna/blob/3c493c1642b1555d541755e0984c968ba6c0f540/test/com/sun/jna/StructureFieldOrderInspector.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/test/com/sun/jna/StructureFieldOrderInspector.java b/test/com/sun/jna/StructureFieldOrderInspector.java
+--- a/test/com/sun/jna/StructureFieldOrderInspector.java
++++ b/test/com/sun/jna/StructureFieldOrderInspector.java
+@@ -22,18 +22,15 @@
+  */
+ package com.sun.jna;
+ 
+-import org.reflections.Reflections;
+-import org.reflections.scanners.ResourcesScanner;
+-import org.reflections.scanners.SubTypesScanner;
+-import org.reflections.util.ClasspathHelper;
+-import org.reflections.util.ConfigurationBuilder;
+ 
+ import java.lang.reflect.*;
+ import java.util.ArrayList;
++import java.net.URI;
+ import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Set;
++import org.junit.platform.commons.support.ReflectionSupport;
+ 
+ /**
+  * Utility class for detecting missing {@link com.sun.jna.Structure#getFieldOrder()} methods.
+@@ -114,14 +111,16 @@
+      */
+     public static Set<Class<? extends Structure>> findSubTypesOfStructure(final Class<?> classDeclaredInSourceTreeToSearch, boolean onlyInnerClasses) {
+ 
+-        // use: http://code.google.com/p/reflections/
+-
+-        final Reflections reflections = new Reflections(new ConfigurationBuilder()
+-                .setScanners(new SubTypesScanner(false /* don't exclude Object.class */), new ResourcesScanner())
+-                .setUrls(ClasspathHelper.forClass(classDeclaredInSourceTreeToSearch))
+-        );
+-
+-        Set<Class<? extends Structure>> types = new HashSet<>(reflections.getSubTypesOf(Structure.class));
++        URI root = URI.create(classDeclaredInSourceTreeToSearch.getProtectionDomain()
++                .getCodeSource().getLocation().toExternalForm());
++        Set<Class<? extends Structure>> types = new HashSet<>();
++        for (Class<?> candidate : ReflectionSupport.findAllClassesInClasspathRoot(root,
++                cls -> cls != Structure.class && Structure.class.isAssignableFrom(cls), name -> true)) {
++            // Include intermediate Structure types supplied by another classpath entry.
++            for (Class<?> cls = candidate; cls != Structure.class; cls = cls.getSuperclass()) {
++                types.add(cls.asSubclass(Structure.class));
++            }
++        }
+         if(onlyInnerClasses) {
+             Iterator<Class<? extends Structure>> it = types.iterator();
+             while(it.hasNext()) {
