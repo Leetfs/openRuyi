@@ -1,0 +1,34 @@
+From a7f752649489e6c785e9915c7b663b59a3df55ae Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 00:59:01 +0800
+Subject: [PATCH] Use the system ASM types in the proxy test fixture
+
+The system Byte Buddy uses unshaded ASM. Import that ASM API when
+generating the proxy class used by the reflection tests.
+
+Upstream: downstream system-library integration
+Reference: https://github.com/raphw/byte-buddy/blob/byte-buddy-1.17.7/byte-buddy-dep/pom.xml
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../org/powermock/reflect/internal/proxy/ClassFactory.java  | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/powermock-reflect/src/test/java/org/powermock/reflect/internal/proxy/ClassFactory.java b/powermock-reflect/src/test/java/org/powermock/reflect/internal/proxy/ClassFactory.java
+index 03db992..828bfe0 100644
+--- a/powermock-reflect/src/test/java/org/powermock/reflect/internal/proxy/ClassFactory.java
++++ b/powermock-reflect/src/test/java/org/powermock/reflect/internal/proxy/ClassFactory.java
+@@ -1,8 +1,8 @@
+ package org.powermock.reflect.internal.proxy;
+ 
+-import net.bytebuddy.jar.asm.ClassWriter;
+-import net.bytebuddy.jar.asm.MethodVisitor;
+-import net.bytebuddy.jar.asm.Opcodes;
++import org.objectweb.asm.ClassWriter;
++import org.objectweb.asm.MethodVisitor;
++import org.objectweb.asm.Opcodes;
+ 
+ class ClassFactory implements Opcodes {
+     
+-- 
+2.54.0
+

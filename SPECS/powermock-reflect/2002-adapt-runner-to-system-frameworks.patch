@@ -1,0 +1,157 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Adapt PowerMock to the distribution ASM, Mockito and JUnit APIs
+
+Use the unshaded ASM signatures exposed by Byte Buddy. Return the spy
+cleanup handle to Mockito and forward JUnit 4.13 suite notifications.
+
+Upstream: downstream compatibility with distribution libraries
+Reference: https://github.com/junit-team/junit4/blob/r4.13.2/src/main/java/org/junit/runner/notification/RunNotifier.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/powermock-core/src/main/java/org/powermock/core/bytebuddy/ConditionalStateStackManipulation.java b/powermock-core/src/main/java/org/powermock/core/bytebuddy/ConditionalStateStackManipulation.java
+--- a/powermock-core/src/main/java/org/powermock/core/bytebuddy/ConditionalStateStackManipulation.java
++++ b/powermock-core/src/main/java/org/powermock/core/bytebuddy/ConditionalStateStackManipulation.java
+@@ -20,9 +20,9 @@
+ 
+ import net.bytebuddy.implementation.Implementation.Context;
+ import net.bytebuddy.implementation.bytecode.StackManipulation;
+-import net.bytebuddy.jar.asm.Label;
+-import net.bytebuddy.jar.asm.MethodVisitor;
+-import net.bytebuddy.jar.asm.Opcodes;
++import org.objectweb.asm.Label;
++import org.objectweb.asm.MethodVisitor;
++import org.objectweb.asm.Opcodes;
+ 
+ public class ConditionalStateStackManipulation implements StackManipulation {
+     
+diff --git a/powermock-core/src/main/java/org/powermock/core/bytebuddy/Frame.java b/powermock-core/src/main/java/org/powermock/core/bytebuddy/Frame.java
+--- a/powermock-core/src/main/java/org/powermock/core/bytebuddy/Frame.java
++++ b/powermock-core/src/main/java/org/powermock/core/bytebuddy/Frame.java
+@@ -24,7 +24,7 @@
+ import net.bytebuddy.description.method.ParameterList;
+ import net.bytebuddy.description.type.TypeDescription.Generic;
+ import net.bytebuddy.implementation.bytecode.StackSize;
+-import net.bytebuddy.jar.asm.Opcodes;
++import org.objectweb.asm.Opcodes;
+ import net.bytebuddy.utility.CompoundList;
+ 
+ import java.util.ArrayList;
+diff --git a/powermock-core/src/main/java/org/powermock/core/bytebuddy/MaxLocalsExtractor.java b/powermock-core/src/main/java/org/powermock/core/bytebuddy/MaxLocalsExtractor.java
+--- a/powermock-core/src/main/java/org/powermock/core/bytebuddy/MaxLocalsExtractor.java
++++ b/powermock-core/src/main/java/org/powermock/core/bytebuddy/MaxLocalsExtractor.java
+@@ -19,9 +19,9 @@
+ package org.powermock.core.bytebuddy;
+ 
+ import net.bytebuddy.description.method.MethodDescription;
+-import net.bytebuddy.jar.asm.ClassVisitor;
+-import net.bytebuddy.jar.asm.MethodVisitor;
+-import net.bytebuddy.jar.asm.Opcodes;
++import org.objectweb.asm.ClassVisitor;
++import org.objectweb.asm.MethodVisitor;
++import org.objectweb.asm.Opcodes;
+ 
+ public class MaxLocalsExtractor extends ClassVisitor {
+     
+diff --git a/powermock-core/src/main/java/org/powermock/core/bytebuddy/MockGetawayCall.java b/powermock-core/src/main/java/org/powermock/core/bytebuddy/MockGetawayCall.java
+--- a/powermock-core/src/main/java/org/powermock/core/bytebuddy/MockGetawayCall.java
++++ b/powermock-core/src/main/java/org/powermock/core/bytebuddy/MockGetawayCall.java
+@@ -27,7 +27,7 @@
+ import net.bytebuddy.implementation.bytecode.collection.ArrayFactory;
+ import net.bytebuddy.implementation.bytecode.constant.ClassConstant;
+ import net.bytebuddy.implementation.bytecode.member.MethodInvocation;
+-import net.bytebuddy.jar.asm.MethodVisitor;
++import org.objectweb.asm.MethodVisitor;
+ import org.powermock.core.bytebuddy.Variable.VariableAccess;
+ import org.powermock.reflect.internal.WhiteboxImpl;
+ 
+diff --git a/powermock-core/src/main/java/org/powermock/core/bytebuddy/PrimitiveBoxing.java b/powermock-core/src/main/java/org/powermock/core/bytebuddy/PrimitiveBoxing.java
+--- a/powermock-core/src/main/java/org/powermock/core/bytebuddy/PrimitiveBoxing.java
++++ b/powermock-core/src/main/java/org/powermock/core/bytebuddy/PrimitiveBoxing.java
+@@ -24,8 +24,8 @@
+ import net.bytebuddy.implementation.Implementation;
+ import net.bytebuddy.implementation.bytecode.StackManipulation;
+ import net.bytebuddy.implementation.bytecode.StackSize;
+-import net.bytebuddy.jar.asm.MethodVisitor;
+-import net.bytebuddy.jar.asm.Opcodes;
++import org.objectweb.asm.MethodVisitor;
++import org.objectweb.asm.Opcodes;
+ 
+ public enum PrimitiveBoxing implements StackManipulation{
+     
+diff --git a/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/DelegatingPowerMockRunner.java b/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/DelegatingPowerMockRunner.java
+--- a/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/DelegatingPowerMockRunner.java
++++ b/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/DelegatingPowerMockRunner.java
+@@ -98,10 +98,10 @@
+             @Override
+             public Runner call() throws Exception {
+                 try {
+-                    return Whitebox.invokeConstructor(
+-                            testClass.isAnnotationPresent(PowerMockRunnerDelegate.class)
++                    Class<? extends Runner> runnerType = testClass.isAnnotationPresent(PowerMockRunnerDelegate.class)
+                             ? testClass.getAnnotation(PowerMockRunnerDelegate.class).value()
+-                            : PowerMockRunnerDelegate.DefaultJUnitRunner.class,
++                            : PowerMockRunnerDelegate.DefaultJUnitRunner.class;
++                    return Whitebox.invokeConstructor(runnerType,
+                             new Class[] {Class.class},
+                             new Object[] {testClass});
+                 } catch (ConstructorNotFoundException rootProblem) {
+diff --git a/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifier.java b/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifier.java
+--- a/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifier.java
++++ b/powermock-modules/powermock-module-junit4/src/main/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifier.java
+@@ -96,6 +96,16 @@
+     }
+ 
+     @Override
++    public void fireTestSuiteStarted(Description description) {
++        invoke("fireTestSuiteStarted", description);
++    }
++
++    @Override
++    public void fireTestSuiteFinished(Description description) {
++        invoke("fireTestSuiteFinished", description);
++    }
++
++    @Override
+     public void fireTestRunStarted(Description description) {
+         invoke("fireTestRunStarted", description);
+     }
+diff --git a/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoInjectingAnnotationEngine.java b/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoInjectingAnnotationEngine.java
+--- a/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoInjectingAnnotationEngine.java
++++ b/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoInjectingAnnotationEngine.java
+@@ -30,14 +30,15 @@
+     
+     @SuppressWarnings("deprecation")
+     @Override
+-    public void process(Class<?> context, Object testClass) {
++    public AutoCloseable process(Class<?> context, Object testClass) {
+         // this will create @Spies:
+-        new PowerMockitoSpyAnnotationEngine().process(context, testClass);
++        AutoCloseable spies = new PowerMockitoSpyAnnotationEngine().process(context, testClass);
+         
+         preLoadPluginLoader();
+         
+         // this injects mocks
+         injectMocks(testClass);
++        return spies;
+     }
+     
+     private void preLoadPluginLoader() {
+diff --git a/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoSpyAnnotationEngine.java b/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoSpyAnnotationEngine.java
+--- a/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoSpyAnnotationEngine.java
++++ b/powermock-api/powermock-api-mockito2/src/main/java/org/powermock/api/mockito/internal/configuration/PowerMockitoSpyAnnotationEngine.java
+@@ -34,7 +34,7 @@
+ 
+ 	@SuppressWarnings("deprecation")
+ 	@Override
+-	public void process(Class<?> context, Object testClass) {
++	public AutoCloseable process(Class<?> context, Object testClass) {
+ 		Field[] fields = context.getDeclaredFields();
+ 		for (Field field : fields) {
+ 			if (field.isAnnotationPresent(Spy.class)) {
+@@ -63,5 +63,6 @@
+ 				}
+ 			}
+ 		}
++		return () -> { };
+ 	}
+ }

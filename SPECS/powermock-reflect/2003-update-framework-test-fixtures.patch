@@ -1,0 +1,146 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Retain test assertions with the current Java testing libraries
+
+Select the object overload for reflective assertions, apply the original
+condition to the extracted collection, and return the requested test
+configuration type from the fixture.
+
+Upstream: downstream compatibility with distribution libraries
+Reference: https://github.com/powermock/powermock/tree/powermock-2.0.9/powermock-core/src/test/java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/powermock-core/src/test/java/org/powermock/core/classloader/MockClassLoaderFactoryTest.java b/powermock-core/src/test/java/org/powermock/core/classloader/MockClassLoaderFactoryTest.java
+--- a/powermock-core/src/test/java/org/powermock/core/classloader/MockClassLoaderFactoryTest.java
++++ b/powermock-core/src/test/java/org/powermock/core/classloader/MockClassLoaderFactoryTest.java
+@@ -48,7 +48,7 @@
+             assertThat(((MockClassLoader) classLoader).getConfiguration())
+                 .as("MockClassLoader configuration contains expected class: %s", expectedClassToModify)
+                 .extracting("modify")
+-                .are(contains(expectedClassToModify));
++                .is(contains(expectedClassToModify));
+         }
+     }
+     
+@@ -83,7 +83,7 @@
+             assertThat(((MockClassLoader) classLoader).getConfiguration())
+                 .as("MockClassLoader configuration contains expected class: %s", expectedClassToModify)
+                 .extracting("modify")
+-                .are(contains(expectedClassToModify));
++                .is(contains(expectedClassToModify));
+         }
+     
+     }
+diff --git a/powermock-core/src/test/java/org/powermock/core/transformers/MethodsMockTransformerTest.java b/powermock-core/src/test/java/org/powermock/core/transformers/MethodsMockTransformerTest.java
+--- a/powermock-core/src/test/java/org/powermock/core/transformers/MethodsMockTransformerTest.java
++++ b/powermock-core/src/test/java/org/powermock/core/transformers/MethodsMockTransformerTest.java
+@@ -77,7 +77,7 @@
+         
+         WhiteboxImpl.invokeMethod(instance, "voidPrivateMethod", "name");
+         
+-        assertThat(WhiteboxImpl.getInternalState(instance, "lname"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(instance, "lname"))
+             .as("Field name is not set")
+             .isNull();
+         
+@@ -96,7 +96,7 @@
+         
+         WhiteboxImpl.invokeMethod(instance, "voidMethod", "name", "field", 100d);
+         
+-        assertThat(WhiteboxImpl.getInternalState(instance, "field"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(instance, "field"))
+             .as("Field name is not set")
+             .isNull();
+         
+@@ -117,7 +117,7 @@
+         
+         WhiteboxImpl.invokeMethod(instance, "finalVoidMethod", "name", "field", 100d);
+         
+-        assertThat(WhiteboxImpl.getInternalState(instance, "field"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(instance, "field"))
+             .as("Field name is not set")
+             .isNull();
+         
+@@ -138,7 +138,7 @@
+         final String fieldValue = RandomString.make(10);
+         WhiteboxImpl.invokeMethod(instance, "finalVoidMethod", "name", fieldValue, 100d);
+         
+-        assertThat(WhiteboxImpl.getInternalState(instance, "field"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(instance, "field"))
+             .as("Field name is not set")
+             .isEqualTo(fieldValue);
+         
+@@ -315,7 +315,7 @@
+         assertThat(methodCalls())
+             .isNot(registered().forMethod(SYNTHETIC_METHOD_NAME));
+         
+-        assertThat(WhiteboxImpl.getInternalState(clazz, "syntheticMethodIsCalled"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(clazz, "syntheticMethodIsCalled"))
+             .isEqualTo(true);
+     }
+     
+diff --git a/powermock-core/src/test/java/org/powermock/core/transformers/StaticMethodsMockTransformerTest.java b/powermock-core/src/test/java/org/powermock/core/transformers/StaticMethodsMockTransformerTest.java
+--- a/powermock-core/src/test/java/org/powermock/core/transformers/StaticMethodsMockTransformerTest.java
++++ b/powermock-core/src/test/java/org/powermock/core/transformers/StaticMethodsMockTransformerTest.java
+@@ -60,7 +60,7 @@
+         
+         WhiteboxImpl.invokeMethod(clazz, "voidMethod", "name", "field", 100d);
+         
+-        assertThat(WhiteboxImpl.getInternalState(clazz, "field"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(clazz, "field"))
+             .as("Field name is not set")
+             .isNull();
+         
+@@ -78,7 +78,7 @@
+         final String expectedFieldValue = "field";
+         WhiteboxImpl.invokeMethod(clazz, "voidMethod", "name", expectedFieldValue, 100d);
+         
+-        assertThat(WhiteboxImpl.getInternalState(clazz, "field"))
++        assertThat(WhiteboxImpl.<Object>getInternalState(clazz, "field"))
+             .as("Field name is not set")
+             .isEqualTo(expectedFieldValue);
+         
+diff --git a/powermock-core/src/test/java/org/powermock/tests/utils/impl/PowerMockIgnorePackagesExtractorImplTest.java b/powermock-core/src/test/java/org/powermock/tests/utils/impl/PowerMockIgnorePackagesExtractorImplTest.java
+--- a/powermock-core/src/test/java/org/powermock/tests/utils/impl/PowerMockIgnorePackagesExtractorImplTest.java
++++ b/powermock-core/src/test/java/org/powermock/tests/utils/impl/PowerMockIgnorePackagesExtractorImplTest.java
+@@ -77,6 +77,9 @@
+         GlobalConfiguration.setConfigurationFactory(new ConfigurationFactory() {
+             @Override
+             public <T extends Configuration<T>> T create(final Class<T> configurationType) {
++                if (configurationType.equals(org.powermock.configuration.MockitoConfiguration.class)) {
++                    return configurationType.cast(new org.powermock.configuration.MockitoConfiguration());
++                }
+                 PowerMockConfiguration powerMockConfiguration = new PowerMockConfiguration();
+                 
+                 powerMockConfiguration.setGlobalIgnore(globalIgnore);
+@@ -101,6 +104,9 @@
+         GlobalConfiguration.setConfigurationFactory(new ConfigurationFactory() {
+             @Override
+             public <T extends Configuration<T>> T create(final Class<T> configurationType) {
++                if (configurationType.equals(org.powermock.configuration.MockitoConfiguration.class)) {
++                    return configurationType.cast(new org.powermock.configuration.MockitoConfiguration());
++                }
+                 PowerMockConfiguration powerMockConfiguration = new PowerMockConfiguration();
+                 
+                 powerMockConfiguration.setGlobalIgnore(globalIgnore);
+@@ -125,6 +131,9 @@
+         GlobalConfiguration.setConfigurationFactory(new ConfigurationFactory() {
+             @Override
+             public <T extends Configuration<T>> T create(final Class<T> configurationType) {
++                if (configurationType.equals(org.powermock.configuration.MockitoConfiguration.class)) {
++                    return configurationType.cast(new org.powermock.configuration.MockitoConfiguration());
++                }
+                 PowerMockConfiguration powerMockConfiguration = new PowerMockConfiguration();
+                 
+                 powerMockConfiguration.setGlobalIgnore(globalIgnore);
+diff --git a/powermock-modules/powermock-module-junit4/src/test/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifierTest.java b/powermock-modules/powermock-module-junit4/src/test/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifierTest.java
+--- a/powermock-modules/powermock-module-junit4/src/test/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifierTest.java
++++ b/powermock-modules/powermock-module-junit4/src/test/java/org/powermock/modules/junit4/internal/impl/PowerMockRunNotifierTest.java
+@@ -76,7 +76,7 @@
+         replay(backendRunNotifierMock);
+         method.invoke(new PowerMockRunNotifier(
+                 backendRunNotifierMock,
+-                EasyMock.<PowerMockTestNotifier, PowerMockTestNotifier>createNiceMock(PowerMockTestNotifier.class),
++                EasyMock.<PowerMockTestNotifier>createNiceMock(PowerMockTestNotifier.class),
+                 new Method[0]),
+                 testData);
+         verify(backendRunNotifierMock);
