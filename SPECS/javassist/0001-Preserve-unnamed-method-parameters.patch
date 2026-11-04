@@ -1,0 +1,62 @@
+From: wuwen <wuwen.55@aliyun.com>
+Subject: [PATCH] Preserve unnamed method parameters during constant pool copies
+
+Upstream: backport to 3.27.0-GA
+Reference: https://github.com/jboss-javassist/javassist/commit/784a7c1ef9996d166aedcd4aacd1fa12016dde7f
+
+Use the 3.27 name index accessor in the regression test. Compile its
+inner-class fixture from the Java source documented in the upstream fix.
+---
+diff --git a/src/main/javassist/bytecode/MethodParametersAttribute.java b/src/main/javassist/bytecode/MethodParametersAttribute.java
+--- a/src/main/javassist/bytecode/MethodParametersAttribute.java
++++ b/src/main/javassist/bytecode/MethodParametersAttribute.java
+@@ -32,7 +32,8 @@
+         byte[] data = new byte[names.length * 4 + 1];
+         data[0] = (byte)names.length;
+         for (int i = 0; i < names.length; i++) {
+-            ByteArray.write16bit(cp.addUtf8Info(names[i]), data, i * 4 + 1);
++            String name = names[i];
++            ByteArray.write16bit(name == null ? 0 : cp.addUtf8Info(name), data, i * 4 + 1);
+             ByteArray.write16bit(flags[i], data, i * 4 + 3);
+         }
+ 
+@@ -79,7 +80,8 @@
+         String[] names = new String[s];
+         int[] flags = new int[s];
+         for (int i = 0; i < s; i++) {
+-            names[i] = cp.getUtf8Info(name(i));
++            int index = name(i);
++            names[i] = index == 0 ? null : cp.getUtf8Info(index);
+             flags[i] = accessFlags(i);
+         }
+ 
+diff --git a/src/test/javassist/JvstTest5.java b/src/test/javassist/JvstTest5.java
+--- a/src/test/javassist/JvstTest5.java
++++ b/src/test/javassist/JvstTest5.java
+@@ -574,4 +574,17 @@
+         Object obj = make(cc.getName());
+         assertEquals(1, invoke(obj, "run"));
+     }
++    public void testGithubIssue462Java21WithoutParameters() throws java.io.IOException {
++        String name = "Java21InnerClassWithoutParameters$InnerClass.class";
++        try (java.io.InputStream input = getClass().getClassLoader().getResourceAsStream(name)) {
++            assertNotNull(input);
++            CtClass cc = sloader.makeClass(input);
++            cc.getClassFile().compact();
++            javassist.bytecode.MethodInfo method = cc.getClassFile2().getMethod("<init>");
++            javassist.bytecode.MethodParametersAttribute attr =
++                (javassist.bytecode.MethodParametersAttribute) method.getAttribute("MethodParameters");
++            assertEquals(1, attr.size());
++            assertEquals(0, attr.name(0));
++        }
++    }
+ }
+diff --git a/src/test/fixtures/Java21InnerClassWithoutParameters.java b/src/test/fixtures/Java21InnerClassWithoutParameters.java
+--- /dev/null
++++ b/src/test/fixtures/Java21InnerClassWithoutParameters.java
+@@ -0,0 +1,5 @@
++public class Java21InnerClassWithoutParameters {
++    class InnerClass implements Runnable {
++        public void run() {}
++    }
++}
