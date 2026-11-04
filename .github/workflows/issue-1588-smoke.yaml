@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: (C) 2026 openRuyi Project Contributors
+# SPDX-FileContributor: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+#
+# SPDX-License-Identifier: MulanPSL-2.0
+
+name: Issue 1588 OBS tools smoke test
+
+on:
+  push:
+    branches: [test/issue-1588-smoke]
+
+permissions:
+  contents: read
+
+jobs:
+  install-tools:
+    if: github.repository == 'Leetfs/openRuyi'
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-latest]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract actual workflow installation scripts
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import textwrap
+
+          scripts = []
+          for name in ('build.yaml', 'update-package.yaml'):
+              text = pathlib.Path('.github/workflows', name).read_text()
+              marker = '    - name: Install tools\n      run: |\n'
+              assert text.count(marker) == 1, name
+              block = text.split(marker, 1)[1].split('    - ', 1)[0]
+              scripts.append(textwrap.dedent(block))
+          assert scripts[0] == scripts[1], 'Installation steps differ'
+          pathlib.Path('/tmp/issue-1588-install.sh').write_text(scripts[0])
+          PY
+          bash -n /tmp/issue-1588-install.sh
+      - name: Install OBS tools using the fixed workflow
+        run: |
+          cat /etc/os-release
+          bash -euxo pipefail /tmp/issue-1588-install.sh
+      - name: Verify tools and existing pbuild patch
+        run: |
+          command -v osc pbuild
+          dpkg-query -W osc obs-build libwww-perl libxml-parser-perl
+          osc --version
+          perl -MLWP::UserAgent -MXML::Parser -e 'print "Perl modules available\n"'
+          sudo patch --dry-run --directory=/ --strip=1 -i "$PWD/.github/build/pbuild.patch"
+          {
+            echo 'OBS tools installed and pbuild patch applies.'
+            echo "Runner: ${{ matrix.runner }}"
+            cat /etc/os-release
+            dpkg-query -W osc obs-build libwww-perl libxml-parser-perl
+          } >> "$GITHUB_STEP_SUMMARY"
