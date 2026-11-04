@@ -1,0 +1,68 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Isolate clean goal tests with Plugin Testing Harness 3.5
+
+Use the released harness's Jupiter annotations and restore the deleted
+fixture files before each test. Exclude default output directories in the
+two fixtures that exercise only file sets or an empty configuration.
+
+Upstream: downstream adaptation for Maven Plugin Testing Harness 3.5
+Reference: https://github.com/apache/maven-clean-plugin/blob/maven-clean-plugin-3.5.0/src/test/java/org/apache/maven/plugins/clean/CleanMojoTest.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/test/java/org/apache/maven/plugins/clean/CleanMojoTest.java b/src/test/java/org/apache/maven/plugins/clean/CleanMojoTest.java
+--- a/src/test/java/org/apache/maven/plugins/clean/CleanMojoTest.java
++++ b/src/test/java/org/apache/maven/plugins/clean/CleanMojoTest.java
+@@ -31,14 +31,14 @@
+ 
+ import org.apache.maven.plugin.MojoExecutionException;
+ import org.apache.maven.plugin.logging.SystemStreamLog;
+-import org.apache.maven.plugin.testing.junit5.InjectMojo;
+-import org.apache.maven.plugin.testing.junit5.MojoTest;
++import org.apache.maven.api.plugin.testing.InjectMojo;
++import org.apache.maven.api.plugin.testing.MojoTest;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.condition.DisabledOnOs;
+ import org.junit.jupiter.api.condition.EnabledOnOs;
+ import org.junit.jupiter.api.condition.OS;
+ 
+-import static org.apache.maven.plugin.testing.junit5.MojoExtension.setVariableValueToObject;
++import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+ import static org.codehaus.plexus.testing.PlexusExtension.getBasedir;
+ import static org.codehaus.plexus.util.IOUtil.copy;
+ import static org.junit.jupiter.api.Assertions.assertFalse;
+@@ -54,6 +54,13 @@
+  */
+ @MojoTest
+ class CleanMojoTest {
++
++    @org.junit.jupiter.api.BeforeEach
++    void restoreTestResources() throws IOException {
++        org.apache.commons.io.FileUtils.copyDirectory(
++                new File("src/test/resources/unit"), new File("target/test-classes/unit"));
++    }
++
+     /**
+      * Tests the simple removal of directories
+      *
+diff --git a/src/test/resources/unit/empty-clean-test/plugin-pom.xml b/src/test/resources/unit/empty-clean-test/plugin-pom.xml
+--- a/src/test/resources/unit/empty-clean-test/plugin-pom.xml
++++ b/src/test/resources/unit/empty-clean-test/plugin-pom.xml
+@@ -23,6 +23,7 @@
+       <plugin>
+         <artifactId>maven-clean-plugin</artifactId>
+         <configuration>
++          <excludeDefaultDirectories>true</excludeDefaultDirectories>
+           <verbose>true</verbose>
+           <failOnError>true</failOnError>
+         </configuration>
+diff --git a/src/test/resources/unit/fileset-clean-test/plugin-pom.xml b/src/test/resources/unit/fileset-clean-test/plugin-pom.xml
+--- a/src/test/resources/unit/fileset-clean-test/plugin-pom.xml
++++ b/src/test/resources/unit/fileset-clean-test/plugin-pom.xml
+@@ -23,6 +23,7 @@
+       <plugin>
+         <artifactId>maven-clean-plugin</artifactId>
+         <configuration>
++          <excludeDefaultDirectories>true</excludeDefaultDirectories>
+           <filesets>
+             <fileset>
+               <directory>${basedir}/target/test-classes/unit/fileset-clean-test/target</directory>
