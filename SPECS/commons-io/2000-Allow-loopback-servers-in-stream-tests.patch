@@ -1,0 +1,41 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Allow loopback servers in stream tests
+
+Read the HTTP and TLS endpoints from optional test properties. This lets
+an offline build exercise URL streams from a local server with a trusted
+test certificate.
+
+Upstream: pending
+Reference: https://github.com/apache/commons-io/blob/54073d3b5fdd2985b98a48040ede95eb59c7ee53/src/test/java/org/apache/commons/io/input/XmlStreamReaderTest.java
+---
+--- a/src/test/java/org/apache/commons/io/build/URIOriginTest.java
++++ b/src/test/java/org/apache/commons/io/build/URIOriginTest.java
+@@ -64,7 +64,7 @@
+             "https://apache.com"
+     })
+     void testGetInputStream(final String uri) throws Exception {
+-        final AbstractOrigin.URIOrigin origin = new AbstractOrigin.URIOrigin(new URI(uri));
++        final AbstractOrigin.URIOrigin origin = new AbstractOrigin.URIOrigin(new URI(System.getProperty("commons.io.test." + new URI(uri).getScheme(), uri)));
+         try (InputStream in = origin.getInputStream()) {
+             assertNotEquals(-1, in.read());
+         }
+--- a/src/test/java/org/apache/commons/io/input/XmlStreamReaderTest.java
++++ b/src/test/java/org/apache/commons/io/input/XmlStreamReaderTest.java
+@@ -282,7 +282,7 @@
+ 
+     @Test
+     protected void testConstructorURLConnectionInput() throws IOException {
+-        try (XmlStreamReader reader = new XmlStreamReader(new URL("https://www.apache.org/").openConnection(), UTF_8)) {
++        try (XmlStreamReader reader = new XmlStreamReader(new URL(System.getProperty("commons.io.test.https", "https://www.apache.org/")).openConnection(), UTF_8)) {
+             // do nothing
+         }
+     }
+@@ -294,7 +294,7 @@
+ 
+     @Test
+     protected void testConstructorURLInput() throws IOException {
+-        try (XmlStreamReader reader = new XmlStreamReader(new URL("https://www.apache.org/"))) {
++        try (XmlStreamReader reader = new XmlStreamReader(new URL(System.getProperty("commons.io.test.https", "https://www.apache.org/")))) {
+             // do nothing
+         }
+     }
