@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-24.04, ubuntu-latest]
+        runner: [ubuntu-24.04, ubuntu-26.04, ubuntu-latest]
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     steps:
@@ -48,7 +48,7 @@ jobs:
         run: |
           command -v osc pbuild
           dpkg-query -W osc obs-build libwww-perl libxml-parser-perl
-          osc --version
+          osc --help > /dev/null
           perl -MLWP::UserAgent -MXML::Parser -e 'print "Perl modules available\n"'
           sudo patch --dry-run --directory=/ --strip=1 -i "$PWD/.github/build/pbuild.patch"
           {
