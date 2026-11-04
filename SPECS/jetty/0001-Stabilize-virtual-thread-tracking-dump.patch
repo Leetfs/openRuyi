@@ -1,0 +1,117 @@
+From 5b9db48aa6dbacdebbec980cd0f03e37fd80991a Mon Sep 17 00:00:00 2001
+From: dragonfsky <dragonfsky@gmail.com>
+Date: Thu, 3 Sep 2026 11:28:00 +0800
+Subject: [PATCH] Issue #14904 - Stabilize virtual thread tracking dump test
+
+Signed-off-by: Dongliang Xie <dragonfsky@gmail.com>
+Upstream: backport from jetty-12.1.x
+Reference: https://github.com/jetty/jetty.project/commit/5b9db48aa6dbacdebbec980cd0f03e37fd80991a
+
+---
+ .../util/thread/VirtualThreadPoolTest.java    | 56 +++++++++++--------
+ 1 file changed, 32 insertions(+), 24 deletions(-)
+
+diff --git a/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java b/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java
+index e1f5cdbff27c..9961d00fa2b1 100644
+--- a/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java
++++ b/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java
+@@ -116,38 +116,39 @@ public void testTrackingDump() throws Exception
+         TrackingExecutor trackingExecutor = (TrackingExecutor)vtp.getVirtualThreadsExecutor();
+         assertThat(trackingExecutor.size(), is(0));
+ 
+-        CountDownLatch running = new CountDownLatch(4);
+-        Waiter waiter = new Waiter(running, false);
+-        Waiter spinner = new Waiter(running, true);
++        CountDownLatch waiterRunning = new CountDownLatch(1);
++        CountDownLatch spinnerRunning = new CountDownLatch(1);
++        CountDownLatch release = new CountDownLatch(1);
++        Waiter waiter = new Waiter(waiterRunning, release, false);
++        Waiter spinner = new Waiter(spinnerRunning, release, true);
+         try
+         {
+             vtp.execute(waiter);
+-            vtp.execute(spinner);
+-            vtp.execute(waiter);
+-            vtp.execute(spinner);
++            assertTrue(waiterRunning.await(5, TimeUnit.SECONDS));
++            await().atMost(5, TimeUnit.SECONDS).until(waiter.getThread()::getState, is(Thread.State.WAITING));
+ 
+-            assertTrue(running.await(5, TimeUnit.SECONDS));
+-            assertThat(trackingExecutor.size(), is(4));
++            vtp.execute(spinner);
++            assertTrue(spinnerRunning.await(5, TimeUnit.SECONDS));
++            assertThat(trackingExecutor.size(), is(2));
+ 
+             vtp.setDetailedDump(false);
+             String dump = vtp.dump();
+-            assertThat(count(dump, "VirtualThread[#"), is(4));
+-            assertThat(count(dump, "/runnable@"), is(2));
+-            assertThat(count(dump, "waiting"), is(2));
++            assertThat(count(dump, "VirtualThread[#"), is(2));
++            assertThat(count(dump, "/runnable@"), is(1));
++            assertThat(count(dump, "waiting"), is(1));
+             assertThat(count(dump, "VirtualThreadPoolTest.java"), is(0));
+ 
+             vtp.setDetailedDump(true);
+             dump = vtp.dump();
+-            assertThat(count(dump, "VirtualThread[#"), is(4));
+-            assertThat(count(dump, "/runnable@"), is(2));
+-            assertThat(count(dump, "waiting"), is(2));
+-            assertThat(count(dump, "VirtualThreadPoolTest.java"), is(4));
+-            assertThat(count(dump, "CountDownLatch.await("), is(2));
++            assertThat(count(dump, "VirtualThread[#"), is(2));
++            assertThat(count(dump, "/runnable@"), is(1));
++            assertThat(count(dump, "waiting"), is(1));
++            assertThat(count(dump, "VirtualThreadPoolTest.java"), is(2));
++            assertThat(count(dump, "CountDownLatch.await("), is(1));
+         }
+         finally
+         {
+-            waiter.countDown();
+-            spinner.countDown();
++            release.countDown();
+             vtp.stop();
+         }
+     }
+@@ -209,28 +210,35 @@ public static int count(String str, String subStr)
+         return count;
+     }
+ 
+-    private static class Waiter extends CountDownLatch implements Runnable
++    private static class Waiter implements Runnable
+     {
+         private final CountDownLatch _running;
++        private final CountDownLatch _release;
+         private final boolean _spin;
++        private Thread _thread;
+ 
+-        public Waiter(CountDownLatch running, boolean spin)
++        public Waiter(CountDownLatch running, CountDownLatch release, boolean spin)
+         {
+-            super(1);
+             _running = running;
++            _release = release;
+             _spin = spin;
+         }
+ 
++        public Thread getThread()
++        {
++            return _thread;
++        }
++
+         @Override
+         public void run()
+         {
+             try
+             {
++                _thread = Thread.currentThread();
+                 _running.countDown();
+-                while (_spin && getCount() > 0)
++                while (_spin && _release.getCount() > 0)
+                     Thread.onSpinWait();
+-                if (!await(10, TimeUnit.SECONDS))
+-                    throw new IllegalStateException();
++                _release.await();
+             }
+             catch (InterruptedException e)
+             {

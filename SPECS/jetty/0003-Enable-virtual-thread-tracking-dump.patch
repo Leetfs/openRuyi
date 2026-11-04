@@ -1,0 +1,36 @@
+From c686b2427350d6142c79e1f8cdf26d248d7a5b4c Mon Sep 17 00:00:00 2001
+From: dragonfsky <dragonfsky@gmail.com>
+Date: Sun, 18 Oct 2026 18:38:39 +0800
+Subject: [PATCH] Fixes #14904 - Enable virtual thread tracking dump test on
+ Windows
+
+Signed-off-by: Dongliang Xie <dragonfsky@gmail.com>
+Upstream: backport from jetty-12.1.x
+Reference: https://github.com/jetty/jetty.project/commit/c686b2427350d6142c79e1f8cdf26d248d7a5b4c
+
+---
+ .../org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java   | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java b/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java
+index eb6bcf8c38f9..fafeb7fbccad 100644
+--- a/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java
++++ b/jetty-core/jetty-util/src/test/java/org/eclipse/jetty/util/thread/VirtualThreadPoolTest.java
+@@ -21,9 +21,7 @@
+ import org.eclipse.jetty.util.StringUtil;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.condition.DisabledForJreRange;
+-import org.junit.jupiter.api.condition.DisabledOnOs;
+ import org.junit.jupiter.api.condition.JRE;
+-import org.junit.jupiter.api.condition.OS;
+ 
+ import static org.awaitility.Awaitility.await;
+ import static org.hamcrest.MatcherAssert.assertThat;
+@@ -106,7 +104,6 @@ public void testTry() throws Exception
+     }
+ 
+     @Test
+-    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "Fails on Windows")
+     public void testTrackingDump() throws Exception
+     {
+         VirtualThreadPool vtp = new VirtualThreadPool();
