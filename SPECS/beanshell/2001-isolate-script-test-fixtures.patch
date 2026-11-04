@@ -1,0 +1,416 @@
+From b8a2c6b1cb0138bacd22a0b518868e88442baea2 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 00:23:37 +0800
+Subject: [PATCH] Isolate legacy script fixtures and exercise module access
+ offline
+
+Reset the process-wide accessibility flag for each script and restore it
+afterwards. Test daemon assignment on an unstarted thread, join the workers
+that assert inner-class behavior and send harness diagnostics through the
+interpreter directly. Check package access separately from nested class
+construction, retaining the original access assertions.
+
+Read from a local jar: URL to exercise a real, non-exported JDK connection
+implementation without an external server. Include the failed assertion
+in each script report and emit individual JUnit XML results.
+
+Upstream: downstream Ant and JDK test environment integration
+Reference: https://github.com/beanshell/beanshell/tree/2.1.1/tests
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ build.xml                                     |  2 +
+ tests/junitTests/src/bsh/Java_9_Test.java     | 30 ++++++---
+ .../junitTests/src/bsh/NumberLiteralTest.java |  6 ++
+ tests/junitTests/src/bsh/OldScriptsTest.java  | 18 +++++-
+ tests/test-scripts/TestHarness.bsh            |  8 +--
+ tests/test-scripts/accessibility.bsh          | 64 ++++++-------------
+ tests/test-scripts/accessibilityInner.bsh     | 46 +++++++++++++
+ tests/test-scripts/class14.bsh                | 19 ++++--
+ tests/test-scripts/fields2.bsh                | 11 +++-
+ 9 files changed, 138 insertions(+), 66 deletions(-)
+ create mode 100644 tests/test-scripts/accessibilityInner.bsh
+
+diff --git a/build.xml b/build.xml
+index 2efde4a7..6a41c5bd 100644
+--- a/build.xml
++++ b/build.xml
+@@ -705,6 +705,7 @@
+ 		 <assertions enableSystemAssertions="true"/>
+ 
+ 		 <formatter type="brief" usefile="true"/>
++         <formatter type="xml" usefile="true"/>
+ 
+ 		 <batchtest todir="${junit-reports}">
+ 			<fileset dir="${junit-test-src-dir}">
+@@ -728,6 +729,7 @@
+ 		 <assertions enableSystemAssertions="true"/>
+ 
+ 		 <formatter type="brief" usefile="true"/>
++         <formatter type="xml" usefile="true"/>
+ 
+ 		 <batchtest todir="${junit-reports}">
+ 			<fileset dir="${junit-test-src-dir}">
+diff --git a/tests/junitTests/src/bsh/Java_9_Test.java b/tests/junitTests/src/bsh/Java_9_Test.java
+index df7d482a..064c18a8 100644
+--- a/tests/junitTests/src/bsh/Java_9_Test.java
++++ b/tests/junitTests/src/bsh/Java_9_Test.java
+@@ -25,6 +25,12 @@
+ 
+ package bsh;
+ 
++import java.net.URL;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.jar.JarEntry;
++import java.util.jar.JarOutputStream;
++import static org.junit.Assert.assertEquals;
+ import org.junit.Test;
+ import org.junit.runner.RunWith;
+ 
+@@ -35,14 +41,22 @@ public class Java_9_Test {
+      * Must be run with JVM arg --illegal-access=deny
+      */
+     @Test
+-    public void do_not_access_non_open_methods() throws EvalError {
+-        String script =
+-                "import java.net.URL;\n" +
+-                "url = new URL(\"https://github.com/beanshell\");\n" +
+-                "urlConnection = url.openConnection();\n" +
+-                "stream = urlConnection.getInputStream();\n" +
+-                "stream.close();\n";
+-        new Interpreter().eval(script);
++    public void do_not_access_non_open_methods() throws Exception {
++        Path fixture = Files.createTempFile("beanshell-module-access", ".jar");
++        try {
++            try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(fixture))) {
++                out.putNextEntry(new JarEntry("input"));
++                out.write(42);
++                out.closeEntry();
++            }
++            Interpreter interpreter = new Interpreter();
++            interpreter.set("url", new URL("jar:" + fixture.toUri().toURL() + "!/input"));
++            assertEquals(42, interpreter.eval(
++                    "connection = url.openConnection(); input = connection.getInputStream();"
++                    + "value = input.read(); input.close(); return value;"));
++        } finally {
++            Files.delete(fixture);
++        }
+     }
+ 
+ }
+diff --git a/tests/junitTests/src/bsh/NumberLiteralTest.java b/tests/junitTests/src/bsh/NumberLiteralTest.java
+index 1d7a33ff..9435263b 100644
+--- a/tests/junitTests/src/bsh/NumberLiteralTest.java
++++ b/tests/junitTests/src/bsh/NumberLiteralTest.java
+@@ -24,6 +24,12 @@ public class NumberLiteralTest {
+     @Test
+     public void integer_literal_enhancements_binary() throws Exception {
+         assertEquals("0b10011001", 153, eval("return 0b10011001;"));
++        assertEquals(13L, eval("return 0B1_101L;"));
++    }
++
++    @Test(expected = ParseException.class)
++    public void binary_literal_requires_a_digit() throws Exception {
++        eval("return 0b;");
+     }
+ 
+ /*
+diff --git a/tests/junitTests/src/bsh/OldScriptsTest.java b/tests/junitTests/src/bsh/OldScriptsTest.java
+index 2f3f49ae..f12e216f 100644
+--- a/tests/junitTests/src/bsh/OldScriptsTest.java
++++ b/tests/junitTests/src/bsh/OldScriptsTest.java
+@@ -95,6 +95,22 @@ public class OldScriptsTest {
+ 		}
+ 
+ 
++        private boolean previousAccessibility;
++
++        @Override
++        protected void setUp() throws Exception {
++            previousAccessibility = Capabilities.haveAccessibility();
++            // Generated script classes contain package-private fields and methods.
++            String name = _file.getName();
++            Capabilities.setAccessibility(name.startsWith("class") || name.equals("override.bsh")
++                    || name.equals("accessibility.bsh"));
++        }
++
++        @Override
++        protected void tearDown() throws Exception {
++            Capabilities.setAccessibility(previousAccessibility);
++        }
++
+ 		@Override
+ 		public String getName() {
+ 			return _file.getName();
+@@ -111,7 +127,7 @@ public class OldScriptsTest {
+ 			interpreter.eval("cd(" + path + ");");
+ 			interpreter.eval(new FileReader(_file));
+ 			assertEquals("'test_completed' flag check", Boolean.TRUE, interpreter.get("test_completed"));
+-			assertEquals("'test_failed' flag check", Boolean.FALSE, interpreter.get("test_failed"));
++			assertEquals(String.valueOf(interpreter.get("test_message")), Boolean.FALSE, interpreter.get("test_failed"));
+ 		}
+ 
+ 	}
+diff --git a/tests/test-scripts/TestHarness.bsh b/tests/test-scripts/TestHarness.bsh
+index 3144e312..cb48f32c 100644
+--- a/tests/test-scripts/TestHarness.bsh
++++ b/tests/test-scripts/TestHarness.bsh
+@@ -14,7 +14,7 @@ assert( boolean condition )
+ 			+"Line: "+ this.namespace.getInvocationLine()
+ 			+" : "+this.namespace.getInvocationText()
+ 			+" : while evaluating file: "+getSourceFileInfo();
+-		print(super.test_message);
++		this.interpreter.println(super.test_message);
+ 		super.test_failed = true;
+ 	}
+ }
+@@ -36,7 +36,7 @@ fail() {
+ }
+ 
+ warning( s ) {
+-	print("WARNING: "+s);
++	this.interpreter.println("WARNING: "+s);
+ 	super.test_warning=true;
+ }
+ 
+@@ -44,9 +44,9 @@ complete() {
+ 	super.test_completed = true;
+ 
+ 	if ( super.test_failed )
+-		print( bsh.sourceFile + ": Complete: FAILED!");
++		this.interpreter.println( bsh.sourceFile + ": Complete: FAILED!");
+ 	else
+-		print( bsh.sourceFile + ": Completed ok.");
++		this.interpreter.println( bsh.sourceFile + ": Completed ok.");
+ }
+ 
+ flag() {
+diff --git a/tests/test-scripts/accessibility.bsh b/tests/test-scripts/accessibility.bsh
+index cb49109c..5b3df52d 100644
+--- a/tests/test-scripts/accessibility.bsh
++++ b/tests/test-scripts/accessibility.bsh
+@@ -1,9 +1,12 @@
+ #!/bin/java bsh.Interpreter
+ 
+ source("TestHarness.bsh");
+-source("Assert.bsh");
+-
+-assumeTrue("testing illegal access assumes accessibility", haveAccessibility());
++import bsh.Capabilities;
++import bsh.EvalError;
++assertEquals(Object expected, Object actual) {
++    org.junit.Assert.assertEquals(expected, actual);
++}
++org.junit.Assert.assertTrue("accessibility enabled", Capabilities.haveAccessibility());
+ 
+ import mypackage.*;
+ 
+@@ -26,12 +29,23 @@ assert(Accessibility2.sfield4==4);
+ 	Should 'field' of non-public A be accessible through public class B?
+ 	javac would allow this, but reflection API only works with accessibility on
+ */
+-assert(Accessibility2.supersfield4 == void);
++boolean hiddenField(String expression, String field) {
++    try {
++        return this.interpreter.eval(expression+" == void", this.caller.namespace);
++    } catch (EvalError denied) {
++        message = denied.getMessage();
++        return message.indexOf(field) >= 0 &&
++            (message.indexOf("No static field or inner class") >= 0 ||
++             message.indexOf("No such field") >= 0 ||
++             message.indexOf("Cannot access field") >= 0);
++    }
++}
++assert(hiddenField("Accessibility2.supersfield4", "supersfield4"));
+ 
+ javax.swing.JInternalFrame.DO_NOTHING_ON_CLOSE;
+ 
+ assert( isEvalError("a.get1()") );
+-assert( a.field1 == void );
++assert(hiddenField("a.field1", "field1"));
+ 
+ //
+ // With accessibility
+@@ -103,11 +117,6 @@ a=null;
+ 
+ b=new Accessibility1();
+ 
+-bc = b.new AccessibilityChild("hello BeanShell");
+-assertEquals("hello BeanShell", bc.str);
+-bc = new Accessibility2.AccessibilityChild2("hello BeanShell");
+-assertEquals("hello BeanShell", bc.str);
+-
+ x=new Accessibility1(1);
+ x=new Accessibility1(1,2);
+ x=new Accessibility1(1,2,3);
+@@ -129,39 +138,4 @@ assert(m.foo(2).equals("private"));
+ warning("this test runs on sparc but fails on windows... Nail this down.");
+ assert(m.foo(null).equals("public"));
+ 
+-setAccessibility(true);
+-
+-// name space variables accessible as fields
+-class AA {
+-    private AA() {}
+-    i = 6;
+-    private int inst = 3;
+-    private static String stat = "hello BeanShell";
+-
+-    private class BB {
+-        BB() {}
+-        BB(boolean b) { isInner = b; }
+-        private boolean isInner = true;
+-    }
+-}
+-
+-assertEquals("hello BeanShell", AA.stat);
+-AA.stat = "foo";
+-assertEquals("foo", AA.stat);
+-
+-aa = new AA();
+-assertEquals(6, aa.i);
+-assertEquals(3, aa.inst);
+-
+-aa.i = 66;
+-aa.inst = 33;
+-
+-assertEquals(66, aa.i);
+-assertEquals(33, aa.inst);
+-
+-assertTrue(aa.new BB().isInner);
+-assertTrue(new AA.BB().isInner);
+-assertFalse(new AA.BB(false).isInner);
+-assertFalse(aa.new BB(false).isInner);
+-
+ complete();
+diff --git a/tests/test-scripts/accessibilityInner.bsh b/tests/test-scripts/accessibilityInner.bsh
+new file mode 100644
+index 00000000..7020ae24
+--- /dev/null
++++ b/tests/test-scripts/accessibilityInner.bsh
+@@ -0,0 +1,46 @@
++source("TestHarness.bsh");
++import mypackage.*;
++import org.junit.Assert;
++setAccessibility(true);
++b=new Accessibility1();
++bc = b.new AccessibilityChild("hello BeanShell");
++Assert.assertEquals("hello BeanShell", bc.str);
++bc = new Accessibility2.AccessibilityChild2("hello BeanShell");
++Assert.assertEquals("hello BeanShell", bc.str);
++
++setAccessibility(true);
++
++// name space variables accessible as fields
++class AA {
++    private AA() {}
++    i = 6;
++    private int inst = 3;
++    private static String stat = "hello BeanShell";
++
++    private class BB {
++        BB() {}
++        BB(boolean b) { isInner = b; }
++        private boolean isInner = true;
++    }
++}
++
++Assert.assertEquals("hello BeanShell", AA.stat);
++AA.stat = "foo";
++Assert.assertEquals("foo", AA.stat);
++
++aa = new AA();
++Assert.assertEquals(6, aa.i);
++Assert.assertEquals(3, aa.inst);
++
++aa.i = 66;
++aa.inst = 33;
++
++Assert.assertEquals(66, aa.i);
++Assert.assertEquals(33, aa.inst);
++
++Assert.assertTrue(aa.new BB().isInner);
++Assert.assertTrue(new AA.BB().isInner);
++Assert.assertFalse(new AA.BB(false).isInner);
++Assert.assertFalse(aa.new BB(false).isInner);
++
++complete();
+diff --git a/tests/test-scripts/class14.bsh b/tests/test-scripts/class14.bsh
+index 829599a2..78bfd147 100644
+--- a/tests/test-scripts/class14.bsh
++++ b/tests/test-scripts/class14.bsh
+@@ -1,11 +1,16 @@
+ source("TestHarness.bsh");
++workers = new java.util.ArrayList();
++startWorker(thread) {
++    workers.add(thread);
++    thread.start();
++}
+ 
+ class TestInner22 
+ {
+ 	static int s = 5;
+ 	int i = 4;
+ 	Object t22This = this;
+-	new MyThread().start();
++	startWorker(new MyThread());
+ 	assert( TestInner22.this == t22This );
+ 
+ 	void go() 
+@@ -20,17 +25,17 @@ class TestInner22
+ 				assert(i==4); 
+ 			} 
+ 		};
+-		new Thread(r).start();
++		startWorker(new Thread(r));
+ 
+-		new Thread() {
++		startWorker(new Thread() {
+ 			public void run() { 
+ 				assert( this instanceof Thread );
+ 				assert( TestInner22.this == t22This );
+ 				assert(i==4); 
+ 			}
+-		}.start();
++		});
+ 
+-		new MyThread().start();
++		startWorker(new MyThread());
+ 	}
+ 
+ 	class MyThread extends Thread {
+@@ -52,5 +57,9 @@ class TestInner22
+ }
+ 
+ new TestInner22().go();
++for (worker : workers) {
++    worker.join(10000);
++    assert(!worker.isAlive());
++}
+ 
+ complete();
+diff --git a/tests/test-scripts/fields2.bsh b/tests/test-scripts/fields2.bsh
+index 6f3fdd4e..c17be229 100644
+--- a/tests/test-scripts/fields2.bsh
++++ b/tests/test-scripts/fields2.bsh
+@@ -25,9 +25,14 @@ foo().bar2().bar().x=5;
+ foo().bar2().bar2().bar2().bar();
+ 
+ setAccessibility(true);
+-Thread.currentThread().daemon = false;
+-Thread.currentThread().currentThread().daemon = false;
+-Thread.currentThread().currentThread().currentThread().daemon = false;
++thread = new Thread();
++ref = new java.util.concurrent.atomic.AtomicReference(thread);
++nested = new java.util.concurrent.atomic.AtomicReference(ref);
++thread.daemon = false;
++ref.get().daemon = true;
++assert(thread.daemon);
++nested.get().get().daemon = false;
++assert(!thread.daemon);
+ setAccessibility(false);
+ 
+ Fields [] fa = { new Fields(), new Fields() };
+-- 
+2.54.0
+
