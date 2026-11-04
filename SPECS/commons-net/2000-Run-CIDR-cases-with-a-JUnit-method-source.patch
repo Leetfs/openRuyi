@@ -1,0 +1,49 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Use a method source for the CIDR cases
+
+Expose the release CIDR table through a MethodSource accessor so the
+same parameterized cases run with the distribution JUnit provider.
+
+Upstream: pending
+Reference: https://github.com/apache/commons-net/blob/35fa0dff3e8660359832e72631ff3cf557b543a8/src/test/java/org/apache/commons/net/util/SubnetUtilsTest.java
+---
+--- a/src/test/java/org/apache/commons/net/util/SubnetUtilsTest.java
++++ b/src/test/java/org/apache/commons/net/util/SubnetUtilsTest.java
+@@ -36,7 +36,7 @@
+ import org.apache.commons.net.util.SubnetUtils.SubnetInfo;
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.params.ParameterizedTest;
+-import org.junit.jupiter.params.provider.FieldSource;
++import org.junit.jupiter.params.provider.MethodSource;
+ 
+ /**
+  * Tests {@link SubnetUtils}.
+@@ -48,6 +48,10 @@
+      * Fixture values includes counting the host.
+      */
+     // @formatter:off
++    private static List<ImmutablePair<String, Long>> cidrSizes() {
++        return CIDR_SIZES;
++    }
++
+     private static final List<ImmutablePair<String, Long>> CIDR_SIZES = Arrays.asList(
+             //ImmutablePair.of("192.168.0.1/0", 4294967296L), // takes a while
+             //ImmutablePair.of("192.168.0.1/1", 2147483648L), // takes a while
+@@ -475,7 +479,7 @@
+     }
+ 
+     @ParameterizedTest
+-    @FieldSource("CIDR_SIZES")
++    @MethodSource("cidrSizes")
+     void testSubnetAddressIterableCount(final ImmutablePair<String, Long> pair) {
+         final String cidrNotation = pair.getKey();
+         final long max = pair.getValue();
+@@ -501,7 +505,7 @@
+     }
+ 
+     @ParameterizedTest
+-    @FieldSource("CIDR_SIZES")
++    @MethodSource("cidrSizes")
+     void testSubnetAddressStreamCount(final ImmutablePair<String, Long> pair) {
+         final String cidrNotation = pair.getKey();
+         final long max = pair.getValue();
