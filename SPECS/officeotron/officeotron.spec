@@ -87,8 +87,8 @@ cat > officeotron.mf <<MANIFEST
 Manifest-Version: 1.0
 Main-Class: org.probatron.officeotron.Driver
 Implementation-Version: %{version}
-Class-Path: jing.jar zipspy.jar log4j-over-slf4j.jar slf4j-jdk14.jar
-  xercesImpl.jar
+Class-Path: jing.jar zipspy.jar log4j-over-slf4j.jar slf4j-api.jar
+  slf4j-jdk14.jar xercesImpl.jar
 
 MANIFEST
 jar --create --file officeotron.jar --manifest officeotron.mf -C classes .
@@ -111,7 +111,7 @@ javac --release 8 -encoding UTF-8 -cp "$deps" -d test-classes @tests.list
 tests=$(sed -e 's|^src/||' -e 's|/|.|g' -e 's|\.java$||' tests.list)
 java -cp "test-classes:$deps" org.junit.runner.JUnitCore $tests
 # Check the installed JAR manifest, version and valid/invalid OOXML fixtures.
-for jar in jing zipspy log4j-over-slf4j slf4j-jdk14 xercesImpl; do
+for jar in jing zipspy log4j-over-slf4j slf4j-api slf4j-jdk14 xercesImpl; do
     ln -s %{_datadir}/java/"$jar".jar "$jar".jar
 done
 test "$(java -jar officeotron.jar --version)" = "%{version}"
