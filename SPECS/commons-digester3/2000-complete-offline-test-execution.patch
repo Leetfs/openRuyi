@@ -1,0 +1,47 @@
+From 4ce795b15c060bfc83e47c94bf9dcba28270e45e Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 14:23:10 +0800
+Subject: [PATCH] Release asynchronous test executors and correct the Atom
+ fixture
+
+Each asynchronous reader test leaves a fixed-pool worker running after
+its Future completes. Shut down that executor during teardown so the
+test JVM can terminate.
+
+The Atom input incorrectly declares the DTD of the Digester rule
+language. Remove that declaration from the Atom data document. The
+separate rule document continues to use the bundled Digester DTD.
+
+Upstream: no
+Reference: https://github.com/apache/commons-digester/tree/58bac0b34d88575673e48a9a5dc33a89c1d72a1b/commons-digester3-core/src/test
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../java/org/apache/commons/digester3/AsyncReaderTestCase.java   | 1 +
+ .../org/apache/commons/digester3/xmlrules/atom-content.xml       | 1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/test/java/org/apache/commons/digester3/AsyncReaderTestCase.java b/src/test/java/org/apache/commons/digester3/AsyncReaderTestCase.java
+index 4fa0a21..d0f2032 100644
+--- a/src/test/java/org/apache/commons/digester3/AsyncReaderTestCase.java
++++ b/src/test/java/org/apache/commons/digester3/AsyncReaderTestCase.java
+@@ -60,6 +60,7 @@ public final class AsyncReaderTestCase
+     @After
+     public void tearDown()
+     {
++        digesterLoader.getExecutorService().shutdownNow();
+         digester = null;
+     }
+ 
+diff --git a/src/test/resources/org/apache/commons/digester3/xmlrules/atom-content.xml b/src/test/resources/org/apache/commons/digester3/xmlrules/atom-content.xml
+index b008fb6..226b28c 100644
+--- a/src/test/resources/org/apache/commons/digester3/xmlrules/atom-content.xml
++++ b/src/test/resources/org/apache/commons/digester3/xmlrules/atom-content.xml
+@@ -1,5 +1,4 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<!DOCTYPE digester-rules PUBLIC "-//Apache Commons //DTD digester-rules XML V1.0//EN" "http://commons.apache.org/digester/dtds/digester-rules-3.0.dtd">
+ <!--
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+-- 
+2.54.0
+
