@@ -2,9 +2,9 @@ From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 Subject: [PATCH] Keep validation tests independent of serializer formatting
 
 Ignore only a redundant declaration of the implicitly bound xml prefix.
-Keep all remaining output and error-count assertions. Make the dummy
-report count errors instead of always returning zero, so that the package
-integrity assertion tests the errors actually reported by the validator.
+Keep all remaining output and error-count assertions. The current sample
+has no incorrect relationship type, so explicitly introduce one in the
+temporary extracted test package. Retain the expectation of one error.
 
 Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
 ---
@@ -51,24 +51,22 @@ Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
  }
 --- a/src/org/probatron/officeotron/OOXMLValidationSessionTest.java
 +++ b/src/org/probatron/officeotron/OOXMLValidationSessionTest.java
-@@ -82,6 +82,7 @@
-      * Dummy validation report doing nothing only for the test purpose.
-      */
-     private class DummyValidationReport implements ValidationReport {
-+        private int errors;
- 
- 		public void addComment(String s) {
- 		}
-@@ -96,10 +97,11 @@
- 		}
- 
- 		public int getErrCount() {
--			return 0;
-+			return errors;
- 		}
- 
- 		public void incErrs() {
-+            errors++;
- 		}
- 
- 		public void incIndent() {
+@@ -61,6 +61,18 @@
+     {
+     	Store.init( System.getProperty( "java.io.tmpdir" ), false );
+     	uuid = Store.putZippedResource( new FileInputStream( TEST_FILE ), TEST_FILE.getPath() );
++        // The checked-in sample now matches the schema mapping. Make the
++        // single invalid relationship required by this negative-control test.
++        java.nio.file.Path relationships = java.nio.file.Paths.get(
++                Store.getDirectory(uuid), "ppt", "_rels", "presentation.xml.rels");
++        String xml = new String(java.nio.file.Files.readAllBytes(relationships),
++                java.nio.charset.StandardCharsets.UTF_8);
++        String validType = "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide\"";
++        assertEquals(1, xml.split(java.util.regex.Pattern.quote(validType), -1).length - 1);
++        java.nio.file.Files.write(relationships,
++                xml.replace(validType, "Type=\"urn:officeotron-test:invalid-slide\"")
++                .getBytes(java.nio.charset.StandardCharsets.UTF_8));
++
+         ovs = new OOXMLValidationSession( uuid, new ReportFactory() {
+ 			
+ 			public ValidationReport create() {

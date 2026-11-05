@@ -31,7 +31,7 @@ Patch2000:      2000-report-the-application-version.patch
 # Downstream inclusion of the W3C software license's required attribution.
 # https://www.w3.org/Consortium/Legal/copyright-software-19980720
 Patch2001:      2001-include-w3c-schema-attribution.patch
-# Downstream test fixes for implicit namespaces and a non-counting mock report.
+# Downstream test fixes for implicit namespaces and an explicitly invalid fixture.
 # https://git.libreoffice.org/officeotron/+/81b91b821b019937b4bfb3f15efd88fa17da9985/src/org/probatron/officeotron/
 Patch2002:      2002-correct-the-validation-test-fixtures.patch
 BuildArch:      noarch
