@@ -173,6 +173,15 @@ Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
    <depends module="xsd-datatype"/>
    <depends module="rng-parse"/>
    <depends module="dtd-parse"/>
+@@ -19,7 +20,7 @@
+   <jar>
+     <manifest>
+       <attribute name="Main-Class" value="com/thaiopensource/relaxng/translate/Driver"/>
+-      <attribute name="Class-Path" value="resolver.jar"/>
++      <attribute name="Class-Path" value="xml-resolver.jar relaxngDatatype.jar xercesImpl.jar"/>
+     </manifest>
+     <service type="com.thaiopensource.datatype.xsd.regex.RegexEngine">
+       <provider classname="com.thaiopensource.datatype.xsd.regex.xerces2.RegexEngineImpl"/>
 --- a/mod/validate/mod.xml
 +++ b/mod/validate/mod.xml
 @@ -2,6 +2,7 @@
