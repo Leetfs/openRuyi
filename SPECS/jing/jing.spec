@@ -35,7 +35,6 @@ BuildRequires:  xalan-j2-interpretive
 BuildRequires:  xerces-j2
 BuildRequires:  xml-commons-resolver
 
-Requires:       ant
 Requires:       isorelax
 Requires:       java-25-openjdk-headless
 Requires:       relaxng-datatype
@@ -74,8 +73,7 @@ ant -f modbuild.xml -Dlib.dir="$PWD/lib" jing-jar
 
 %install
 install -Dpm644 build/jing.jar %{buildroot}%{_datadir}/java/jing.jar
-mkdir -p %{buildroot}%{_datadir}/ant/lib %{buildroot}%{_bindir}
-ln -s ../../java/jing.jar %{buildroot}%{_datadir}/ant/lib/jing.jar
+mkdir -p %{buildroot}%{_bindir}
 cat > %{buildroot}%{_bindir}/jing <<'SH'
 #!/bin/sh
 exec java -jar /usr/share/java/jing.jar "$@"
@@ -109,7 +107,6 @@ fi
 %doc README.adoc
 %{_bindir}/jing
 %{_datadir}/java/jing.jar
-%{_datadir}/ant/lib/jing.jar
 
 %changelog
 %autochangelog
