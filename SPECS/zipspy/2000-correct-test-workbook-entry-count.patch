@@ -1,0 +1,28 @@
+From 13ccd77cabb8063a922af7b531611d19b4c11dff Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 09:32:33 +0800
+Subject: [PATCH] Check the number of ZIP entries in the upstream workbook
+
+maria.xlsx contains 15 local file headers, and the end-of-central-directory record also specifies 15 entries. Use the count from the shipped workbook in the existing test.
+
+Upstream: https://code.google.com/archive/p/zipspy/source/default/source (archived)
+---
+ zipspy/trunk/src/org/xmlopen/zipspy/ZipArchiveTest.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/zipspy/trunk/src/org/xmlopen/zipspy/ZipArchiveTest.java b/zipspy/trunk/src/org/xmlopen/zipspy/ZipArchiveTest.java
+index c699cb6..aa190fe 100644
+--- a/zipspy/trunk/src/org/xmlopen/zipspy/ZipArchiveTest.java
++++ b/zipspy/trunk/src/org/xmlopen/zipspy/ZipArchiveTest.java
+@@ -81,7 +81,7 @@ public class ZipArchiveTest extends TestCase
+     public void test_headerCount()
+     {
+ 
+-        assertTrue( za.getLocalHeaderCount() == 14 );
++        assertEquals( 15, za.getLocalHeaderCount() );
+     }
+ 
+ 
+-- 
+2.54.0
+
