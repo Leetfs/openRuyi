@@ -1,0 +1,109 @@
+From f86f6b34622585c301b0838dd9c6724ac38290ca Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 13:25:32 +0800
+Subject: [PATCH] Use local DNS and HTTPS fixtures in lookup tests
+
+The lookup tests contact public DNS and HTTPS services, which are
+unavailable in offline build workers. Resolve localhost and serve two
+UTF-8 responses through a local HTTPS endpoint with a temporary trusted
+certificate. Restore the default TLS socket factory after the test.
+
+Upstream: no
+Reference: https://github.com/apache/commons-text/tree/rel/commons-text-1.12.0
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ ...tutorWithInterpolatorStringLookupTest.java |  4 +-
+ .../text/lookup/UrlStringLookupTest.java      | 50 +++++++++++++++++--
+ 2 files changed, 49 insertions(+), 5 deletions(-)
+
+diff --git a/src/test/java/org/apache/commons/text/StringSubstitutorWithInterpolatorStringLookupTest.java b/src/test/java/org/apache/commons/text/StringSubstitutorWithInterpolatorStringLookupTest.java
+index f9ccc62..33ec3be 100644
+--- a/src/test/java/org/apache/commons/text/StringSubstitutorWithInterpolatorStringLookupTest.java
++++ b/src/test/java/org/apache/commons/text/StringSubstitutorWithInterpolatorStringLookupTest.java
+@@ -157,8 +157,8 @@ public class StringSubstitutorWithInterpolatorStringLookupTest {
+     public void testDnsLookupAddress() throws UnknownHostException {
+         final StringSubstitutor strSubst =
+                 new StringSubstitutor(createInterpolatorWithLookups(DefaultStringLookup.DNS));
+-        Assertions.assertEquals(InetAddress.getByName("apache.org").getHostAddress(),
+-            strSubst.replace("${dns:address|apache.org}"));
++        Assertions.assertEquals(InetAddress.getByName("localhost").getHostAddress(),
++            strSubst.replace("${dns:address|localhost}"));
+     }
+ 
+     @Test
+diff --git a/src/test/java/org/apache/commons/text/lookup/UrlStringLookupTest.java b/src/test/java/org/apache/commons/text/lookup/UrlStringLookupTest.java
+index 93b83fe..ceb1d38 100644
+--- a/src/test/java/org/apache/commons/text/lookup/UrlStringLookupTest.java
++++ b/src/test/java/org/apache/commons/text/lookup/UrlStringLookupTest.java
+@@ -19,11 +19,23 @@ package org.apache.commons.text.lookup;
+ 
+ import static org.junit.jupiter.api.Assertions.assertThrows;
+ 
++import java.io.InputStream;
++import java.net.InetSocketAddress;
+ import java.net.URI;
+ import java.nio.charset.StandardCharsets;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
++import java.security.KeyStore;
++
++import javax.net.ssl.HttpsURLConnection;
++import javax.net.ssl.KeyManagerFactory;
++import javax.net.ssl.SSLContext;
++import javax.net.ssl.SSLSocketFactory;
++import javax.net.ssl.TrustManagerFactory;
++
++import com.sun.net.httpserver.HttpsConfigurator;
++import com.sun.net.httpserver.HttpsServer;
+ 
+ import org.junit.jupiter.api.Assertions;
+ import org.junit.jupiter.api.Test;
+@@ -59,9 +71,41 @@ public class UrlStringLookupTest {
+     }
+ 
+     @Test
+-    public void testHttpScheme() {
+-        Assertions.assertNotNull(UrlStringLookup.INSTANCE.lookup("UTF-8:https://www.apache.org"));
+-        Assertions.assertNotNull(UrlStringLookup.INSTANCE.lookup("UTF-8:https://www.google.com"));
++    public void testHttpScheme() throws Exception {
++        final char[] password = "changeit".toCharArray();
++        final KeyStore keys = KeyStore.getInstance("PKCS12");
++        try (InputStream input = Files.newInputStream(Paths.get("target/test-keystore.p12"))) {
++            keys.load(input, password);
++        }
++        final KeyManagerFactory managers = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
++        managers.init(keys, password);
++        final TrustManagerFactory trust = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
++        trust.init(keys);
++        final SSLContext context = SSLContext.getInstance("TLS");
++        context.init(managers.getKeyManagers(), trust.getTrustManagers(), null);
++        final HttpsServer server = HttpsServer.create(new InetSocketAddress("localhost", 0), 0);
++        server.setHttpsConfigurator(new HttpsConfigurator(context));
++        server.createContext("/", exchange -> {
++            final byte[] body = ("lookup " + exchange.getRequestURI().getPath() + " \u2603")
++                    .getBytes(StandardCharsets.UTF_8);
++            exchange.sendResponseHeaders(200, body.length);
++            try {
++                exchange.getResponseBody().write(body);
++            } finally {
++                exchange.close();
++            }
++        });
++        final SSLSocketFactory original = HttpsURLConnection.getDefaultSSLSocketFactory();
++        try {
++            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
++            server.start();
++            final String url = "UTF-8:https://localhost:" + server.getAddress().getPort();
++            Assertions.assertEquals("lookup /first \u2603", UrlStringLookup.INSTANCE.lookup(url + "/first"));
++            Assertions.assertEquals("lookup /second \u2603", UrlStringLookup.INSTANCE.lookup(url + "/second"));
++        } finally {
++            HttpsURLConnection.setDefaultSSLSocketFactory(original);
++            server.stop(0);
++        }
+     }
+ 
+     @Test
+-- 
+2.54.0
+
