@@ -1,0 +1,120 @@
+From 87ba9b41f6d9119a900215c0f424a1cdb30fcfb5 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 14:02:53 +0800
+Subject: [PATCH] Select the Writer view modes exercised by their tests
+
+HideWhitespace only applies outside automatic or book layout. Select a single column for the hidden-whitespace test. The theme and formatting-mark commands toggle when invoked without arguments. Select Dark and enable ControlCodes explicitly before checking the resulting view states and pixels. Restore the prior formatting-mark setting on exit.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../extras/tiledrendering/tiledrendering.cxx  | 25 ++++++++++++++-----
+ sw/qa/extras/uiwriter/uiwriter4.cxx           |  4 +++
+ 2 files changed, 23 insertions(+), 6 deletions(-)
+
+diff --git a/sw/qa/extras/tiledrendering/tiledrendering.cxx b/sw/qa/extras/tiledrendering/tiledrendering.cxx
+index 39ec05e..5170fcb 100644
+--- a/sw/qa/extras/tiledrendering/tiledrendering.cxx
++++ b/sw/qa/extras/tiledrendering/tiledrendering.cxx
+@@ -1321,7 +1321,9 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testGetViewRenderState)
+     {
+         SwView* pView = getSwDocShell()->GetView();
+         uno::Reference<frame::XFrame> xFrame = pView->GetViewFrame().GetFrame().GetFrameInterface();
+-        uno::Sequence<beans::PropertyValue> aPropertyValues = comphelper::InitPropertySequence({});
++        uno::Sequence<beans::PropertyValue> aPropertyValues = {
++            comphelper::makePropertyValue(u"NewTheme"_ustr, u"Dark"_ustr)
++        };
+         comphelper::dispatchCommand(u".uno:ChangeTheme"_ustr, xFrame, aPropertyValues);
+     }
+     CPPUNIT_ASSERT_EQUAL("S;Dark"_ostr, pXTextDocument->getViewRenderState());
+@@ -2656,6 +2658,18 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testHighlightNumbering_shd)
+     CPPUNIT_ASSERT_EQUAL(COL_WHITE, aColor);
+ }
+ 
++// Keep formatting-mark settings local to a tile rendering test.
++static auto setControlCodesForTest(SwDocShell& shell, bool show)
++{
++    auto set = [](bool value) {
++        comphelper::dispatchCommand(u".uno:ControlCodes"_ustr,
++                                    { comphelper::makePropertyValue(u"ControlCodes"_ustr, value) });
++    };
++    const bool previous = shell.GetWrtShell()->GetViewOptions()->IsViewMetaChars();
++    set(show);
++    return comphelper::ScopeGuard([=] { set(previous); });
++}
++
+ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testPilcrowRedlining)
+ {
+     // Load a document where the top left tile contains
+@@ -2664,7 +2678,7 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testPilcrowRedlining)
+ 
+     // show non printing characters, including pilcrow and
+     // line break symbols with redlining
+-    comphelper::dispatchCommand(u".uno:ControlCodes"_ustr, {});
++    auto restore = setControlCodesForTest(*getSwDocShell(), true);
+ 
+     // Render a larger area, and then get the color of the bottom right corner of our tile.
+     size_t nCanvasWidth = 2048;
+@@ -2720,7 +2734,6 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testPilcrowRedlining)
+         CPPUNIT_ASSERT_MESSAGE(aTexts[nLine], bHasRedlineColor);
+     }
+ 
+-    comphelper::dispatchCommand(u".uno:ControlCodes"_ustr, {});
+ }
+ 
+ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testDoubleUnderlineAndStrikeOut)
+@@ -2773,7 +2786,7 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testTdf43244_SpacesOnMargin)
+ 
+     // show non printing characters, including pilcrow and
+     // line break symbols with redlining
+-    comphelper::dispatchCommand(u".uno:ControlCodes"_ustr, {});
++    auto restore = setControlCodesForTest(*getSwDocShell(), true);
+ 
+     // Render a larger area, and then get the colors from the right side of the page.
+     size_t nCanvasWidth = 1024;
+@@ -2807,8 +2820,6 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testTdf43244_SpacesOnMargin)
+         }
+     }
+     CPPUNIT_ASSERT(bSpaceFound);
+-
+-    comphelper::dispatchCommand(u".uno:ControlCodes"_ustr, {});
+ }
+ 
+ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testClipText)
+@@ -3839,6 +3850,7 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testSwitchingChartToDarkMode)
+     addDarkLightThemes(COL_BLACK, COL_WHITE);
+     SwXTextDocument* pXTextDocument = createDoc("large-chart-labels.odt");
+     CPPUNIT_ASSERT(pXTextDocument);
++    auto restore = setControlCodesForTest(*getSwDocShell(), false);
+ 
+     SwView* pView = getSwDocShell()->GetView();
+     uno::Reference<frame::XFrame> xFrame = pView->GetViewFrame().GetFrame().GetFrameInterface();
+@@ -3888,6 +3900,7 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testPrintDarkModeChart)
+     addDarkLightThemes(COL_BLACK, COL_WHITE);
+     SwXTextDocument* pXTextDocument = createDoc("large-chart-labels.odt");
+     CPPUNIT_ASSERT(pXTextDocument);
++    auto restore = setControlCodesForTest(*getSwDocShell(), false);
+ 
+     SwView* pView = getSwDocShell()->GetView();
+     uno::Reference<frame::XFrame> xFrame = pView->GetViewFrame().GetFrame().GetFrameInterface();
+diff --git a/sw/qa/extras/uiwriter/uiwriter4.cxx b/sw/qa/extras/uiwriter/uiwriter4.cxx
+index 72a1b5e..6057cff 100644
+--- a/sw/qa/extras/uiwriter/uiwriter4.cxx
++++ b/sw/qa/extras/uiwriter/uiwriter4.cxx
+@@ -99,6 +99,8 @@ CPPUNIT_TEST_FIXTURE(SwUiWriterTest4, testTdf96515)
+     createSwDoc();
+     SwWrtShell* pWrtShell = getSwDocShell()->GetWrtShell();
+     SwViewOption aViewOptions(*pWrtShell->GetViewOptions());
++    aViewOptions.SetViewLayoutBookMode(false);
++    aViewOptions.SetViewLayoutColumns(1);
+     aViewOptions.SetHideWhitespaceMode(true);
+     pWrtShell->ApplyViewOptions(aViewOptions);
+     CPPUNIT_ASSERT(pWrtShell->GetViewOptions()->IsWhitespaceHidden());
+@@ -573,6 +575,8 @@ CPPUNIT_TEST_FIXTURE(SwUiWriterTest4, testTdf96536)
+     createSwDoc();
+     SwWrtShell* pWrtShell = getSwDocShell()->GetWrtShell();
+     SwViewOption aViewOptions(*pWrtShell->GetViewOptions());
++    aViewOptions.SetViewLayoutBookMode(false);
++    aViewOptions.SetViewLayoutColumns(1);
+     aViewOptions.SetHideWhitespaceMode(true);
+     pWrtShell->ApplyViewOptions(aViewOptions);
+     CPPUNIT_ASSERT(pWrtShell->GetViewOptions()->IsWhitespaceHidden());

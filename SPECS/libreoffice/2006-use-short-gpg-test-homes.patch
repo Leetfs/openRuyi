@@ -1,0 +1,64 @@
+From 98e5160810a1168068b39f8704afb93dcd101416 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 12:27:24 +0800
+Subject: [PATCH] Allow a short root for GnuPG test homes
+
+Without a per-user runtime directory, GnuPG places its agent socket in GNUPGHOME. Long build paths can exceed the Unix socket pathname limit. Let each signing test keep its own keyring under an optional short directory, using the original fixture and signature assertions.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ unotest/source/cpp/macros_test.cxx   | 14 ++++++++++----
+ xmlsecurity/qa/uitest/gpg/encrypt.py |  8 ++++++--
+ 2 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/unotest/source/cpp/macros_test.cxx b/unotest/source/cpp/macros_test.cxx
+index e11d080..a1956d7 100644
+--- a/unotest/source/cpp/macros_test.cxx
++++ b/unotest/source/cpp/macros_test.cxx
+@@ -306,10 +306,16 @@ SAL_DLLPUBLIC_EXPORT void test_deinit_gpg()
+ void MacrosTest::setUpGpg(const test::Directories& rDirectories,
+                           std::u16string_view const rTestName)
+ {
+-    OUString aTargetDir = rDirectories.getURLFromWorkdir(
+-        Concat2View("CppunitTest/" + OUString(rTestName.data(), rTestName.size()) + ".test.user"));
+-
+-    return test_init_gpg(aTargetDir);
++    const OUString aRoot = o3tl::getEnvironment(u"LIBO_TEST_GPG_ROOT"_ustr);
++    const OUString aName(rTestName.data(), rTestName.size());
++    OUString aTargetDir;
++    if (aRoot.isEmpty())
++        aTargetDir = rDirectories.getURLFromWorkdir(Concat2View("CppunitTest/" + aName + ".test.user"));
++    else
++        CPPUNIT_ASSERT_EQUAL(osl::FileBase::E_None, osl::FileBase::getFileURLFromSystemPath(
++            aRoot + "/" + aName, aTargetDir));
++
++    test_init_gpg(aTargetDir);
+ }
+ 
+ void MacrosTest::tearDownGpg() { return test_deinit_gpg(); }
+diff --git a/xmlsecurity/qa/uitest/gpg/encrypt.py b/xmlsecurity/qa/uitest/gpg/encrypt.py
+index b68b288..1f61db2 100644
+--- a/xmlsecurity/qa/uitest/gpg/encrypt.py
++++ b/xmlsecurity/qa/uitest/gpg/encrypt.py
+@@ -12,6 +12,7 @@ from uitest.uihelper.common import get_state_as_dict
+ from libreoffice.uno.propertyvalue import mkPropertyValues
+ import pyuno
+ 
++from pathlib import Path
+ from tempfile import TemporaryDirectory
+ from urllib.parse import urljoin, urlparse
+ from urllib.request import url2pathname
+@@ -26,8 +27,11 @@ class GpgEncryptTest(UITestCase):
+ 
+     @classmethod
+     def setUpClass(cls):
+-        testdir = os.getenv("TestUserDir")
+-        certdir = urljoin(testdir, "signing-keys")
++        keyroot = os.getenv("LIBO_TEST_GPG_ROOT")
++        if keyroot:
++            certdir = (Path(keyroot) / "xmlsecurity_gpg").as_uri()
++        else:
++            certdir = urljoin(os.environ["TestUserDir"], "signing-keys")
+         # this sets GNUPGHOME so do it before starting soffice
+         pyuno.private_initTestEnvironmentGPG(certdir)
+         # ugly: set var here again because "os.environ" is a copy :(

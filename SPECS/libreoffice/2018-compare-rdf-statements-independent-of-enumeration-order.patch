@@ -1,0 +1,173 @@
+From 3e7a68a0e4f7f624e138960b7ddbe1a94ed08c00 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 21:33:15 +0800
+Subject: [PATCH] Compare RDF manifest statements independently of enumeration
+ order
+
+RDF graphs are sets of triples. The document metadata test already sorts statements after a save and reload. Apply the same ordering to both expected and actual statements when reading them directly, preserving the expected count, subjects, predicates, objects and named graphs.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ unoxml/qa/unit/rdftest.cxx | 93 ++++++++++++--------------------------
+ 1 file changed, 28 insertions(+), 65 deletions(-)
+
+diff --git a/unoxml/qa/unit/rdftest.cxx b/unoxml/qa/unit/rdftest.cxx
+index a55942e..a2449c1 100644
+--- a/unoxml/qa/unit/rdftest.cxx
++++ b/unoxml/qa/unit/rdftest.cxx
+@@ -960,6 +960,19 @@ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testTdf123293)
+     CPPUNIT_ASSERT(xDocRepo);
+ }
+ 
++static void assertUnorderedStatements(const uno::Reference<container::XEnumeration>& enumeration,
++                                      const std::vector<rdf::Statement>& expected)
++{
++    std::vector<rdf::Statement> actual;
++    while (enumeration->hasMoreElements())
++        actual.push_back(enumeration->nextElement().get<rdf::Statement>());
++    CPPUNIT_ASSERT_EQUAL(expected.size(), actual.size());
++    actual = sortStatements(actual);
++    const auto sorted = sortStatements(expected);
++    for (size_t i = 0; i < actual.size(); ++i)
++        CPPUNIT_ASSERT_STATEMENT_EQUAL(sorted[i], actual[i]);
++}
++
+ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testDocumentMetadataAccess)
+ {
+     loadFromURL(u"private:factory/swriter"_ustr);
+@@ -994,13 +1007,7 @@ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testDocumentMetadataAccess)
+ 
+     std::vector aStatements = getManifestStatements(xContext, xBase);
+ 
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum, { aStatements[0], aStatements[1], aStatements[2], aStatements[3], aStatements[4] });
+ 
+     try
+     {
+@@ -1255,45 +1262,25 @@ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testDocumentMetadataAccess)
+ 
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+     // removeContentOrStylesFile (content)
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum, { aStatements[1], aStatements[2], aStatements[4] });
+ 
+     xDocumentMetadataAccess->addContentOrStylesFile("content.xml");
+ 
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+     // addContentOrStylesFile (content)
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum, { aStatements[0], aStatements[1], aStatements[3], aStatements[2], aStatements[4] });
+ 
+     xDocumentMetadataAccess->removeContentOrStylesFile("styles.xml");
+ 
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+     // removeContentOrStylesFile (styles)
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum, { aStatements[0], aStatements[3], aStatements[4] });
+ 
+     xDocumentMetadataAccess->addContentOrStylesFile("styles.xml");
+ 
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+     // addContentOrStylesFile (styles)
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum, { aStatements[0], aStatements[1], aStatements[2], aStatements[3], aStatements[4] });
+ 
+     uno::Reference<css::rdf::XURI> xFooPath = rdf::URI::createNS(xContext, sBaseURI, "foo.rdf");
+     rdf::Statement aBaseHaspartFoo(xBase, xPkgHasPart, xFooPath, xManifest);
+@@ -1305,16 +1292,9 @@ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testDocumentMetadataAccess)
+ 
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+     // addMetadataFile
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aFooTypeBar, xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aFooTypeMetadata, xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aBaseHaspartFoo, xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum,
++                              { aStatements[0], aFooTypeBar, aFooTypeMetadata, aStatements[1],
++                                aBaseHaspartFoo, aStatements[2], aStatements[3], aStatements[4] });
+ 
+     // getMetadataGraphsWithType
+     css::uno::Sequence<uno::Reference<rdf::XURI>> xGraphBar
+@@ -1326,13 +1306,7 @@ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testDocumentMetadataAccess)
+     xDocumentMetadataAccess->removeMetadataFile(xFooPath);
+ 
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum, { aStatements[0], aStatements[1], aStatements[2], aStatements[3], aStatements[4] });
+ 
+     uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
+     uno::Reference<container::XEnumerationAccess> xParaEnumAccess(xTextDocument->getText(),
+@@ -1358,29 +1332,18 @@ CPPUNIT_TEST_FIXTURE(RDFStreamTest, testDocumentMetadataAccess)
+ 
+     // addMetadataFile
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aMFStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aMFStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum,
++                              { aMFStatements[0], aStatements[0], aStatements[1], aMFStatements[1],
++                                aStatements[2], aStatements[3], aStatements[4] });
+ 
+     xRepo->getGraph(xFooBar)->addStatement(xFoo, xBar, xFoo);
+ 
+     rdf::Statement aFoobar_FooBarFoo(xFoo, xBar, xFoo, xFooBar);
+     // addStatement
+     xEnum = xRepo->getStatements(nullptr, nullptr, nullptr);
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aFoobar_FooBarFoo, xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aMFStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[0], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aMFStatements[1], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[2], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[3], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT_STATEMENT_EQUAL(aStatements[4], xEnum->nextElement().get<rdf::Statement>());
+-    CPPUNIT_ASSERT(!xEnum->hasMoreElements());
++    assertUnorderedStatements(xEnum,
++                              { aFoobar_FooBarFoo, aMFStatements[0], aStatements[0], aStatements[1],
++                                aMFStatements[1], aStatements[2], aStatements[3], aStatements[4] });
+ 
+     uno::Sequence<beans::PropertyValue> aArgsEmptyNoContent{
+         comphelper::makePropertyValue(u"MediaType"_ustr,

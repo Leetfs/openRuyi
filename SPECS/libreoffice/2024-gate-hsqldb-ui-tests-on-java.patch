@@ -1,0 +1,41 @@
+From 2f56aef6255a79d15d4fbd96f32224760f1f3130 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 18:44:24 +0800
+Subject: [PATCH] dbaccess: gate the HSQLDB UI test groups on Java support
+
+The edit_field test opens tdf75509.odb, and the query tests open
+tdf42713.odb and tdf99619.odb; all three use sdbc:embedded:hsqldb.
+The remaining query test calls create_db_in_start_center(), which
+explicitly selects HSQLDB Embedded in the database wizard.
+
+Register these two UI groups only when Java is enabled, matching
+the existing guards on HSQLDB C++ tests. The Firebird C++ tests
+remain available in builds configured without Java.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ dbaccess/Module_dbaccess.mk | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dbaccess/Module_dbaccess.mk b/dbaccess/Module_dbaccess.mk
+index 8072063..fd887cc 100644
+--- a/dbaccess/Module_dbaccess.mk
++++ b/dbaccess/Module_dbaccess.mk
+@@ -94,10 +94,14 @@ $(eval $(call gb_Module_add_screenshot_targets,dbaccess,\
+ 
+ endif
+ 
++# These UI tests open embedded HSQLDB fixtures or create an HSQLDB database.
++# The HSQLDB driver is unavailable when Java support is disabled.
++ifeq ($(ENABLE_JAVA),TRUE)
+ $(eval $(call gb_Module_add_uicheck_targets,dbaccess,\
+     UITest_edit_field \
+     UITest_query \
+ ))
++endif
+ 
+ endif
+ 
+-- 
+2.54.0
+

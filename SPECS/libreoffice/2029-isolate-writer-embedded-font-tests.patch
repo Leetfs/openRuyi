@@ -1,0 +1,32 @@
+From c3522c90fcc4f0095391a3ed28b591c47dec80de Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Sat, 7 Nov 2026 23:19:25 +0800
+Subject: [PATCH] Isolate Writer embedded-font tests from matching system
+ fonts.
+
+Use the explicit distribution test-font profile for the Writer import test target. Installed IBM Plex Serif faces otherwise satisfy the subsetted-font lookup and populate the export cache, making the two availability assertions depend on fixture order.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sw/CppunitTest_sw_writerfilter_dmapper.mk | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/sw/CppunitTest_sw_writerfilter_dmapper.mk b/sw/CppunitTest_sw_writerfilter_dmapper.mk
+index 11d6957..9be270b 100644
+--- a/sw/CppunitTest_sw_writerfilter_dmapper.mk
++++ b/sw/CppunitTest_sw_writerfilter_dmapper.mk
+@@ -76,6 +76,11 @@ $(eval $(call gb_CppunitTest_use_configuration,sw_writerfilter_dmapper))
+ # by a link relation
+ $(call gb_CppunitTest_get_target,sw_writerfilter_dmapper) : $(call gb_Library_get_target,sw_writerfilter)
+ 
++# Embedded-font availability must not be satisfied by matching system faces.
++ifneq ($(strip $(LIBO_TEST_FONTCONFIG_FILE)),)
++$(call gb_CppunitTest_get_target,sw_writerfilter_dmapper) : EXTRA_ENV_VARS += FONTCONFIG_FILE="$(LIBO_TEST_FONTCONFIG_FILE)"
++endif
++
+ ifneq ($(filter MORE_FONTS,$(BUILD_TYPE)),)
+ $(eval $(call gb_CppunitTest_set_non_application_font_use,sw_writerfilter_misc,abort))
+ endif
+-- 
+2.54.0
+

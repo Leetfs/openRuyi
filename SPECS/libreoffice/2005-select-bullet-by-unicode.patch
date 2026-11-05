@@ -1,0 +1,30 @@
+From 2a10d3736f41ea66431f63a8e33435220cb587e1 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 12:09:39 +0800
+Subject: [PATCH] Select the Writer bullet by its Unicode code point
+
+The character grid is ordered by the glyphs available in the selected font. The same cell may contain the right-pointing pointer rather than the down-pointing triangle. Enter U+25BC directly and keep the assertions that reopening the dialog preserves its hexadecimal and decimal codes.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sw/qa/uitest/writer_tests2/formatBulletsNumbering.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sw/qa/uitest/writer_tests2/formatBulletsNumbering.py b/sw/qa/uitest/writer_tests2/formatBulletsNumbering.py
+index f240cfe..17921d1 100644
+--- a/sw/qa/uitest/writer_tests2/formatBulletsNumbering.py
++++ b/sw/qa/uitest/writer_tests2/formatBulletsNumbering.py
+@@ -33,8 +33,8 @@ class formatBulletsNumbering(UITestCase):
+                 self.assertEqual(get_state_as_dict(xSelector)["SelectedItemId"], "3")
+                 xChangeBulletBtn = xBulletPage.getChild("changeBulletBtn")
+                 with self.ui_test.execute_blocking_action(xChangeBulletBtn.executeAction, args=('CLICK', ())) as xCharSetDialog:
+-                    xCharSet = xCharSetDialog.getChild("showcharset")
+-                    xCharSet.executeAction("SELECT", mkPropertyValues({"COLUMN": "21", "ROW": "1"}))
++                    xHexText = xCharSetDialog.getChild("hexvalue")
++                    xHexText.executeAction("SET", mkPropertyValues({"TEXT": "25BC"}))
+ 
+             # Check that the "black down-pointing triangle" bullet is the third item
+             with self.ui_test.execute_dialog_through_command(".uno:BulletsAndNumberingDialog") as xDialog:
+-- 
+2.54.0
+

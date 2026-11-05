@@ -1,0 +1,269 @@
+From bc53ef2a9ee183e60345b9fef8af799b755ce289 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 19:04:05 +0800
+Subject: [PATCH] qa: preserve RTL geometry checks with the system Noto fonts
+
+Noto Sans Arabic 2.013 draws dots and marks as separate PDF objects and
+joins kashida to adjacent glyphs. Match those text objects and check
+whitespace expansion, the two kashida insertion sites, and all seven
+glyph positions across the hidden-span boundary.
+
+Noto Sans Hebrew 3.001 needs a fallback for slash and X strikeouts.
+Check their character content, alignment and coverage independently
+of the fallback font's glyph width.
+
+Use 36pt for the Bismillah in the bidi underflow fixture. Its larger
+system-font advance must still leave the final word on the second
+line; retain the original line-content assertions.
+
+These are downstream adaptations to the distribution font set.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sw/qa/extras/layout/data/tdf162314.fodt |   2 +-
+ sw/qa/extras/layout/layout4.cxx         |   2 +
+ vcl/qa/cppunit/pdfexport/pdfexport2.cxx | 178 +++++++++++++-----------
+ 3 files changed, 101 insertions(+), 81 deletions(-)
+
+diff --git a/sw/qa/extras/layout/data/tdf162314.fodt b/sw/qa/extras/layout/data/tdf162314.fodt
+index 1d6ee09..e6ef37b 100644
+--- a/sw/qa/extras/layout/data/tdf162314.fodt
++++ b/sw/qa/extras/layout/data/tdf162314.fodt
+@@ -97,7 +97,7 @@
+    <style:text-properties/>
+   </style:style>
+   <style:style style:name="T4" style:family="text">
+-   <style:text-properties fo:font-size="44pt" style:font-size-asian="44pt" style:font-name-complex="Noto Sans Arabic" style:font-size-complex="44pt"/>
++   <style:text-properties fo:font-size="36pt" style:font-size-asian="36pt" style:font-name-complex="Noto Sans Arabic" style:font-size-complex="36pt"/>
+   </style:style>
+   <style:style style:name="T5" style:family="text">
+    <style:text-properties/>
+diff --git a/sw/qa/extras/layout/layout4.cxx b/sw/qa/extras/layout/layout4.cxx
+index 40693ed..9c8a6dc 100644
+--- a/sw/qa/extras/layout/layout4.cxx
++++ b/sw/qa/extras/layout/layout4.cxx
+@@ -1720,6 +1720,8 @@ CPPUNIT_TEST_FIXTURE(SwLayoutWriter4, TestTdf162314)
+ {
+     // Regression test for bidi portion line breaking where the portion layout ends with underflow,
+     // but the bidi portion should not be truncated.
++    // The fixture uses 36pt with system Noto Sans Arabic 2.013 so that the
++    // Bismillah fits after the Latin text, while the final word underflows.
+     createSwDoc("tdf162314.fodt");
+     auto pXmlDoc = parseLayoutDump();
+ 
+diff --git a/vcl/qa/cppunit/pdfexport/pdfexport2.cxx b/vcl/qa/cppunit/pdfexport/pdfexport2.cxx
+index 4716ea7..68c32fe 100644
+--- a/vcl/qa/cppunit/pdfexport/pdfexport2.cxx
++++ b/vcl/qa/cppunit/pdfexport/pdfexport2.cxx
+@@ -5584,28 +5584,28 @@ CPPUNIT_TEST_FIXTURE(PdfExportTest2, testTdf134226)
+     std::vector<basegfx::B2DRectangle> aRect;
+     GetPdfPageTextObjectsAndBounds(parsePDFExport(), /*nPage*/ 0, aText, aRect);
+ 
+-    CPPUNIT_ASSERT_EQUAL(size_t(8), aText.size());
+-
+-    CPPUNIT_ASSERT_EQUAL(u"ة"_ustr, aText[0].trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText[1].trim());
+-    CPPUNIT_ASSERT_EQUAL(u"\u0651ق"_ustr, aText[2].trim());
+-    CPPUNIT_ASSERT_EQUAL(u"ش"_ustr, aText[3].trim());
+-    CPPUNIT_ASSERT_EQUAL(u"\u0651ق"_ustr, aText[4].trim());
+-    CPPUNIT_ASSERT_EQUAL(u"ش"_ustr, aText[5].trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText[6].trim());
+-    CPPUNIT_ASSERT_EQUAL(u"ة"_ustr, aText[7].trim());
+-
+-    // Verify that the corresponding text segments are positioned roughly equally
+-    auto fnEqualPos
+-        = [](const basegfx::B2DRectangle& stExpected, const basegfx::B2DRectangle& stFound) {
+-              CPPUNIT_ASSERT_DOUBLES_EQUAL(stExpected.getMinX(), stFound.getMinX(), /*delta*/ 0.15);
+-              CPPUNIT_ASSERT_DOUBLES_EQUAL(stExpected.getMaxX(), stFound.getMaxX(), /*delta*/ 0.15);
+-          };
++    // Noto Sans Arabic 2.013 emits separate objects for dots and marks.
++    // Both lines must retain all seven glyph objects at the same horizontal
++    // positions, including the shadda in the hidden span.
++    const std::vector<OUString> aExpected{
++        u""_ustr, u"ة"_ustr, u"\u0651ق"_ustr, u""_ustr, u""_ustr, u""_ustr, u"ش"_ustr,
++        u""_ustr, u"\u0651ق"_ustr, u""_ustr, u"ش"_ustr, u""_ustr, u""_ustr, u"ة"_ustr
++    };
++    CPPUNIT_ASSERT_EQUAL(aExpected.size(), aText.size());
++    for (size_t i = 0; i < aExpected.size(); ++i)
++        CPPUNIT_ASSERT_EQUAL(aExpected[i], aText[i].trim());
+ 
+-    fnEqualPos(aRect[0], aRect[7]);
+-    fnEqualPos(aRect[1], aRect[6]);
+-    fnEqualPos(aRect[2], aRect[4]);
+-    fnEqualPos(aRect[3], aRect[5]);
++    const size_t aMatchingGlyphs[] = { 12, 13, 11, 7, 8, 9, 10 };
++    for (size_t i = 0; i < std::size(aMatchingGlyphs); ++i)
++    {
++        const auto& rFirst = aRect[i];
++        const auto& rSecond = aRect[aMatchingGlyphs[i]];
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(rFirst.getMinX(), rSecond.getMinX(), 0.15);
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(rFirst.getMaxX(), rSecond.getMaxX(), 0.15);
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(rFirst.getHeight(), rSecond.getHeight(), 0.15);
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(aRect[0].getMinY() - aRect[12].getMinY(),
++                                    rFirst.getMinY() - rSecond.getMinY(), 0.15);
++    }
+ }
+ 
+ // tdf#71956 - Tests that glyphs can be individually styled
+@@ -5926,32 +5926,44 @@ CPPUNIT_TEST_FIXTURE(PdfExportTest2, testTdf151748KashidaSpace)
+     std::vector<basegfx::B2DRectangle> aRect;
+     GetPdfPageTextObjectsAndBounds(parsePDFExport(), /*nPage*/ 0, aText, aRect);
+ 
+-    CPPUNIT_ASSERT_EQUAL(size_t(17), aText.size());
+-
+-    // Box 1: Not enough room for kashida
+-    CPPUNIT_ASSERT_EQUAL(u"خط تخوردگی"_ustr, aText.at(0).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"وتوسط"_ustr, aText.at(1).trim());
+-
+-    // Box 2: One kashida toward end
+-    CPPUNIT_ASSERT_EQUAL(u"وردگی"_ustr, aText.at(2).trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText.at(3).trim()); // Kashida
+-    CPPUNIT_ASSERT_EQUAL(u"خط تخ"_ustr, aText.at(4).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"وتوسط"_ustr, aText.at(5).trim());
+-
+-    // Box 3: Two kashida
+-    CPPUNIT_ASSERT_EQUAL(u"وردگی"_ustr, aText.at(6).trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText.at(7).trim()); // Kashida
+-    CPPUNIT_ASSERT_EQUAL(u"ط تخ"_ustr, aText.at(8).trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText.at(9).trim()); // Kashida
+-    CPPUNIT_ASSERT_EQUAL(u"خ"_ustr, aText.at(10).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"وتوسط"_ustr, aText.at(11).trim());
+-
+-    // Box 4: One kashida (text size change)
+-    CPPUNIT_ASSERT_EQUAL(u"خط"_ustr, aText.at(12).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"وردگی"_ustr, aText.at(13).trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText.at(14).trim()); // Kashida
+-    CPPUNIT_ASSERT_EQUAL(u"تخ"_ustr, aText.at(15).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"وتوسط"_ustr, aText.at(16).trim());
++    // Noto Sans Arabic 2.013 separates the dots from the letters, and joins
++    // kashida to the preceding glyph instead of emitting an empty text object.
++    const std::vector<OUString> aBoxText{
++        u"ی"_ustr, u"گ"_ustr, u"ورد"_ustr, u""_ustr, u"خ"_ustr, u""_ustr, u"ت"_ustr,
++        u"ط"_ustr, u""_ustr, u"خ"_ustr, u"وسط"_ustr, u""_ustr, u"ت"_ustr, u"و"_ustr
++    };
++    const std::vector<OUString> aLargeBoxText{
++        u"ط"_ustr, u""_ustr, u"خ"_ustr, u"ی"_ustr, u"گ"_ustr, u"ورد"_ustr,
++        u""_ustr, u"خ"_ustr, u""_ustr, u"ت"_ustr, u""_ustr,
++        u"وسط"_ustr, u""_ustr, u"ت"_ustr, u"و"_ustr
++    };
++    CPPUNIT_ASSERT_EQUAL(3 * aBoxText.size() + aLargeBoxText.size(), aText.size());
++    for (size_t nBox = 0; nBox < 3; ++nBox)
++        for (size_t i = 0; i < aBoxText.size(); ++i)
++            CPPUNIT_ASSERT_EQUAL(aBoxText[i], aText[nBox * aBoxText.size() + i].trim());
++    for (size_t i = 0; i < aLargeBoxText.size(); ++i)
++        CPPUNIT_ASSERT_EQUAL(aLargeBoxText[i], aText[3 * aBoxText.size() + i].trim());
++
++    // Box 1 has no room for kashida. Box 2 stretches only the later insertion
++    // site; box 3 stretches both. Check the visible glyph extensions, not the
++    // number of PDF objects used to draw them.
++    CPPUNIT_ASSERT_GREATER(aRect[4].getWidth() + 2.0, aRect[18].getWidth());
++    CPPUNIT_ASSERT_DOUBLES_EQUAL(aRect[9].getWidth(), aRect[23].getWidth(), 0.15);
++    CPPUNIT_ASSERT_GREATER(aRect[18].getWidth() + 2.0, aRect[32].getWidth());
++    CPPUNIT_ASSERT_GREATER(aRect[9].getWidth() + 2.0, aRect[37].getWidth());
++    // The right edge and the unexpanded second line stay aligned in all boxes.
++    for (size_t nBox = 1; nBox < 3; ++nBox)
++    {
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(aRect[9].getMaxX(), aRect[14 * nBox + 9].getMaxX(), 0.15);
++        for (size_t i = 10; i < 14; ++i)
++        {
++            CPPUNIT_ASSERT_DOUBLES_EQUAL(aRect[i].getMinX(), aRect[14 * nBox + i].getMinX(), 0.15);
++            CPPUNIT_ASSERT_DOUBLES_EQUAL(aRect[i].getMaxX(), aRect[14 * nBox + i].getMaxX(), 0.15);
++        }
++    }
++    // Box 4 still stretches the small text across the font-size change.
++    CPPUNIT_ASSERT_GREATER(aRect[4].getWidth() + 2.0, aRect[49].getWidth());
++    CPPUNIT_ASSERT_GREATER(2.0 * aRect[9].getHeight(), aRect[44].getHeight());
+ }
+ 
+ // tdf#163105 - Writer kashida justification should expand spaces
+@@ -5964,16 +5976,19 @@ CPPUNIT_TEST_FIXTURE(PdfExportTest2, testTdf163105SwKashidaSpaceExpansion)
+     std::vector<basegfx::B2DRectangle> aRect;
+     GetPdfPageTextObjectsAndBounds(parsePDFExport(), /*nPage*/ 0, aText, aRect);
+ 
+-    CPPUNIT_ASSERT_EQUAL(size_t(5), aText.size());
+-
+-    CPPUNIT_ASSERT_EQUAL(u"یده"_ustr, aText.at(0).trim());
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText.at(1).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"ه کش"_ustr, aText.at(2).trim()); // This span is whitespace justified
+-    CPPUNIT_ASSERT_EQUAL(u""_ustr, aText.at(3).trim());
+-    CPPUNIT_ASSERT_EQUAL(u"نویس"_ustr, aText.at(4).trim());
++    // With Noto Sans Arabic 2.013, dots and marks are separate objects and
++    // kashida is part of the adjacent glyph. The span containing the space
++    // must still receive its share of justification.
++    const std::vector<OUString> aExpected{
++        u"ده"_ustr, u""_ustr, u"ی"_ustr, u""_ustr, u"ش"_ustr, u"ه ک"_ustr,
++        u"س"_ustr, u"ی"_ustr, u""_ustr, u"و"_ustr, u""_ustr, u"ن"_ustr
++    };
++    CPPUNIT_ASSERT_EQUAL(aExpected.size(), aText.size());
++    for (size_t i = 0; i < aExpected.size(); ++i)
++        CPPUNIT_ASSERT_EQUAL(aExpected[i], aText[i].trim());
+ 
+-    // Without the fix, this will be less than 25
+-    CPPUNIT_ASSERT_GREATER(150.0, aRect.at(2).getWidth());
++    // Without whitespace expansion this span is less than 25 points wide.
++    CPPUNIT_ASSERT_GREATER(150.0, aRect.at(5).getWidth());
+ }
+ 
+ // tdf#163105 - Writer should use font information when choosing kashida positions
+@@ -6621,31 +6636,34 @@ CPPUNIT_TEST_FIXTURE(PdfExportTest2, testTdf117941RtlStrikeoutChars)
+     GetPdfPageTextObjectsAndBounds(parsePDFExport(), /*page*/ 0, aText, aRect);
+ 
+     CPPUNIT_ASSERT_EQUAL(size_t(8), aText.size());
++    for (size_t i : { size_t(0), size_t(4) })
++    {
++        CPPUNIT_ASSERT_EQUAL(u"AAAAAAAA"_ustr, aText[i].trim());
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(56.8, aRect[i].getMinX(), 1.0);
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(261.2, aRect[i].getMaxX(), 1.0);
++    }
++    for (size_t i : { size_t(2), size_t(6) })
++    {
++        CPPUNIT_ASSERT_EQUAL(u"אאאאאאאא"_ustr, aText[i].trim());
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(354.5, aRect[i].getMinX(), 1.0);
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(553.8, aRect[i].getMaxX(), 1.0);
++    }
+ 
+-    CPPUNIT_ASSERT_EQUAL(u"AAAAAAAA"_ustr, aText.at(0).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(56.8, aRect.at(0).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(261.2, aRect.at(0).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"//////////////"_ustr, aText.at(1).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(56.8, aRect.at(1).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(264.7, aRect.at(1).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"אאאאאאאא"_ustr, aText.at(2).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(354.5, aRect.at(2).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(553.8, aRect.at(2).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"//////////////"_ustr, aText.at(3).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(353.5, aRect.at(3).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(558.3, aRect.at(3).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"AAAAAAAA"_ustr, aText.at(4).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(56.8, aRect.at(4).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(261.2, aRect.at(4).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"XXXXXXXXX"_ustr, aText.at(5).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(56.8, aRect.at(5).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(267.6, aRect.at(5).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"אאאאאאאא"_ustr, aText.at(6).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(354.5, aRect.at(6).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(553.8, aRect.at(6).getMaxX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_EQUAL(u"XXXXXXXXX"_ustr, aText.at(7).trim());
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(353.1, aRect.at(7).getMinX(), /*delta*/ 1.0);
+-    CPPUNIT_ASSERT_DOUBLES_EQUAL(565.2, aRect.at(7).getMaxX(), /*delta*/ 1.0);
++    // The system Hebrew font lacks Latin strikeout characters, so their
++    // count depends on the fallback font. Every character must still be the
++    // requested slash/X, and the strikeout must start at the text's left edge
++    // and cover it completely, with at most one extra character of overhang.
++    for (size_t i : { size_t(1), size_t(3), size_t(5), size_t(7) })
++    {
++        const OUString aStrike = aText[i].trim();
++        CPPUNIT_ASSERT(!aStrike.isEmpty());
++        for (sal_Int32 j = 0; j < aStrike.getLength(); ++j)
++            CPPUNIT_ASSERT(aStrike[j] == (i < 4 ? u'/' : u'X'));
++        CPPUNIT_ASSERT_DOUBLES_EQUAL(aRect[i - 1].getMinX(), aRect[i].getMinX(), 2.0);
++        CPPUNIT_ASSERT(aRect[i].getMaxX() >= aRect[i - 1].getMaxX());
++        const double fOneCharacter = aRect[i].getWidth() / aStrike.getLength();
++        CPPUNIT_ASSERT(aRect[i].getMaxX() - aRect[i - 1].getMaxX() <= fOneCharacter);
++    }
+ }
+ 
+ } // end anonymous namespace
+-- 
+2.54.0
+

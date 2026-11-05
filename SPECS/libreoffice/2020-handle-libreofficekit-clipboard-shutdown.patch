@@ -1,0 +1,79 @@
+From 7101419f3d07daff06b79bddd255dba7cfa824af Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 22:10:28 +0800
+Subject: [PATCH] Handle clipboard requests after LibreOfficeKit shutdown
+
+Writer clears its clipboard when SwDLL is destroyed. An embedder that loads a Writer document and releases its Office handle can reach that destructor after VCL has cleared the per-view clipboard map. Report the unavailable service using DeploymentException, as other unavailable system clipboard backends do, and accept late clipboard releases. Keep live view clipboard lookups and updates unchanged.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ desktop/source/lib/lokclipboard.cxx | 27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
+
+diff --git a/desktop/source/lib/lokclipboard.cxx b/desktop/source/lib/lokclipboard.cxx
+index 2d5d12d..bc19ee9 100644
+--- a/desktop/source/lib/lokclipboard.cxx
++++ b/desktop/source/lib/lokclipboard.cxx
+@@ -14,6 +14,7 @@
+ #include <sfx2/lokhelper.hxx>
+ #include <sal/log.hxx>
+ #include <cppuhelper/supportsservice.hxx>
++#include <com/sun/star/uno/DeploymentException.hpp>
+ #include <com/sun/star/uno/XComponentContext.hpp>
+ 
+ using namespace css;
+@@ -33,15 +34,18 @@ rtl::Reference<LOKClipboard> LOKClipboardFactory::getClipboardForCurView()
+ 
+     osl::MutexGuard aGuard(gMutex);
+ 
+-    auto& gClipboards = getClipboards();
+-    auto it = gClipboards.get()->find(nViewId);
+-    if (it != gClipboards.get()->end())
++    auto* pClipboards = getClipboards().get();
++    if (!pClipboards)
++        throw DeploymentException(u"The LibreOfficeKit clipboard has been shut down."_ustr);
++
++    auto it = pClipboards->find(nViewId);
++    if (it != pClipboards->end())
+     {
+         SAL_INFO("lok", "Got clip: " << it->second.get() << " from " << nViewId);
+         return it->second;
+     }
+     rtl::Reference<LOKClipboard> xClip(new LOKClipboard());
+-    (*gClipboards.get())[nViewId] = xClip;
++    (*pClipboards)[nViewId] = xClip;
+     SAL_INFO("lok", "Created clip: " << xClip.get() << " for viewId " << nViewId);
+     return xClip;
+ }
+@@ -50,19 +54,22 @@ void LOKClipboardFactory::releaseClipboardForView(int nViewId)
+ {
+     osl::MutexGuard aGuard(gMutex);
+ 
+-    auto& gClipboards = getClipboards();
++    auto* pClipboards = getClipboards().get();
++    if (!pClipboards)
++        return;
++
+     if (nViewId < 0) // clear all
+     {
+-        gClipboards.get()->clear();
++        pClipboards->clear();
+         SAL_INFO("lok", "Released all clipboards on doc destroy\n");
+     }
+-    else if (gClipboards.get())
++    else
+     {
+-        auto it = gClipboards.get()->find(nViewId);
+-        if (it != gClipboards.get()->end())
++        auto it = pClipboards->find(nViewId);
++        if (it != pClipboards->end())
+         {
+             SAL_INFO("lok", "Releasing clip: " << it->second.get() << " for destroyed " << nViewId);
+-            gClipboards.get()->erase(it);
++            pClipboards->erase(it);
+         }
+     }
+ }
+-- 
+2.54.0
+

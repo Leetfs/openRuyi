@@ -1,0 +1,73 @@
+From 887159615545d571561be74fed93b4fad930b184 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 22:55:13 +0800
+Subject: [PATCH] Select a font that provides glyphs when Fontconfig returns an
+ empty match
+
+The Hebrew field and Lao footnote documents request the digit one and Latin A. Fontconfig can rank a musical notation face which has none of these glyphs. If the first match covers no requested character and a ranked face covers the entire run, prepare that face instead. Keep usable partial matches and the existing fallback when no single face covers the run.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ vcl/unx/generic/fontmanager/fontconfig.cxx | 39 +++++++++++++++++++++-
+ 1 file changed, 38 insertions(+), 1 deletion(-)
+
+diff --git a/vcl/unx/generic/fontmanager/fontconfig.cxx b/vcl/unx/generic/fontmanager/fontconfig.cxx
+index 5ecb3e3..eba9f2c 100644
+--- a/vcl/unx/generic/fontmanager/fontconfig.cxx
++++ b/vcl/unx/generic/fontmanager/fontconfig.cxx
+@@ -1119,6 +1119,42 @@ static bool isDeclaredTestFallback(FcFontSet* fonts, FcPattern* match,
+     return foundRequested;
+ }
+ 
++// A substitution rule can rank a face that supplies none of a fallback run's
++// characters. Preserve usable partial matches for the normal fallback chain.
++static FcPattern* matchFallbackFont(FcConfig* config, FcFontSet* fonts, FcPattern* request,
++                                    bool needGlyphs, FcResult* result)
++{
++    FcPattern* match = FcFontSetMatch(config, &fonts, 1, request, result);
++    FcCharSet* required = nullptr;
++    FcCharSet* supported = nullptr;
++    if (!match || !needGlyphs
++        || FcPatternGetCharSet(request, FC_CHARSET, 0, &required) != FcResultMatch
++        || (FcPatternGetCharSet(match, FC_CHARSET, 0, &supported) == FcResultMatch
++            && FcCharSetIntersectCount(required, supported) != 0))
++        return match;
++
++    FcResult sortResult;
++    FcFontSet* ranked = FcFontSetSort(config, &fonts, 1, request, FcFalse, nullptr, &sortResult);
++    if (ranked)
++    {
++        for (int i = 0; i < ranked->nfont; ++i)
++        {
++            FcPattern* candidate = ranked->fonts[i];
++            if (FcPatternGetCharSet(candidate, FC_CHARSET, 0, &supported) != FcResultMatch
++                || !FcCharSetIsSubset(required, supported))
++                continue;
++            if (FcPattern* better = FcFontRenderPrepare(config, request, candidate))
++            {
++                FcPatternDestroy(match);
++                match = better;
++            }
++            break;
++        }
++        FcFontSetDestroy(ranked);
++    }
++    return match;
++}
++
+ void PrintFontManager::Substitute(vcl::font::FontSelectPattern &rPattern, OUString& rMissingCodes)
+ {
+     FontCfgWrapper& rWrapper = FontCfgWrapper::get();
+@@ -1217,7 +1253,8 @@ void PrintFontManager::Substitute(vcl::font::FontSelectPattern &rPattern, OUStri
+     // process the result of the fontconfig query
+     FcResult eResult = FcResultNoMatch;
+     FcFontSet* pFontSet = rWrapper.getFontSet();
+-    FcPattern* pResult = FcFontSetMatch(FcConfigGetCurrent(), &pFontSet, 1, pPattern, &eResult);
++    FcPattern* pResult = matchFallbackFont(FcConfigGetCurrent(), pFontSet, pPattern,
++                                           !rMissingCodes.isEmpty(), &eResult);
+     FcPatternDestroy( pPattern );
+ 
+     FcFontSet*  pSet = nullptr;
+-- 
+2.54.0
+

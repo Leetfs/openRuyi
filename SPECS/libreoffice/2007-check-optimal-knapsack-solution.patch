@@ -1,0 +1,28 @@
+From 96d47cbb1c6c9b270782b50c375a8cf78610c50e Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 13:28:47 +0800
+Subject: [PATCH] Check the optimal solution of the Calc knapsack fixture
+
+Enumerating the 32768 binary selections of the 15 items gives one optimum of 6987 at weight 1000. The former expected value of 6981 is feasible at weight 999 but is smaller. Check both the optimal value and its weight.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sc/qa/extras/scsolverobj.cxx | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/sc/qa/extras/scsolverobj.cxx b/sc/qa/extras/scsolverobj.cxx
+index b7735a7..3cdafa9 100644
+--- a/sc/qa/extras/scsolverobj.cxx
++++ b/sc/qa/extras/scsolverobj.cxx
+@@ -116,8 +116,9 @@ void ScSolverSettingsObj::testXSolverSettings()
+     xSolverModel->setSuppressDialog(true);
+     xSolverModel->solve();
+ 
+-    // The correct solution value is 6981 (using LpsolveSolver)
+-    CPPUNIT_ASSERT_EQUAL(static_cast<double>(6981), xSheet->getCellByPosition(6, 6)->getValue());
++    // The optimal selection in knapsack.ods uses the full capacity of 1000.
++    CPPUNIT_ASSERT_EQUAL(1000.0, xSheet->getCellByPosition(6, 4)->getValue());
++    CPPUNIT_ASSERT_EQUAL(6987.0, xSheet->getCellByPosition(6, 6)->getValue());
+ 
+     // Check objective function and variable cells
+     testCellAddress(aObjCell, xSolverModel->getObjectiveCell());

@@ -1,0 +1,102 @@
+From 3a06d049295e0ab5e0db5f62ad17fa1c2366f61d Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Sat, 7 Nov 2026 15:25:22 +0800
+Subject: [PATCH] Keep Firebird SQLDA types compatible with the Base driver
+
+Firebird 4 and 5 return INT128 for BIGINT and decimal aggregates and
+timezone-aware types for CURRENT_TIME and CURRENT_TIMESTAMP. The
+driver has no buffers for these SQLDA types, so fetching a normal
+SUM(BIGINT) result fails with an empty data pointer.
+
+Set the documented isc_dpb_set_bind option when its header constant
+is available. Coerce the new numeric and zoned temporal types to the
+representations implemented by the driver, limited to this connection.
+Add coverage for 64-bit sums, scaled decimal sums and temporal values.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ .../source/drivers/firebird/Connection.cxx    | 12 ++++++-
+ dbaccess/qa/unit/firebird.cxx                 | 31 +++++++++++++++++++
+ 2 files changed, 42 insertions(+), 1 deletion(-)
+
+diff --git a/connectivity/source/drivers/firebird/Connection.cxx b/connectivity/source/drivers/firebird/Connection.cxx
+index 40606a7..f9b927c 100644
+--- a/connectivity/source/drivers/firebird/Connection.cxx
++++ b/connectivity/source/drivers/firebird/Connection.cxx
+@@ -296,7 +296,17 @@ void Connection::construct(const OUString& url, const Sequence< PropertyValue >&
+             dpbBuffer.push_back(sizeof(sCharset) - 1);
+             dpbBuffer.append(sCharset);
+ 
+-            // Do any more dpbBuffer additions here
++#ifdef isc_dpb_set_bind
++            // Firebird 4+ returns INT128 for some aggregates and zoned temporal
++            // types for CURRENT_TIME/STAMP. The SDBC driver consumes the legacy
++            // SQLDA types, so request that representation for this connection.
++            const char sBindings[] =
++                "INT128 TO LEGACY; DECFLOAT TO LEGACY; TIME ZONE TO LEGACY";
++            dpbBuffer.push_back(isc_dpb_set_bind);
++            dpbBuffer.push_back(sizeof(sBindings) - 1);
++            dpbBuffer.append(sBindings);
++#endif
++
+ 
+             // attach without running the database's own event triggers
+             if (m_bIsEmbedded || m_bIsFile)
+diff --git a/dbaccess/qa/unit/firebird.cxx b/dbaccess/qa/unit/firebird.cxx
+index 3e8b051..55c9b63 100644
+--- a/dbaccess/qa/unit/firebird.cxx
++++ b/dbaccess/qa/unit/firebird.cxx
+@@ -31,12 +31,14 @@ public:
+     void testIntegerDatabase();
+     void testTdf132924();
+     void testTdf153057();
++    void testAggregateAndTemporalTypes();
+ 
+     CPPUNIT_TEST_SUITE(FirebirdTest);
+     CPPUNIT_TEST(testEmptyDBConnection);
+     CPPUNIT_TEST(testIntegerDatabase);
+     CPPUNIT_TEST(testTdf132924);
+     CPPUNIT_TEST(testTdf153057);
++    CPPUNIT_TEST(testAggregateAndTemporalTypes);
+     CPPUNIT_TEST_SUITE_END();
+ };
+ 
+@@ -194,6 +196,35 @@ void FirebirdTest::testTdf153057()
+     }
+ }
+ 
++void FirebirdTest::testAggregateAndTemporalTypes()
++{
++    createTempCopy(u"firebird_empty.odb");
++    uno::Reference<XOfficeDatabaseDocument> xDocument = getDocumentForUrl(maTempFile.GetURL());
++    uno::Reference<XConnection> xConnection = getConnectionForDocument(xDocument);
++    uno::Reference<XStatement> xStatement = xConnection->createStatement();
++
++    // Firebird 4+ describes both aggregates as INT128 without the connection binding.
++    {
++        uno::Reference<XResultSet> xResults = xStatement->executeQuery(
++            u"SELECT SUM(CAST(9000000000000000000 AS BIGINT)), "
++             "SUM(CAST(42.25 AS DECIMAL(18,2))) FROM RDB$DATABASE"_ustr);
++        CPPUNIT_ASSERT(xResults->next());
++        uno::Reference<XRow> xRow(xResults, UNO_QUERY_THROW);
++        CPPUNIT_ASSERT_EQUAL(SAL_CONST_INT64(9000000000000000000), xRow->getLong(1));
++        CPPUNIT_ASSERT_EQUAL(u"42.25"_ustr, xRow->getString(2));
++        CPPUNIT_ASSERT(!xResults->next());
++    }
++    {
++        uno::Reference<XResultSet> xResults = xStatement->executeQuery(
++            u"SELECT CURRENT_TIMESTAMP, CURRENT_TIME FROM RDB$DATABASE"_ustr);
++        CPPUNIT_ASSERT(xResults->next());
++        uno::Reference<XRow> xRow(xResults, UNO_QUERY_THROW);
++        CPPUNIT_ASSERT(xRow->getTimestamp(1).Year >= 2000);
++        CPPUNIT_ASSERT(xRow->getTime(2).Hours < 24);
++        CPPUNIT_ASSERT(!xResults->next());
++    }
++}
++
+ CPPUNIT_TEST_SUITE_REGISTRATION(FirebirdTest);
+ 
+ CPPUNIT_PLUGIN_IMPLEMENT();
+-- 
+2.54.0
+

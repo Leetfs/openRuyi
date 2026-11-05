@@ -1,0 +1,39 @@
+From 770a2f8dbadf812012673d7ed0165fc4d33ce543 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Sat, 7 Nov 2026 23:29:01 +0800
+Subject: [PATCH] Close the Base signature fixture before reusing its frame.
+
+Base model disposal does not close its controllers. Use XCloseable after the signature assertion so subsequent Writer loads through the default target do not encounter the disposed database frame.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ xmlsecurity/qa/unit/signing/signing2.cxx | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/xmlsecurity/qa/unit/signing/signing2.cxx b/xmlsecurity/qa/unit/signing/signing2.cxx
+index 066ef67..8169a84 100644
+--- a/xmlsecurity/qa/unit/signing/signing2.cxx
++++ b/xmlsecurity/qa/unit/signing/signing2.cxx
+@@ -21,6 +21,7 @@
+ #include <com/sun/star/beans/XPropertySet.hpp>
+ #include <com/sun/star/embed/XStorage.hpp>
+ #include <com/sun/star/text/XTextDocument.hpp>
++#include <com/sun/star/util/XCloseable.hpp>
+ #include <com/sun/star/xml/crypto/SEInitializer.hpp>
+ 
+ #include <sfx2/sfxbasemodel.hxx>
+@@ -108,6 +109,11 @@ CPPUNIT_TEST_FIXTURE(SigningTest2, testPreserveMacroSignatureODB)
+     // Make sure the signature is still there
+     assertXPath(pXmlDoc, "//dsig:Signature", "Id",
+                 u"ID_00a7002f009000bc00ce00f7004400460080002f002e00e400e0003700df00e8");
++
++    // Base closes its controllers through XCloseable, before another document reuses the frame.
++    uno::Reference<util::XCloseable> xCloseable(mxComponent, uno::UNO_QUERY_THROW);
++    xCloseable->close(true);
++    mxComponent.clear();
+ }
+ 
+ CPPUNIT_TEST_FIXTURE(SigningTest2, testPasswordPreserveMacroSignatureODF13)
+-- 
+2.54.0
+

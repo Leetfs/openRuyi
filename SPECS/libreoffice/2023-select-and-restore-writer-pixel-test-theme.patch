@@ -1,0 +1,56 @@
+From 6a6ea45169a4b646990f50d643f3cb49f0623242 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Wed, 4 Nov 2026 22:55:13 +0800
+Subject: [PATCH] Select light paper for Writer pixel tests and restore the
+ view theme
+
+The numbering shading and translucent rectangle tests compare against a white page. Either preceding dark-chart test can leave their new views in the Dark scheme, rendering the page black and the rectangle at level 64. Select the Light scheme through the same view command before painting and restore the original per-view scheme afterwards.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+ sw/qa/extras/tiledrendering/tiledrendering.cxx | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/sw/qa/extras/tiledrendering/tiledrendering.cxx b/sw/qa/extras/tiledrendering/tiledrendering.cxx
+index 5170fcb..0b198ed 100644
+--- a/sw/qa/extras/tiledrendering/tiledrendering.cxx
++++ b/sw/qa/extras/tiledrendering/tiledrendering.cxx
+@@ -2579,10 +2579,27 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testDeselectCustomShape)
+     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), pWrtShell->GetDrawView()->GetMarkedObjectList().GetMarkCount());
+ }
+ 
++// These pixel checks measure paint over a white page, even if an earlier
++// view selected a dark color scheme.
++static auto useLightPageForPixelTest(SwDocShell& shell)
++{
++    SwView* view = shell.GetView();
++    const OUString previous = view->GetWrtShell().GetViewOptions()->GetThemeName();
++    auto frame = view->GetViewFrame().GetFrame().GetFrameInterface();
++    auto selectTheme = [frame](const OUString& theme) {
++        comphelper::dispatchCommand(u".uno:ChangeTheme"_ustr, frame,
++                                    { comphelper::makePropertyValue(u"NewTheme"_ustr, theme) });
++    };
++    addDarkLightThemes(COL_BLACK, COL_WHITE);
++    selectTheme(u"Light"_ustr);
++    return comphelper::ScopeGuard([selectTheme, previous] { selectTheme(previous); });
++}
++
+ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testSemiTransparent)
+ {
+     // Load a document where the top left tile contains a semi-transparent rectangle shape.
+     SwXTextDocument* pXTextDocument = createDoc("semi-transparent.odt");
++    auto restoreTheme = useLightPageForPixelTest(*getSwDocShell());
+ 
+     // Render a larger area, and then get the color of the bottom right corner of our tile.
+     size_t nCanvasWidth = 1024;
+@@ -2637,6 +2654,7 @@ CPPUNIT_TEST_FIXTURE(SwTiledRenderingTest, testHighlightNumbering_shd)
+ {
+     // Load a document where the top left tile contains a semi-transparent rectangle shape.
+     SwXTextDocument* pXTextDocument = createDoc("tdf114799_shd.docx");
++    auto restoreTheme = useLightPageForPixelTest(*getSwDocShell());
+ 
+     // Render a larger area, and then get the color of the bottom right corner of our tile.
+     size_t nCanvasWidth = 1024;
+-- 
+2.54.0
+
