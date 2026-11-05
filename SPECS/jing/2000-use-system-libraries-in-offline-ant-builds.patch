@@ -1,0 +1,206 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Build offline with system datatype and TestNG libraries
+
+Use the standalone RELAX NG datatype API without compiling or packaging a
+second copy. Load the separate TestNG Ant task and runner, and resolve
+Jing's runtime libraries by their installed names. The RELAX NG website
+submodule is supplied as an archive, so the build does not fetch it.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/build.xsl
++++ b/build.xsl
+@@ -18,17 +18,12 @@
+     <taskdef name="testng" classname="org.testng.TestNGAntTask">
+       <classpath>
+ 	<pathelement location="${{lib.dir}}/testng.jar"/>
++        <pathelement location="${{lib.dir}}/testng-ant.jar"/>
+       </classpath>
+     </taskdef>
+     <target name="dummy"/>
+     <target name="init">
+       <mkdir dir="{$build}"/>
+-      <exec executable="git">
+-        <arg value="submodule"/>
+-        <arg value="update"/>
+-        <arg value="--init"/>
+-        <arg value="--recursive"/>
+-      </exec>
+       <copy todir="{$doc}">
+         <fileset dir="relaxng.org/jclark" includes="**"/>
+       </copy>
+@@ -166,6 +161,7 @@
+ 	  </xsl:for-each>
+ 	  <xsl:if test="test[@type='testng']">
+ 	    <pathelement location="${{lib.dir}}/testng.jar"/>
++        <pathelement location="${{lib.dir}}/testng-ant.jar"/>
+ 	  </xsl:if>
+ 	</classpath>
+       </javac>
+@@ -413,6 +409,8 @@
+ 	    listeners="org.testng.reporters.DotTestListener">
+       <classfileset dir="{$build}/mod/{$name}/classes/test" includes="**/*.class"/>
+       <classpath>
++        <pathelement location="${{lib.dir}}/testng.jar"/>
++        <pathelement location="${{lib.dir}}/testng-ant.jar"/>
+ 	<pathelement location="{$build}/mod/{$name}/classes/test"/>
+ 	<pathelement location="{$build}/mod/{$name}/classes/main"/>
+ 	<pathelement location="mod/{$name}/src/test"/>
+--- a/mod/convert-from-xml/mod.xml
++++ b/mod/convert-from-xml/mod.xml
+@@ -2,7 +2,7 @@
+   <depends module="util"/>
+   <depends module="resolver"/>
+   <depends module="infer"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="rng-schema"/>
+   <compile/>
+ </module>
+--- a/mod/convert-to-xsd/mod.xml
++++ b/mod/convert-to-xsd/mod.xml
+@@ -1,6 +1,6 @@
+ <module>
+   <depends module="util"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="rng-schema"/>
+   <test name="toxsd" type="convert" schema="trang/test/toxsdtest.rnc" output="xsd"/>
+   <compile/>
+--- a/mod/datatype/mod.xml
++++ b/mod/datatype/mod.xml
+@@ -1,4 +1 @@
+-<module>
+-  <depends module="util"/>
+-  <compile/>
+-</module>
++<module/>
+--- a/mod/infer/mod.xml
++++ b/mod/infer/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="xsd-datatype"/>
+   <depends module="regex"/>
+   <compile test="yes"/>
+--- a/mod/jing/mod.xml
++++ b/mod/jing/mod.xml
+@@ -3,7 +3,7 @@
+   <depends module="resolver"/>
+   <depends module="catalog"/>
+   <depends module="regex"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="xsd-datatype"/>
+   <depends module="rng-parse"/>
+   <depends module="pattern"/>
+@@ -22,7 +22,7 @@
+     <manifest>
+       <attribute name="Main-Class" value="com/thaiopensource/relaxng/util/Driver"/>
+       <attribute name="Class-Path"
+-		 value="saxon9.jar xalan.jar isorelax.jar resolver.jar"/>
++		 value="saxon-he.jar xalan.jar serializer.jar xercesImpl.jar isorelax.jar xml-resolver.jar relaxngDatatype.jar"/>
+     </manifest>
+     <service type="com.thaiopensource.datatype.xsd.regex.RegexEngine"/>
+     <service type="org.relaxng.datatype.DatatypeLibraryFactory"/>
+--- a/mod/pattern/mod.xml
++++ b/mod/pattern/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="rng-parse"/>
+   <compile test="yes"/>
+   <test name="unit" type="testng"/>
+--- a/mod/rng-jarv/mod.xml
++++ b/mod/rng-jarv/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="rng-parse"/>
+   <depends module="pattern"/>
+   <depends lib="isorelax"/>
+--- a/mod/rng-jaxp/mod.xml
++++ b/mod/rng-jaxp/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="xsd-datatype"/>
+   <depends module="regex"/>
+   <depends module="rng-parse"/>
+--- a/mod/rng-parse/mod.xml
++++ b/mod/rng-parse/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <compile/>
+   <ant precompile="mod.rng-parse.gen">
+     <target name="mod.rng-parse.gen">
+--- a/mod/rng-schema/mod.xml
++++ b/mod/rng-schema/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="rng-parse"/>
+   <test name="compact" type="convert" schema="trang/test/compacttest.rnc" output="xml"/>
+   <compile/>
+--- a/mod/rng-validate/mod.xml
++++ b/mod/rng-validate/mod.xml
+@@ -2,7 +2,7 @@
+   <depends module="util"/>
+   <depends module="resolver"/>
+   <depends module="catalog"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="rng-parse"/>
+   <depends module="pattern"/>
+   <depends module="validate"/>
+--- a/mod/trang/mod.xml
++++ b/mod/trang/mod.xml
+@@ -3,7 +3,7 @@
+   <depends module="resolver"/>
+   <depends module="catalog"/>
+   <depends module="regex"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="xsd-datatype"/>
+   <depends module="rng-parse"/>
+   <depends module="dtd-parse"/>
+--- a/mod/validate/mod.xml
++++ b/mod/validate/mod.xml
+@@ -1,7 +1,7 @@
+ <module>
+   <depends module="util"/>
+   <depends module="resolver"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends lib="isorelax"/>
+   <compile/>
+   <service type="com.thaiopensource.validate.SchemaReaderFactory">
+--- a/mod/xsd-datatype/mod.xml
++++ b/mod/xsd-datatype/mod.xml
+@@ -1,6 +1,6 @@
+ <module>
+   <depends module="util"/>
+-  <depends module="datatype"/>
++  <depends lib="relaxngDatatype"/>
+   <depends module="regex"/>
+   <test name="xsd" type="validate" transform="xsdtest.xsl" schema="test/xsdtest.rnc"/>
+   <test name="unit" type="testng"/>
