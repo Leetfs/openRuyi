@@ -28,7 +28,7 @@ used by Java source generators such as Caffeine.
 %build
 mkdir classes
 find javapoet/src/main/java -name '*.java' | sort > sources.list
-javac --release 21 -encoding UTF-8 -d classes @sources.list
+javac --release 17 -encoding UTF-8 -d classes @sources.list
 cat > javapoet.mf <<MANIFEST
 Manifest-Version: 1.0
 Automatic-Module-Name: com.palantir.javapoet
