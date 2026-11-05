@@ -1,0 +1,19 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Report the application version independently of its logging provider
+
+Read the version from the application package. A separately packaged logging
+bridge has its own implementation version.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/src/org/probatron/officeotron/Driver.java
++++ b/src/org/probatron/officeotron/Driver.java
+@@ -79,7 +79,7 @@
+     			System.out.println( "arguments: [--errors-only] [--schema <schema.xsd>] ]file1 ..." );
+     			return;
+             } else if ( args[i].equals("--version") ) {
+-                String versionStr = logger.getClass().getPackage().getImplementationVersion();
++                String versionStr = Driver.class.getPackage().getImplementationVersion();
+                 System.out.println(versionStr);
+                 return;
+     		} else if ( args[i].equals("--schema") && i+1 < args.length ) {
