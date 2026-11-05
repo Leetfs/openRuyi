@@ -74,9 +74,6 @@ BuildRequires:  fonts-rubik
 # The Draw contour-text check renders a Chinese label with a CJK fallback.
 BuildRequires:  fonts-noto-sans-cjk-static
 BuildRequires:  fonts-noto-static
-# Writer line breaking, RTL strikeout and PDF kashida use the reference regular faces.
-BuildRequires:  fonts-noto-sans-arabic-testdata
-BuildRequires:  fonts-noto-sans-hebrew-testdata
 BuildRequires:  fonts-reem-kufi
 BuildRequires:  gcc-c++
 BuildRequires:  lpsolve-devel
@@ -490,12 +487,6 @@ for path in sorted(map(Path, files)):
         target = fonts / path.name
         if not target.exists():
             target.symlink_to(path)
-for name in ("NotoSansArabic-Regular.ttf", "NotoSansHebrew-Regular.ttf"):
-    reference = Path("%{_datadir}/openruyi-test-fonts") / name
-    target = fonts / name
-    assert reference.is_file() and target.is_symlink()
-    target.unlink()
-    target.symlink_to(reference)
 profile = ET.Element("fontconfig")
 ET.SubElement(profile, "include").text = "/etc/fonts/fonts.conf"
 ET.SubElement(profile, "reset-dirs")
