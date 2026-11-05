@@ -1,0 +1,127 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Compare module data with the installed Java descriptors
+
+Use the JDK to read module flags and qualified exports from the same
+class file. Check the formatter's module name against the constant pool.
+Use BCEL's annotated fixture for the parameter-annotation visit. The
+separate JVM load of a Kotlin lambda requires the Kotlin runtime; BCEL
+still parses the original lambda on every build.
+
+Upstream: downstream adaptation for the distribution Java libraries
+Reference: https://github.com/apache/commons-bcel/tree/rel/commons-bcel-6.12.0/src/test/java/org/apache/bcel
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleAccessTest.java b/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleAccessTest.java
+--- a/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleAccessTest.java
++++ b/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleAccessTest.java
+@@ -50,6 +50,10 @@
+     @ParameterizedTest
+     @MethodSource
+     void testJREModules(final URL url) throws Exception {
++        final java.lang.module.ModuleDescriptor descriptor;
++        try (InputStream input = url.openStream()) {
++            descriptor = java.lang.module.ModuleDescriptor.read(input);
++        }
+         try (InputStream inputStream = url.openStream()) {
+             final ClassParser classParser = new ClassParser(inputStream, "module-info.class");
+             final JavaClass javaClass = classParser.parse();
+@@ -58,11 +62,8 @@
+                 @Override
+                 public void visitModule(final Module obj) {
+                     final String urlPath = url.getPath();
+-                    if (urlPath.contains("/commons-")) {
+-                        assertEquals(4096, obj.getModuleFlags(), url.toString());
+-                    } else {
+-                        assertEquals(0, obj.getModuleFlags(), url.toString());
+-                    }
++                    final int flags = descriptor.accessFlags().stream().mapToInt(java.lang.reflect.AccessFlag::mask).reduce(0, (a, b) -> a | b);
++                    assertEquals(flags, obj.getModuleFlags(), url.toString());
+                     final String[] usedClassNames = obj.getUsedClassNames(constantPool, true);
+                     if (urlPath.contains("junit-jupiter-engine")) {
+                         assertEquals(1, usedClassNames.length);
+@@ -287,38 +288,9 @@
+                     assertEquals(0, obj.getExportsFlags(), url.toString());
+                     final String packageName = obj.getPackageName(constantPool);
+                     final String[] toModuleNames = obj.getToModuleNames(constantPool);
+-                    if (url.getPath().contains("junit-platform-commons")) {
+-                        final Set<String> expected = new TreeSet<>();
+-                        expected.add("org.junit.jupiter.api");
+-                        expected.add("org.junit.jupiter.engine");
+-                        expected.add("org.junit.jupiter.migrationsupport");
+-                        expected.add("org.junit.jupiter.params");
+-                        expected.add("org.junit.platform.console");
+-                        expected.add("org.junit.platform.engine");
+-                        expected.add("org.junit.platform.launcher");
+-                        expected.add("org.junit.platform.reporting");
+-                        expected.add("org.junit.platform.runner");
+-                        expected.add("org.junit.platform.suite.api");
+-                        switch (packageName) {
+-                        case "org.junit.platform.commons.util":
+-                            expected.add("org.junit.platform.suite.commons");
+-                            expected.add("org.junit.platform.suite.engine");
+-                            expected.add("org.junit.platform.testkit");
+-                            expected.add("org.junit.vintage.engine");
+-                            expected.add("org.junit.platform.jfr");
+-                            assertEquals(expected, new TreeSet<>(Arrays.asList(toModuleNames)));
+-                            break;
+-                        case "org.junit.platform.commons.logging":
+-                            expected.add("org.junit.platform.suite.engine");
+-                            expected.add("org.junit.platform.testkit");
+-                            expected.add("org.junit.vintage.engine");
+-                            assertEquals(expected, new TreeSet<>(Arrays.asList(toModuleNames)));
+-                            break;
+-                        default:
+-                            assertEquals(0, toModuleNames.length);
+-                            break;
+-                        }
+-                    }
++                    final java.lang.module.ModuleDescriptor.Exports export = descriptor.exports().stream()
++                            .filter(value -> value.source().equals(packageName)).findFirst().get();
++                    assertEquals(export.targets(), new TreeSet<>(Arrays.asList(toModuleNames)));
+                     super.visitModuleExports(obj);
+                 }
+ 
+diff --git a/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleToStringTest.java b/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleToStringTest.java
+--- a/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleToStringTest.java
++++ b/src/test/java/org/apache/bcel/classfile/ConstantPoolModuleToStringTest.java
+@@ -388,18 +388,7 @@
+             append(constantModule);
+             append(constantModule.toString(pool));
+             final String s = constantModule.toString(pool).trim();
+-            final boolean condition = Strings.CS.startsWithAny(s,
+-                    "jdk.",
+-                    "java.",
+-                    "org.junit",
+-                    "org.apiguardian.api",
+-                    "org.opentest4j",
+-                    "net.bytebuddy",
+-                    "com.sun.jna",
+-                    "junit",
+-                    // com.azul.* for reproducibility with Azul JDK
+-                    "com.azul.");
+-            assertTrue(condition, s);
++            assertEquals(constantModule.getModuleName(pool), s.split(", ", 2)[0]);
+         }
+ 
+         @Override
+@@ -516,7 +505,7 @@
+         "org.apache.bcel.Const",                                // contains attributes MethodParameters
+         "java.io.StringBufferInputStream",                      // contains attributes Deprecated, StackMap
+         "java.nio.file.Files",                                  // contains attributes ConstantValue, ExceptionTable, NestMembers
+-        "org.junit.jupiter.api.AssertionsKt",                   // contains attribute ParameterAnnotation
++        "org.apache.bcel.data.AnnotatedWithCombinedAnnotation",                   // contains attribute ParameterAnnotation
+         "javax.annotation.ManagedBean",                         // contains attribute AnnotationDefault
+         "javax.management.remote.rmi.RMIConnectionImpl_Stub"})  // contains attribute Synthetic
+     // @formatter:on
+diff --git a/src/test/java/org/apache/bcel/classfile/InvalidMethodSigantureTest.java b/src/test/java/org/apache/bcel/classfile/InvalidMethodSigantureTest.java
+--- a/src/test/java/org/apache/bcel/classfile/InvalidMethodSigantureTest.java
++++ b/src/test/java/org/apache/bcel/classfile/InvalidMethodSigantureTest.java
+@@ -64,6 +64,8 @@
+ 
+     @Test
+     void testLoadClass() throws Exception {
++        org.junit.jupiter.api.Assumptions.assumeTrue(getClass().getClassLoader()
++                .getResource("kotlin/jvm/internal/Lambda.class") != null, "Loading the compiled lambda requires the Kotlin JVM runtime");
+         final Path path = Paths.get(SRC_TEST_RESOURCES_KOTLIN);
+         assertTrue(Files.exists(path));
+         assertTrue(Files.isDirectory(path));
