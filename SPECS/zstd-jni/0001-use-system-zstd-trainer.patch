@@ -1,0 +1,51 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: Use the system zstd trainer while preserving the JNI compression level
+
+The JNI release extends ZDICT_trainFromBuffer with a compression-level
+argument. Call the public fast-cover trainer with the same parameters.
+This retains the JNI API while linking against the distribution library.
+
+Upstream: not submitted, distribution linkage
+Reference: https://github.com/luben/zstd-jni/blob/v1.5.7-6/src/main/native/dictBuilder/zdict.c#L1107
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+
+--- a/src/main/native/jni_zdict.c
++++ b/src/main/native/jni_zdict.c
+@@ -4,6 +4,19 @@
+ #include <jni.h>
+ #include <zdict.h>
+ #include <zstd_errors.h>
++#include <zstd.h>
++
++/* Match the upstream JNI trainer using the system zstd fast-cover interface. */
++static size_t trainWithLevel(void *dict, size_t capacity, const void *samples,
++                             const size_t *sizes, unsigned count, int level) {
++    ZDICT_fastCover_params_t params = { 0 };
++    params.d = 8;
++    params.steps = 4;
++    params.zParams.compressionLevel = level ? level : ZSTD_CLEVEL_DEFAULT;
++    return ZDICT_optimizeTrainFromBuffer_fastCover(dict, capacity, samples,
++                                                  sizes, count, &params);
++}
++
+ #include <stdlib.h>
+ #include <string.h>
+ 
+@@ -49,7 +62,7 @@
+         params.zParams.compressionLevel = compressionLevel;
+         size = ZDICT_trainFromBuffer_legacy(dict_buff, dict_capacity, samples_buffer, samples_sizes, num_samples, params);
+     } else {
+-        size = ZDICT_trainFromBuffer(dict_buff, dict_capacity, samples_buffer, samples_sizes, num_samples, compressionLevel);
++        size = trainWithLevel(dict_buff, dict_capacity, samples_buffer, samples_sizes, num_samples, compressionLevel);
+     }
+     (*env)->ReleasePrimitiveArrayCritical(env, dictBuffer, dict_buff, 0);
+     free(samples_buffer);
+@@ -86,7 +99,7 @@
+         params.zParams.compressionLevel = compressionLevel;
+         size = ZDICT_trainFromBuffer_legacy(dict_buff, dict_capacity, samples_buffer, samples_sizes, num_samples, params);
+     } else {
+-        size = ZDICT_trainFromBuffer(dict_buff, dict_capacity, samples_buffer, samples_sizes, num_samples, compressionLevel);
++        size = trainWithLevel(dict_buff, dict_capacity, samples_buffer, samples_sizes, num_samples, compressionLevel);
+     }
+ E2: free(samples_sizes);
+ E1: return size;
