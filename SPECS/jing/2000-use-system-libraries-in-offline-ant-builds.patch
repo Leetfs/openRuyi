@@ -48,56 +48,53 @@ Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
  	<pathelement location="mod/{$name}/src/test"/>
 --- a/mod/convert-from-xml/mod.xml
 +++ b/mod/convert-from-xml/mod.xml
-@@ -2,7 +2,7 @@
-   <depends module="util"/>
+@@ -3,6 +3,7 @@
    <depends module="resolver"/>
    <depends module="infer"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="rng-schema"/>
    <compile/>
  </module>
 --- a/mod/convert-to-xsd/mod.xml
 +++ b/mod/convert-to-xsd/mod.xml
-@@ -1,6 +1,6 @@
+@@ -1,6 +1,7 @@
  <module>
    <depends module="util"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="rng-schema"/>
    <test name="toxsd" type="convert" schema="trang/test/toxsdtest.rnc" output="xsd"/>
    <compile/>
 --- a/mod/datatype/mod.xml
 +++ b/mod/datatype/mod.xml
-@@ -1,4 +1 @@
--<module>
--  <depends module="util"/>
--  <compile/>
--</module>
-+<module/>
---- a/mod/infer/mod.xml
-+++ b/mod/infer/mod.xml
-@@ -1,7 +1,7 @@
+@@ -1,4 +1,5 @@
  <module>
    <depends module="util"/>
++  <depends lib="relaxngDatatype"/>
+   <compile/>
+ </module>
+--- a/mod/infer/mod.xml
++++ b/mod/infer/mod.xml
+@@ -2,6 +2,7 @@
+   <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="xsd-datatype"/>
    <depends module="regex"/>
    <compile test="yes"/>
 --- a/mod/jing/mod.xml
 +++ b/mod/jing/mod.xml
-@@ -3,7 +3,7 @@
-   <depends module="resolver"/>
+@@ -4,6 +4,7 @@
    <depends module="catalog"/>
    <depends module="regex"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="xsd-datatype"/>
    <depends module="rng-parse"/>
    <depends module="pattern"/>
-@@ -22,7 +22,7 @@
+@@ -22,7 +23,7 @@
      <manifest>
        <attribute name="Main-Class" value="com/thaiopensource/relaxng/util/Driver"/>
        <attribute name="Class-Path"
@@ -108,98 +105,90 @@ Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
      <service type="org.relaxng.datatype.DatatypeLibraryFactory"/>
 --- a/mod/pattern/mod.xml
 +++ b/mod/pattern/mod.xml
-@@ -1,7 +1,7 @@
- <module>
+@@ -2,6 +2,7 @@
    <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="rng-parse"/>
    <compile test="yes"/>
    <test name="unit" type="testng"/>
 --- a/mod/rng-jarv/mod.xml
 +++ b/mod/rng-jarv/mod.xml
-@@ -1,7 +1,7 @@
- <module>
+@@ -2,6 +2,7 @@
    <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="rng-parse"/>
    <depends module="pattern"/>
    <depends lib="isorelax"/>
 --- a/mod/rng-jaxp/mod.xml
 +++ b/mod/rng-jaxp/mod.xml
-@@ -1,7 +1,7 @@
- <module>
+@@ -2,6 +2,7 @@
    <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="xsd-datatype"/>
    <depends module="regex"/>
    <depends module="rng-parse"/>
 --- a/mod/rng-parse/mod.xml
 +++ b/mod/rng-parse/mod.xml
-@@ -1,7 +1,7 @@
- <module>
+@@ -2,6 +2,7 @@
    <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <compile/>
    <ant precompile="mod.rng-parse.gen">
      <target name="mod.rng-parse.gen">
 --- a/mod/rng-schema/mod.xml
 +++ b/mod/rng-schema/mod.xml
-@@ -1,7 +1,7 @@
- <module>
+@@ -2,6 +2,7 @@
    <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="rng-parse"/>
    <test name="compact" type="convert" schema="trang/test/compacttest.rnc" output="xml"/>
    <compile/>
 --- a/mod/rng-validate/mod.xml
 +++ b/mod/rng-validate/mod.xml
-@@ -2,7 +2,7 @@
-   <depends module="util"/>
+@@ -3,6 +3,7 @@
    <depends module="resolver"/>
    <depends module="catalog"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="rng-parse"/>
    <depends module="pattern"/>
    <depends module="validate"/>
 --- a/mod/trang/mod.xml
 +++ b/mod/trang/mod.xml
-@@ -3,7 +3,7 @@
-   <depends module="resolver"/>
+@@ -4,6 +4,7 @@
    <depends module="catalog"/>
    <depends module="regex"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="xsd-datatype"/>
    <depends module="rng-parse"/>
    <depends module="dtd-parse"/>
 --- a/mod/validate/mod.xml
 +++ b/mod/validate/mod.xml
-@@ -1,7 +1,7 @@
- <module>
+@@ -2,6 +2,7 @@
    <depends module="util"/>
    <depends module="resolver"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends lib="isorelax"/>
    <compile/>
    <service type="com.thaiopensource.validate.SchemaReaderFactory">
 --- a/mod/xsd-datatype/mod.xml
 +++ b/mod/xsd-datatype/mod.xml
-@@ -1,6 +1,6 @@
+@@ -1,6 +1,7 @@
  <module>
    <depends module="util"/>
--  <depends module="datatype"/>
+   <depends module="datatype"/>
 +  <depends lib="relaxngDatatype"/>
    <depends module="regex"/>
    <test name="xsd" type="validate" transform="xsdtest.xsl" schema="test/xsdtest.rnc"/>

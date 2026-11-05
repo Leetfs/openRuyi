@@ -54,7 +54,7 @@ Java API, Ant task and command-line interface.
 tar -xf %{SOURCE1} --strip-components=1 -C relaxng.org
 find . -type f -name '*.jar' -delete
 # The standalone datatype package supplies these interfaces during compilation.
-rm -rf mod/datatype/src
+rm -rf mod/datatype/src/main/org
 for pair in saxon9:saxon-he resolver:xml-resolver \
     xalan:xalan serializer:serializer xercesImpl:xercesImpl \
     isorelax:isorelax javacc:javacc relaxngDatatype:relaxngDatatype \
