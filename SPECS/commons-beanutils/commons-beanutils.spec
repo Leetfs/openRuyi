@@ -20,6 +20,7 @@ BuildArch:      noarch
 
 BuildRequires:  java-25-openjdk-devel
 BuildRequires:  commons-collections3
+BuildRequires:  commons-collections3-testlib
 BuildRequires:  slf4j-jcl
 BuildRequires:  junit4
 BuildRequires:  slf4j-jdk14
@@ -56,7 +57,7 @@ install -Dpm644 commons-beanutils.jar %{buildroot}%{_datadir}/java/commons-beanu
 # Run the upstream JUnit tests against the system dependencies.
 mkdir test-classes
 find src/test/java -name '*.java' | sort > tests.list
-deps=commons-beanutils.jar:%{_datadir}/java/commons-collections3.jar:%{_datadir}/java/jcl-over-slf4j.jar:%{_datadir}/java/slf4j-jdk14.jar:%{_datadir}/java/junit4.jar:%{_datadir}/java/hamcrest1.3/hamcrest-core.jar
+deps=commons-beanutils.jar:%{_datadir}/java/commons-collections3-testlib.jar:%{_datadir}/java/commons-collections3.jar:%{_datadir}/java/jcl-over-slf4j.jar:%{_datadir}/java/slf4j-jdk14.jar:%{_datadir}/java/junit4.jar:%{_datadir}/java/hamcrest1.3/hamcrest-core.jar
 javac --release 8 -encoding UTF-8 -cp "$deps" -d test-classes @tests.list
 tests=$(find src/test/java -type f \( -name '*Test.java' -o -name '*TestCase.java' \) \
     ! -name 'Abstract*.java' | sed 's|^src/test/java/||;s|/|.|g;s|\.java$||' | sort)
