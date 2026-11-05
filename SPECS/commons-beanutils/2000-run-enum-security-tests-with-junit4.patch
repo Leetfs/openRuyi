@@ -1,0 +1,41 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Run the enum security regression with JUnit 4
+
+The rest of the suite uses JUnit 3 or 4. Preserve all enum introspection
+assertions while using that same runner for this regression test.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/src/test/java/org/apache/commons/beanutils/bugs/EnumDeclaringClassTest.java
++++ b/src/test/java/org/apache/commons/beanutils/bugs/EnumDeclaringClassTest.java
+@@ -17,16 +17,16 @@
+ 
+ package org.apache.commons.beanutils.bugs;
+ 
+-import static org.junit.jupiter.api.Assertions.assertEquals;
+-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+-import static org.junit.jupiter.api.Assertions.assertNotNull;
+-import static org.junit.jupiter.api.Assertions.assertThrows;
++import static org.junit.Assert.assertEquals;
++import static org.junit.Assert.assertTrue;
++import static org.junit.Assert.assertNotNull;
++import static org.junit.Assert.assertThrows;
+ 
+ import org.apache.commons.beanutils.BeanUtilsBean;
+ import org.apache.commons.beanutils.PropertyUtilsBean;
+ import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
+ import org.apache.commons.beanutils.TestEnum;
+-import org.junit.jupiter.api.Test;
++import org.junit.Test;
+ 
+ public class EnumDeclaringClassTest {
+ 
+@@ -105,4 +105,8 @@
+         final PropertyUtilsBean propertyUtilsBean = new PropertyUtilsBean();
+         assertThrows(NoSuchMethodException.class, () -> propertyUtilsBean.getNestedProperty(fixture, "testEnum.declaringClass.classLoader"));
+     }
++    private static <T> T assertInstanceOf(Class<T> expected, Object value) {
++        assertTrue("Expected an instance of " + expected.getName(), expected.isInstance(value));
++        return expected.cast(value);
++    }
+ }
