@@ -1,0 +1,25 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Count only Jupiter containers in the parameterized test
+
+The outer JUnit 4 suite is launched through Vintage. Register Jupiter
+explicitly in the nested launcher so the Vintage engine root does not
+change the upstream fixture's Jupiter-specific container counts.
+
+Upstream: downstream adaptation for running the JUnit 4 suite with Vintage
+Reference: https://github.com/apache/maven-surefire/blob/surefire-3.5.5/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java b/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
+--- a/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
++++ b/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
+@@ -466,7 +466,9 @@
+         adapter.setRunMode(NORMAL_RUN);
+ 
+         JUnitPlatformProvider provider =
+-                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener, adapter));
++                new JUnitPlatformProvider(parameters, launcherSessionConfig(config -> config.enableTestEngineAutoRegistration(false)
++                                .addTestEngines(new org.junit.jupiter.engine.JupiterTestEngine())
++                                .addTestExecutionListeners(executionListener, adapter)));
+ 
+         invokeProvider(provider, DisabledParameterizedTest.class);
+ 

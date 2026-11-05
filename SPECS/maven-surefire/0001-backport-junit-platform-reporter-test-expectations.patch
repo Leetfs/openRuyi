@@ -1,0 +1,229 @@
+From: Olivier Lamy <olamy@apache.org>
+Subject: [PATCH] Update the JUnit Platform reporter test expectations
+
+Backport the test changes for class and display names, keeping the JUnit
+4 runner and the JUnit Platform 1.12 TestPlan factory signatures.
+
+Upstream: backport of selected tests
+Reference: https://github.com/apache/maven-surefire/commit/41ce75377fac5b4e3d06cc6e9edad482a2393c59
+---
+diff --git a/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/RunListenerAdapterTest.java b/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/RunListenerAdapterTest.java
+--- a/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/RunListenerAdapterTest.java
++++ b/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/RunListenerAdapterTest.java
+@@ -74,7 +74,6 @@
+ import static org.mockito.Mockito.never;
+ import static org.mockito.Mockito.verify;
+ import static org.mockito.Mockito.verifyNoMoreInteractions;
+-import static org.mockito.Mockito.verifyZeroInteractions;
+ import static org.mockito.Mockito.when;
+ import static org.powermock.reflect.Whitebox.getInternalState;
+ 
+@@ -139,7 +138,8 @@
+         assertEquals(MY_TEST_METHOD_NAME + "(String)", entry.getName());
+         assertNull(entry.getNameText());
+         assertEquals(MyTestClass.class.getName(), entry.getSourceName());
+-        assertNull(entry.getSourceText());
++        assertEquals(
++                "org.apache.maven.surefire.junitplatform.RunListenerAdapterTest$MyTestClass", entry.getSourceText());
+         assertNull(entry.getStackTraceWriter());
+     }
+ 
+@@ -164,7 +164,7 @@
+         adapter.executionStarted(TestIdentifier.from(child));
+         verify(listener)
+                 .testStarting(new SimpleReportEntry(
+-                        NORMAL_RUN, 0x0000000100000001L, className, null, MY_TEST_METHOD_NAME, null));
++                        NORMAL_RUN, 0x0000000100000001L, className, className, MY_TEST_METHOD_NAME, null));
+         verifyNoMoreInteractions(listener);
+ 
+         adapter.executionFinished(TestIdentifier.from(child), successful());
+@@ -173,7 +173,7 @@
+         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
+         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
+         assertThat(report.getValue().getSourceName()).isEqualTo(className);
+-        assertThat(report.getValue().getSourceText()).isNull();
++        assertThat(report.getValue().getSourceText()).isEqualTo(className);
+         assertThat(report.getValue().getName()).isEqualTo(MY_TEST_METHOD_NAME);
+         assertThat(report.getValue().getNameText()).isNull();
+         assertThat(report.getValue().getElapsed()).isNotNull();
+@@ -226,20 +226,19 @@
+         inOrder.verify(listener).testSetStarting(report.capture());
+         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000000L);
+         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
++        assertThat(report.getValue().getSourceText()).isNull();
+         assertThat(report.getValue().getName()).isNull();
+         assertThat(report.getValue().getSystemProperties()).isEmpty();
+-        verifyZeroInteractions(listener);
++        verifyNoMoreInteractions(listener);
+ 
+         adapter.executionStarted(TestIdentifier.from(child1));
+-        inOrder.verify(listener)
+-                .testStarting(new SimpleReportEntry(
+-                        NORMAL_RUN,
+-                        0x0000000100000001L,
+-                        MyTestClass.class.getName(),
+-                        "parent",
+-                        MY_NAMED_TEST_METHOD_NAME,
+-                        "dn1"));
++        report = ArgumentCaptor.forClass(SimpleReportEntry.class);
++        inOrder.verify(listener).testStarting(report.capture());
++        assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
++        assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
++        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
++        assertThat(report.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
++        assertThat(report.getValue().getNameText()).isEqualTo("dn1");
+         inOrder.verifyNoMoreInteractions();
+ 
+         adapter.executionFinished(TestIdentifier.from(child1), successful());
+@@ -248,7 +247,7 @@
+         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
+         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
+         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
++        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
+         assertThat(report.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
+         assertThat(report.getValue().getNameText()).isEqualTo("dn1");
+         assertThat(report.getValue().getElapsed()).isNotNull();
+@@ -261,7 +260,7 @@
+                         NORMAL_RUN,
+                         0x0000000100000002L,
+                         MyTestClass.class.getName(),
+-                        "parent",
++                        MyTestClass.class.getName(),
+                         MY_TEST_METHOD_NAME + "(String)",
+                         null));
+         inOrder.verifyNoMoreInteractions();
+@@ -273,7 +272,7 @@
+         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
+         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000002L);
+         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
++        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
+         assertThat(report.getValue().getName()).isEqualTo(MY_TEST_METHOD_NAME + "(String)");
+         assertThat(report.getValue().getNameText()).isNull();
+         assertThat(report.getValue().getElapsed()).isNotNull();
+@@ -286,7 +285,7 @@
+         adapter.executionFinished(TestIdentifier.from(parent), successful());
+         inOrder.verify(listener).testSetCompleted(report.capture());
+         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
++        assertThat(report.getValue().getSourceText()).isNull();
+         assertThat(report.getValue().getName()).isNull();
+         assertThat(report.getValue().getNameText()).isNull();
+         assertThat(report.getValue().getElapsed()).isNotNull();
+@@ -299,7 +298,7 @@
+     }
+ 
+     @Test
+-    public void notifiedForUnclassifiedTestIdentifier() {
++    public void notifiedForUnclassifiedTestIdentifier() throws Exception {
+         EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("engine"), "engine") {
+             @Override
+             public Type getType() {
+@@ -314,7 +313,8 @@
+ 
+         adapter.executionStarted(TestIdentifier.from(engine));
+         verify(listener)
+-                .testStarting(new SimpleReportEntry(NORMAL_RUN, 0x0000000100000001L, "engine", null, "engine", null));
++                .testStarting(
++                        new SimpleReportEntry(NORMAL_RUN, 0x0000000100000001L, "engine", "engine", "engine", null));
+         verifyNoMoreInteractions(listener);
+ 
+         adapter.executionFinished(TestIdentifier.from(engine), successful());
+@@ -323,7 +323,7 @@
+         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
+         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
+         assertThat(report.getValue().getSourceName()).isEqualTo("engine");
+-        assertThat(report.getValue().getSourceText()).isNull();
++        assertThat(report.getValue().getSourceText()).isEqualTo("engine");
+         assertThat(report.getValue().getName()).isEqualTo("engine");
+         assertThat(report.getValue().getNameText()).isNull();
+         assertThat(report.getValue().getElapsed()).isNotNull();
+@@ -537,7 +537,7 @@
+         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+         verify(listener).testStarting(entryCaptor.capture());
+         assertEquals(parentDisplay, entryCaptor.getValue().getSourceName());
+-        assertNull(entryCaptor.getValue().getSourceText());
++        assertEquals("I am your father", entryCaptor.getValue().getSourceText());
+         assertNull(entryCaptor.getValue().getName());
+         assertNull(entryCaptor.getValue().getNameText());
+     }
+@@ -597,7 +597,7 @@
+         ReportEntry value = entryCaptor.getValue();
+ 
+         assertEquals(MyTestClass.class.getName(), value.getSourceName());
+-        assertNull(value.getSourceText());
++        assertEquals("some display name", value.getSourceText());
+         assertEquals("myNamedTestMethod", value.getName());
+         assertEquals("some display name", value.getNameText());
+     }
+diff --git a/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java b/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
+--- a/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
++++ b/surefire-providers/surefire-junit-platform/src/test/java/org/apache/maven/surefire/junitplatform/JUnitPlatformProviderTest.java
+@@ -439,17 +439,17 @@
+ 
+         assertEquals(2, reportEntries.size());
+ 
++        assertEquals(NestingTest.class.getName(), reportEntries.get(0).getSourceName());
+         assertEquals(
+                 NestingTest.Level1NestedTest.class.getName(),
+-                reportEntries.get(0).getSourceName());
+-        assertNull(reportEntries.get(0).getSourceText());
++                reportEntries.get(0).getSourceText());
+         assertEquals("level1test", reportEntries.get(0).getName());
+         assertNull(reportEntries.get(0).getNameText());
+ 
++        assertEquals(NestingTest.class.getName(), reportEntries.get(1).getSourceName());
+         assertEquals(
+                 NestingTest.Level1NestedTest.Level2NestedTest.class.getName(),
+-                reportEntries.get(1).getSourceName());
+-        assertNull(reportEntries.get(1).getSourceText());
++                reportEntries.get(1).getSourceText());
+         assertEquals("level2test", reportEntries.get(1).getName());
+         assertNull(reportEntries.get(1).getNameText());
+     }
+@@ -592,7 +592,9 @@
+         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
+ 
+         assertEquals(TestClass7.class.getName(), reportEntries.get(0).getSourceName());
+-        assertNull(reportEntries.get(0).getSourceText());
++        assertEquals(
++                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
++                reportEntries.get(0).getSourceText());
+         assertEquals(
+                 "testParameterizedTestCases(String, boolean)[1]",
+                 reportEntries.get(0).getName());
+@@ -601,7 +603,9 @@
+                 reportEntries.get(0).getNameText());
+ 
+         assertEquals(TestClass7.class.getName(), reportEntries.get(1).getSourceName());
+-        assertNull(reportEntries.get(1).getSourceText());
++        assertEquals(
++                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
++                reportEntries.get(1).getSourceText());
+         assertEquals(
+                 "testParameterizedTestCases(String, boolean)[2]",
+                 reportEntries.get(1).getName());
+@@ -610,7 +614,9 @@
+                 reportEntries.get(1).getNameText());
+ 
+         assertEquals(TestClass7.class.getName(), reportEntries.get(2).getSourceName());
+-        assertNull(reportEntries.get(2).getSourceText());
++        assertEquals(
++                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
++                reportEntries.get(2).getSourceText());
+         assertEquals(
+                 "testParameterizedTestCases(String, boolean)[2]",
+                 reportEntries.get(2).getName());
+@@ -619,7 +625,9 @@
+                 reportEntries.get(2).getNameText());
+ 
+         assertEquals(TestClass7.class.getName(), reportEntries.get(3).getSourceName());
+-        assertNull(reportEntries.get(3).getSourceText());
++        assertEquals(
++                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
++                reportEntries.get(3).getSourceText());
+         assertEquals(
+                 "testParameterizedTestCases(String, boolean)[2]",
+                 reportEntries.get(3).getName());
