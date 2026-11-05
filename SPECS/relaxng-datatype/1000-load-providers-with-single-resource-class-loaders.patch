@@ -1,0 +1,22 @@
+From: James Clark <jjc@jclark.com>
+Date: Tue, 21 Oct 2008 02:33:48 +0000
+Subject: [PATCH] Fall back to a single service resource in application class loaders
+
+Upstream: https://github.com/relaxng/jing-trang/commit/cc0bb93b09682bbec32f42d6a436adf6849cf12b (datatype module)
+
+--- a/src/org/relaxng/datatype/helpers/DatatypeLibraryLoader.java
++++ b/src/org/relaxng/datatype/helpers/DatatypeLibraryLoader.java
+@@ -148,7 +148,12 @@
+ 
+ 	    Enumeration getResources(String resName) {
+ 	      try {
+-		return cl.getResources(resName);
++                Enumeration resources = cl.getResources(resName);
++                if (resources.hasMoreElements())
++                  return resources;
++                // Some application servers apparently do not implement findResources
++                // in their class loaders, so fall back to getResource.
++                return new Singleton(cl.getResource(resName));
+ 	      }
+ 	      catch (IOException e) {
+ 		return new Singleton(null);
