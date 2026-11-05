@@ -1,0 +1,118 @@
+From 8999c6af6815c3ac90d27cd6b4babcdd83917b41 Mon Sep 17 00:00:00 2001
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Date: Thu, 5 Nov 2026 09:45:42 +0800
+Subject: [PATCH] Build with standard Ant and the JDK XML APIs
+
+The release build expects the binary-only JDK 1.4 XJavac task and a separate archive of standard XML API sources. Use the Ant compiler task and the Java 11 API instead. Keep the parser sources, provider registrations and jar target from the upstream build.
+
+Upstream: https://github.com/apache/xerces2-j/blob/trunk/build.xml (downstream JDK integration)
+---
+ build.xml | 43 ++++++-------------------------------------
+ 1 file changed, 6 insertions(+), 37 deletions(-)
+
+diff --git a/build.xml b/build.xml
+index 16069d4..ac86e85 100644
+--- a/build.xml
++++ b/build.xml
+@@ -38,13 +38,6 @@ Authors:
+   <property name="tests.dir" value="./tests"/>
+   <property name="tools.dir" value="./tools"/>
+ 
+-  <!-- enable compilation under JDK 1.4 and above -->
+-  <taskdef name="xjavac" classname="org.apache.xerces.util.XJavac">
+-    <classpath>
+-      <pathelement location="${tools.dir}/bin/xjavac.jar"/>
+-    </classpath>
+-  </taskdef>
+-
+   <!-- Allow properties following these statements to be overridden -->
+   <!-- Note that all of these don't have to exist.  They've just been defined
+        incase they are used. -->
+@@ -250,30 +243,6 @@ Authors:
+     <copy file="${src.dir}/org/apache/xerces/impl/xpath/regex/message.properties"
+       tofile="${build.src}/org/apache/xerces/impl/xpath/regex/message_en.properties"/>
+ 
+-    <!-- now deal with API's:  -->
+-    <unzip src="${src.apis.zip}" dest="${build.src}">
+-        <patternset
+-            includes="org/xml/sax/** 
+-                javax/xml/**
+-                javax/xml/datatype/**
+-                javax/xml/namespace/**
+-                javax/xml/parsers/**
+-                javax/xml/stream/**
+-                javax/xml/transform/**
+-                javax/xml/validation/**
+-                javax/xml/xpath/**
+-                org/w3c/dom/*
+-                org/w3c/dom/bootstrap/**
+-                org/w3c/dom/events/**
+-                org/w3c/dom/html/**
+-                org/w3c/dom/ls/**
+-                org/w3c/dom/ranges/**
+-                org/w3c/dom/traversal/**
+-                org/w3c/dom/views/**
+-                org/w3c/dom/xpath/**"
+-        />
+-    </unzip>
+-    
+     <!-- substitute tokens as needed -->
+     <replace file="${build.dir}/src/org/apache/xerces/impl/Version.java" 
+              token="@@VERSION@@" value="${parser.Name} ${parser.Version}"/>
+@@ -289,7 +258,7 @@ Authors:
+       </fileset>
+     </copy>
+ 
+-    <xjavac srcdir="${build.src}"
++    <javac release="11" srcdir="${build.src}"
+            destdir="${build.dest}"
+            source="${javac.source}"
+            target="${javac.target}"
+@@ -357,7 +326,7 @@ Authors:
+     <copy todir="${build.samples}" >
+         <fileset dir="${samples.dir}"/>
+     </copy>
+-    <xjavac srcdir="${build.samples}"
++    <javac release="11" srcdir="${build.samples}"
+            destdir="${build.dest}"
+            source="${javac.source}"
+            target="${javac.target}"
+@@ -377,7 +346,7 @@ Authors:
+         <fileset dir="${tests.dir}"
+          excludes="dom/rename/**" />
+     </copy>
+-    <xjavac srcdir="${build.tests}"
++    <javac release="11" srcdir="${build.tests}"
+            destdir="${build.dest}"
+            source="${javac.source}"
+            target="${javac.target}"
+@@ -1007,7 +976,7 @@ Authors:
+       </fileset>
+     </copy>
+ 
+-    <xjavac srcdir="${build.src}"
++    <javac release="11" srcdir="${build.src}"
+            destdir="${build.dest}"
+            source="${javac.source}"
+            target="${javac.target}"
+@@ -1306,7 +1275,7 @@ Authors:
+       </fileset>
+     </copy>
+ 
+-    <xjavac srcdir="${build.src}"
++    <javac release="11" srcdir="${build.src}"
+            destdir="${build.dest}"
+            source="${javac.source}"
+            target="${javac.target}"
+@@ -1457,7 +1426,7 @@ Authors:
+           </fileset>
+         </copy>
+ 
+-        <xjavac srcdir="${build.src}"
++        <javac release="11" srcdir="${build.src}"
+                destdir="${build.dest}"
+                source="${javac.source}"
+                target="${javac.target}"
+-- 
+2.54.0
+
