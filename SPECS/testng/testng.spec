@@ -69,7 +69,7 @@ install -Dpm644 testng.jar %{buildroot}%{_datadir}/java/testng.jar
 mkdir -p %{buildroot}%{_bindir}
 cat > %{buildroot}%{_bindir}/testng <<'SH'
 #!/bin/sh
-exec java -jar /usr/share/java/testng.jar "$@"
+exec java -cp "/usr/share/java/testng.jar${CLASSPATH:+:$CLASSPATH}" org.testng.TestNG "$@"
 SH
 chmod 755 %{buildroot}%{_bindir}/testng
 
@@ -106,12 +106,17 @@ public class FailureCheck {
 JAVA
 deps=testng.jar:%{_datadir}/java/guice.jar:%{_datadir}/java/jcommander.jar:%{_datadir}/java/slf4j-api.jar:%{_datadir}/java/slf4j-jdk14.jar:%{_datadir}/java/jsr305.jar:%{_datadir}/java/snakeyaml.jar
 javac --release 17 -cp "$deps" checks/*.java
-java -cp "checks:$deps" org.testng.TestNG -testclass FrameworkCheck -d "passing report"
+# Exercise the installed launcher with caller-supplied test classes.
+sed "s|/usr/share/java/testng.jar|$PWD/testng.jar|" \
+    %{buildroot}%{_bindir}/testng > testng-check
+jar --create --file passing-tests.jar -C checks FrameworkCheck.class \
+    -C checks 'FrameworkCheck$Bindings.class'
+CLASSPATH="$PWD/passing-tests.jar:$deps" sh ./testng-check -testjar "$PWD/passing-tests.jar" -d "passing report"
 test -s "passing report/index.html"
 grep -F 'total="4"' "passing report/testng-results.xml"
 cmp %{_datadir}/javascript/jquery3/jquery.js "passing report/jquery-3.6.0.min.js"
 # Confirm that a failing test is reflected in both the status and XML report.
-if java -cp "checks:$deps" org.testng.TestNG -testclass FailureCheck -d "failing report"; then
+if CLASSPATH="checks:$deps" sh ./testng-check -testclass FailureCheck -d "failing report"; then
     echo 'Accepted the failing control test'
     exit 1
 else
