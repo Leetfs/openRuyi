@@ -18,6 +18,9 @@ Source0:        https://raw.githubusercontent.com/Saxonica/Saxon-HE/%{saxon_comm
 # Saxonica distributes the full license notices separately from the Java source ZIP.
 #!RemoteAsset:  sha256:9b596a71042a6bd04d31e404dfda11f4cd45459907e745ac645b861919a763dd
 Source1:        https://raw.githubusercontent.com/Saxonica/Saxon-HE/%{saxon_commit}/10/Java/SaxonHE10-9J.zip
+# Downstream fix for the ErrorListener set on SAXTransformerFactory.
+# https://github.com/Saxonica/Saxon-HE/tree/main/10/source
+Patch2000:      2000-preserve-the-sax-templates-error-listener.patch
 BuildArch:      noarch
 
 BuildRequires:  java-25-openjdk-devel
@@ -34,6 +37,8 @@ XML applications, with DOM, SAX and StAX support.
 %setup -q -c -T
 unzip -q %{SOURCE0}
 unzip -q %{SOURCE1} notices/LICENSE.txt notices/THAI.txt notices/JAMESCLARK.txt notices/UNICODE.txt
+# The source files exist after the ZIP has been unpacked.
+%patch -P 2000 -p1
 
 %build
 mkdir -p classes/META-INF/services
@@ -65,6 +70,54 @@ XSL
 echo '<input>ready</input>' > input.xml
 java -cp "$cp" net.sf.saxon.Transform -s:input.xml -xsl:transform.xsl -o:result.xml
 grep -F '<result>READY</result>' result.xml
+
+# SAX stylesheet compilation must report errors to the caller's listener.
+cat > CheckTemplates.java <<'JAVA'
+import java.io.*;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.*;
+import javax.xml.transform.sax.*;
+import javax.xml.transform.stream.*;
+import org.xml.sax.*;
+public class CheckTemplates {
+    static class Errors implements ErrorListener {
+        int count;
+        public void warning(TransformerException e) {}
+        public void error(TransformerException e) { count++; }
+        public void fatalError(TransformerException e) { count++; }
+    }
+    static TemplatesHandler handler(String stylesheet, Errors errors) throws Exception {
+        SAXTransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
+        factory.setErrorListener(errors);
+        TemplatesHandler handler = factory.newTemplatesHandler();
+        handler.setSystemId("file:/stylesheet.xsl");
+        SAXParserFactory parser = SAXParserFactory.newInstance();
+        parser.setNamespaceAware(true);
+        XMLReader reader = parser.newSAXParser().getXMLReader();
+        reader.setContentHandler(handler);
+        reader.parse(new InputSource(new StringReader(stylesheet)));
+        return handler;
+    }
+    public static void main(String[] args) throws Exception {
+        String start = "<xsl:stylesheet version='2.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>";
+        Errors valid = new Errors();
+        Templates good = handler(start + "<xsl:output method='text'/><xsl:template match='/'>42</xsl:template></xsl:stylesheet>", valid).getTemplates();
+        StringWriter result = new StringWriter();
+        good.newTransformer().transform(new StreamSource(new StringReader("<root/>")), new StreamResult(result));
+        if (valid.count != 0 || !"42".equals(result.toString())) throw new AssertionError("Valid transform");
+        Errors invalid = new Errors();
+        boolean rejected = false;
+        try {
+            Templates bad = handler(start + "<xsl:template match='foo bar'/></xsl:stylesheet>", invalid).getTemplates();
+            rejected = bad == null;
+        } catch (IllegalStateException expected) { rejected = true; }
+        if (!rejected || invalid.count == 0) throw new AssertionError("Missing caller error notification");
+        System.out.println("SAX TemplatesHandler valid transform and caller error notification passed");
+    }
+}
+JAVA
+javac --release 11 -cp "$cp" CheckTemplates.java
+java -cp ".:$cp" CheckTemplates
 
 %files
 %license notices/LICENSE.txt notices/THAI.txt notices/JAMESCLARK.txt notices/UNICODE.txt

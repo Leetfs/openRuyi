@@ -1,0 +1,69 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Forward the factory error listener to SAX template compilation
+
+newTemplatesHandler creates its compiler independently of the factory
+and loses the caller's ErrorListener. Propagate the listener to both
+SAX stylesheet construction and final compilation, preserving the
+existing constructor for subclasses.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/net/sf/saxon/jaxp/TemplatesHandlerImpl.java
++++ b/net/sf/saxon/jaxp/TemplatesHandlerImpl.java
+@@ -27,6 +27,7 @@
+ import org.xml.sax.Locator;
+ 
+ import javax.xml.transform.Templates;
++import javax.xml.transform.ErrorListener;
+ import javax.xml.transform.sax.TemplatesHandler;
+ 
+ 
+@@ -42,6 +43,7 @@
+ public class TemplatesHandlerImpl extends ReceivingContentHandler implements TemplatesHandler {
+ 
+     private Processor processor;
++    private final ErrorListener errorListener;
+     private LinkedTreeBuilder builder;
+     private StyleNodeFactory nodeFactory;
+     private Templates templates;
+@@ -56,12 +58,19 @@
+      */
+ 
+     protected TemplatesHandlerImpl(Processor processor) {
++        this(processor, null);
++    }
+ 
++    protected TemplatesHandlerImpl(Processor processor, ErrorListener errorListener) {
+         this.processor = processor;
++        this.errorListener = errorListener;
+         Configuration config = processor.getUnderlyingConfiguration();
+         setPipelineConfiguration(config.makePipelineConfiguration());
+ 
+         CompilerInfo info = new CompilerInfo(config.getDefaultXsltCompilerInfo());
++        if (errorListener != null) {
++            info.setErrorListener(errorListener);
++        }
+         Compilation compilation = new Compilation(config, info);
+         compilation.setMinimalPackageData();
+         nodeFactory = compilation.getStyleNodeFactory(true);
+@@ -98,6 +107,9 @@
+ 
+             try {
+                 XsltCompiler compiler = processor.newXsltCompiler();
++                if (errorListener != null) {
++                    compiler.setErrorListener(errorListener);
++                }
+                 templates = new TemplatesImpl(compiler.compile(doc));
+             } catch (SaxonApiException tce) {
+                 // don't know why we aren't allowed to just throw it!
+--- a/net/sf/saxon/jaxp/SaxonTransformerFactory.java
++++ b/net/sf/saxon/jaxp/SaxonTransformerFactory.java
+@@ -457,7 +457,7 @@
+ 
+     @Override
+     public TemplatesHandler newTemplatesHandler() {
+-        return new TemplatesHandlerImpl(processor);
++        return new TemplatesHandlerImpl(processor, getErrorListener());
+     }
+ 
+     /**
