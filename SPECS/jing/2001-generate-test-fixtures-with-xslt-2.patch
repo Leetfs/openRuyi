@@ -3,6 +3,7 @@ Subject: [PATCH] Generate split test fixtures with standard XSLT 2.0
 
 The build uses net.sf.saxon.TransformerFactoryImpl, but its fixture
 splitter still calls Saxon 6 node-set, output and Java File extensions.
+Keep the transformer classpath on the Ant xslt task, not its factory.
 Use XSLT 2.0 trees and result documents instead. Preserve empty test
 directories with temporary markers that Ant removes before validation.
 
@@ -51,7 +52,22 @@ Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
  </xsl:stylesheet>
 --- a/build.xsl
 +++ b/build.xsl
-@@ -366,6 +366,9 @@
+@@ -336,13 +336,12 @@
+       <xslt style="{$srctestdir}/{@transform}"
+ 	    in="{$srctest}"
+ 	    out="{$runtestdir}/{@name}test.xml">
+-	<factory name="net.sf.saxon.TransformerFactoryImpl">
++	<factory name="net.sf.saxon.TransformerFactoryImpl"/>
+     <classpath>
+       <fileset dir="lib">
+         <filename name="saxon9.jar"/>
+       </fileset>
+     </classpath>
+-  </factory>
+       </xslt>
+       <!-- XXX Could validate intermediate result against a schema -->
+     </xsl:if>
+@@ -366,6 +365,9 @@
        </classpath>
        <param name="dir" expression="{$runtestdir}"/>
      </xslt>
