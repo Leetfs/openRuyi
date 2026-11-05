@@ -1,0 +1,37 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Preserve Ant arguments with a Java launcher argument file
+
+TestNG's default test name contains a space. JCommander's argument-file
+reader splits each line at whitespace, causing the second word to be
+treated as an XML suite filename. Pass a quoted argument file to the Java
+launcher, including the main class, so names and paths retain their
+boundaries while keeping support for long command lines.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/src/main/java/org/testng/TestNGAntTask.java
++++ b/src/main/java/org/testng/TestNGAntTask.java
+@@ -513,8 +513,13 @@
+       }
+       fw = new FileWriter(f);
+       bw = new BufferedWriter(fw);
++      bw.write(m_mainClass);
++      bw.newLine();
+       for (String arg : argv) {
+-        bw.write(arg);
++        bw.write("\"");
++        bw.write(arg.replace("\\", "\\\\").replace("\"", "\\\"")
++            .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"));
++        bw.write("\"");
+         bw.newLine();
+       }
+       bw.flush();
+@@ -537,7 +542,7 @@
+ 
+     createClasspath().setLocation(findJar());
+ 
+-    cmd.createArgument().setValue("@" + fileName);
++    cmd.setClassname("@" + fileName);
+ 
+     ExecuteWatchdog watchdog = createWatchdog();
+     boolean wasKilled = false;
