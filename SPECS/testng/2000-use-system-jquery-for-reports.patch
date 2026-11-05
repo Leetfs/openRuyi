@@ -1,0 +1,23 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Load the HTML report JavaScript from the system jQuery package
+
+Keep self-contained HTML report exports while obtaining jQuery from the
+distribution's JavaScript library package.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/testng-core/src/main/java/org/testng/reporters/jq/Main.java
++++ b/testng-core/src/main/java/org/testng/reporters/jq/Main.java
+@@ -104,7 +104,11 @@
+     }
+   }
+ 
+-  private InputStream load(String fileName) {
++  private InputStream load(String fileName) throws IOException {
++    if (fileName.equals("jquery-3.6.0.min.js")) {
++      return java.nio.file.Files.newInputStream(
++          java.nio.file.Path.of("/usr/share/javascript/jquery3/jquery.js"));
++    }
+     String path = Main.TESTNG_RESOURCE_PREFIX + fileName;
+     return getClass().getResourceAsStream(path);
+   }
