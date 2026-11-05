@@ -32,7 +32,9 @@ expiration, automatic loading and cache statistics.
 
 %build
 mkdir generator-classes classes generated
-deps=%{_datadir}/java/guava.jar:%{_datadir}/java/javapoet-palantir.jar:%{_datadir}/java/commons-lang3.jar:%{_datadir}/java/jspecify.jar:%{_datadir}/java/error-prone-annotations.jar:%{_datadir}/java/spotbugs-annotations.jar
+lang3jar=$(find %{_datadir}/maven-repository/org/apache/commons/commons-lang3 -name '*.jar' -print -quit)
+test -n "$lang3jar"
+deps=%{_datadir}/java/guava.jar:%{_datadir}/java/javapoet-palantir.jar:$lang3jar:%{_datadir}/java/jspecify.jar:%{_datadir}/java/error-prone-annotations.jar:%{_datadir}/java/spotbugs-annotations.jar
 find caffeine/src/javaPoet/java -name '*.java' | sort > generator.list
 javac --release 25 -encoding UTF-8 -cp "$deps" -d generator-classes @generator.list
 cp -a caffeine/src/javaPoet/resources/. generator-classes/
