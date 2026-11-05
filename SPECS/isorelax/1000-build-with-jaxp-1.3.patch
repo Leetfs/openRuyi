@@ -1,0 +1,39 @@
+From: Kohsuke Kawaguchi <kk@kohsuke.org>
+Date: Thu, 31 Mar 2005 18:01:40 +0000
+Subject: [PATCH] Update the document builder factory for JAXP 1.3
+
+Upstream: https://sourceforge.net/p/iso-relax/code/ (release-20050331,
+ValidatingDocumentBuilderFactory.java revision 1.5)
+
+--- a/org/iso_relax/jaxp/ValidatingDocumentBuilderFactory.java
++++ b/org/iso_relax/jaxp/ValidatingDocumentBuilderFactory.java
+@@ -1,11 +1,11 @@
+ package org.iso_relax.jaxp;
++
++import org.iso_relax.verifier.Schema;
++import org.iso_relax.verifier.VerifierConfigurationException;
+ 
+ import javax.xml.parsers.DocumentBuilder;
+ import javax.xml.parsers.DocumentBuilderFactory;
+ import javax.xml.parsers.ParserConfigurationException;
+-
+-import org.iso_relax.verifier.Schema;
+-import org.iso_relax.verifier.VerifierConfigurationException;
+ 
+ /**
+  * Wraps another {@link DocumentBuilderFactory} and adds validation capability.
+@@ -76,6 +76,14 @@
+         return _WrappedFactory.getAttribute(name);
+     }
+ 
++    public void setFeature(String name, boolean value) throws ParserConfigurationException {
++        throw new ParserConfigurationException();
++    }
++
++    public boolean getFeature(String name) throws ParserConfigurationException {
++        throw new ParserConfigurationException();
++    }
++
+     public boolean isValidating()
+     { return validation; }
+     public void setValidating(boolean _validating)
