@@ -43,7 +43,8 @@ javac --release 11 -encoding UTF-8 \
 cat > testng-ant.mf <<MANIFEST
 Manifest-Version: 1.0
 Implementation-Version: %{version}
-Class-Path: testng.jar ../ant/lib/ant.jar
+Class-Path: file:/usr/share/java/testng.jar
+  file:/usr/share/ant/lib/ant.jar
 
 MANIFEST
 jar --create --file testng-ant.jar --manifest testng-ant.mf -C classes .
