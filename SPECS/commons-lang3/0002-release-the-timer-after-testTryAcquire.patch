@@ -1,0 +1,53 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Release the timer started by testTryAcquire
+
+The default semaphore creates its own scheduled executor. Shut it down
+after the contention assertion so a completed JUnit suite can exit.
+
+Upstream: downstream test cleanup
+Reference: https://github.com/apache/commons-lang/blob/rel/commons-lang-3.20.0/src/test/java/org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+diff --git a/src/test/java/org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java b/src/test/java/org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java
+--- a/src/test/java/org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java
++++ b/src/test/java/org/apache/commons/lang3/concurrent/TimedSemaphoreTest.java
+@@ -501,21 +501,25 @@
+     @Test
+     void testTryAcquire() throws InterruptedException {
+         final TimedSemaphore semaphore = new TimedSemaphore(PERIOD_MILLIS, TimeUnit.SECONDS, LIMIT);
+-        final TryAcquireThread[] threads = new TryAcquireThread[3 * LIMIT];
+-        final CountDownLatch latch = new CountDownLatch(1);
+-        for (int i = 0; i < threads.length; i++) {
+-            threads[i] = new TryAcquireThread(semaphore, latch);
+-            threads[i].start();
+-        }
+-        latch.countDown();
+-        int permits = 0;
+-        for (final TryAcquireThread t : threads) {
+-            t.join();
+-            if (t.acquired) {
+-                permits++;
++        try {
++            final TryAcquireThread[] threads = new TryAcquireThread[3 * LIMIT];
++            final CountDownLatch latch = new CountDownLatch(1);
++            for (int i = 0; i < threads.length; i++) {
++                threads[i] = new TryAcquireThread(semaphore, latch);
++                threads[i].start();
+             }
+-        }
+-        assertEquals(LIMIT, permits, "Wrong number of permits granted");
++            latch.countDown();
++            int permits = 0;
++            for (final TryAcquireThread t : threads) {
++                t.join();
++                if (t.acquired) {
++                    permits++;
++                }
++            }
++            assertEquals(LIMIT, permits, "Wrong number of permits granted");
++        } finally {
++            semaphore.shutdown();
++        }
+     }
+ 
+     /**
