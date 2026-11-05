@@ -1,0 +1,63 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Generate split test fixtures with standard XSLT 2.0
+
+The build uses net.sf.saxon.TransformerFactoryImpl, but its fixture
+splitter still calls Saxon 6 node-set, output and Java File extensions.
+Use XSLT 2.0 trees and result documents instead. Preserve empty test
+directories with temporary markers that Ant removes before validation.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/test/saxon.xsl
++++ b/test/saxon.xsl
+@@ -1,8 +1,6 @@
+ <?xml version="1.0"?>
+-<xsl:stylesheet version="1.0"
+-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+-  xmlns:saxon="http://icl.com/saxon"
+-  extension-element-prefixes="saxon">
++<xsl:stylesheet version="2.0"
++  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+ 
+ <xsl:output method="text"/>
+ 
+@@ -10,21 +8,22 @@
+   <xsl:variable name="prepped">
+     <xsl:apply-templates select="*"/>
+   </xsl:variable>
+-  <xsl:apply-templates select="saxon:node-set($prepped)/documents/*" mode="output"/>
++  <xsl:apply-templates select="$prepped/documents/*" mode="output"/>
+ </xsl:template>
+ 
+ <xsl:template match="document" mode="output">
+-  <saxon:output href="{@href}" method="{@method}">
++  <xsl:result-document href="{@href}" method="{@method}">
+     <xsl:if test="@dtd">
+       <xsl:value-of select="@dtd" disable-output-escaping="yes"/>
+     </xsl:if>
+     <xsl:copy-of select="node()"/>
+-  </saxon:output>
++  </xsl:result-document>
+ </xsl:template>
+ 
+ <xsl:template match="dir" mode="output">
+-  <xsl:value-of select="substring(File:mkdir(File:new(@name)),0,0)" 
+-                xmlns:File="java:java.io.File"/>
++  <!-- Saxon creates parent directories for result documents. Ant removes
++       these markers before running the tests, preserving empty directories. -->
++  <xsl:result-document href="{@name}/.jing-directory" method="text"/>
+ </xsl:template>
+ 
+ </xsl:stylesheet>
+--- a/build.xsl
++++ b/build.xsl
+@@ -366,6 +366,9 @@
+       </classpath>
+       <param name="dir" expression="{$runtestdir}"/>
+     </xslt>
++    <delete>
++      <fileset dir="{$runtestdir}" includes="**/.jing-directory"/>
++    </delete>
+   </target>
+   <target name="mod.{$name}.uptodate-split-{@name}">
+     <!-- XXX include split.xsl in source files -->

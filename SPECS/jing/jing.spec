@@ -22,6 +22,9 @@ Source2:        https://www.unicode.org/license.txt#/Unicode-LICENSE.txt
 # Downstream offline build using the standalone datatype API and TestNG Ant task.
 # https://github.com/relaxng/jing-trang/blob/V20241231/build.xsl
 Patch2000:      2000-use-system-libraries-in-offline-ant-builds.patch
+# Downstream compatibility with the configured net.sf.saxon transformer.
+# https://github.com/relaxng/jing-trang/blob/V20241231/test/saxon.xsl
+Patch2001:      2001-generate-test-fixtures-with-xslt-2.patch
 BuildArch:      noarch
 
 BuildRequires:  ant
