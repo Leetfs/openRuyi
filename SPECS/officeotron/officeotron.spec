@@ -31,17 +31,22 @@ Patch2000:      2000-report-the-application-version.patch
 # Downstream inclusion of the W3C software license's required attribution.
 # https://www.w3.org/Consortium/Legal/copyright-software-19980720
 Patch2001:      2001-include-w3c-schema-attribution.patch
+# Downstream test fixes for implicit namespaces and a non-counting mock report.
+# https://git.libreoffice.org/officeotron/+/81b91b821b019937b4bfb3f15efd88fa17da9985/src/org/probatron/officeotron/
+Patch2002:      2002-correct-the-validation-test-fixtures.patch
 BuildArch:      noarch
 
 BuildRequires:  java-25-openjdk-devel
 BuildRequires:  jing
 BuildRequires:  junit4
+BuildRequires:  slf4j-jdk14
 BuildRequires:  slf4j-log4j
 BuildRequires:  xerces-j2
 BuildRequires:  zipspy
 
 Requires:       java-25-openjdk-headless
 Requires:       jing
+Requires:       slf4j-jdk14
 Requires:       slf4j-log4j
 Requires:       xerces-j2
 Requires:       zipspy
@@ -57,6 +62,8 @@ used to check document exports, with separately packaged Java libraries.
 sed -i 's/\r$//' src/org/probatron/officeotron/Driver.java \
     etc/schema/others/xml.xsd etc/schema/others/XMLSchema.dtd \
     etc/schema/others/datatypes.dtd
+sed -i 's/\r$//' src/org/probatron/officeotron/MceXmlFilterTest.java \
+    src/org/probatron/officeotron/OOXMLValidationSessionTest.java
 %autopatch -p1
 find . -type f -name '*.jar' -delete
 cp %{SOURCE1} MPL-1.1.txt
