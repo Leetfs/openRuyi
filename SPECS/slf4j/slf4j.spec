@@ -38,11 +38,20 @@ Requires:       %{name} = %{version}-%{release}
 %description    jcl
 This bridge implements the Commons Logging API and routes its calls to SLF4J.
 
+%package        log4j
+Summary:        Log4j 1.x API bridge to SLF4J
+License:        Apache-2.0
+Requires:       %{name} = %{version}-%{release}
+
+%description    log4j
+This bridge sends logging calls made through the Log4j 1.x API to the
+SLF4J binding selected by the application.
+
 %prep
 %autosetup -n slf4j-v_%{version}
 
 %build
-for mod in slf4j-api slf4j-jdk14 jcl-over-slf4j; do
+for mod in slf4j-api slf4j-jdk14 jcl-over-slf4j log4j-over-slf4j; do
     src=$mod/src/main
     out=$mod/target/classes
     mkdir -p "$out"
@@ -66,7 +75,7 @@ done
 %install
 jars=%{buildroot}%{_datadir}/java
 install -d "$jars"
-install -pm644 slf4j-api.jar slf4j-jdk14.jar jcl-over-slf4j.jar "$jars/"
+install -pm644 slf4j-api.jar slf4j-jdk14.jar jcl-over-slf4j.jar log4j-over-slf4j.jar "$jars/"
 repo=%{_datadir}/maven-repository/org/slf4j/slf4j-api/%{version}
 install -d "%{buildroot}$repo" %{buildroot}%{_datadir}/maven-metadata
 ln -sr "$jars/slf4j-api.jar" "%{buildroot}$repo/slf4j-api-%{version}.jar"
@@ -111,6 +120,34 @@ JAVA
 javac -cp jcl-over-slf4j.jar:slf4j-api.jar LogBridge.java
 java -cp .:jcl-over-slf4j.jar:slf4j-jdk14.jar:slf4j-api.jar LogBridge
 
+# Check the Log4j API calls used by ZIP archive and document validators.
+cat > LegacyLogCheck.java <<'JAVA'
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+class LegacyLogCheck {
+    public static void main(String[] args) {
+        AtomicReference<LogRecord> result = new AtomicReference<>();
+        java.util.logging.Logger target = java.util.logging.Logger.getLogger("archive.check");
+        target.setUseParentHandlers(false);
+        target.addHandler(new Handler() {
+            public void publish(LogRecord rec) { result.set(rec); }
+            public void flush() {}
+            public void close() {}
+        });
+        PropertyConfigurator.configure(new Properties());
+        Logger.getLogger("archive.check").warn("central directory");
+        if (result.get() == null || !"central directory".equals(result.get().getMessage()))
+            throw new AssertionError("Lost Log4j event");
+    }
+}
+JAVA
+javac -cp log4j-over-slf4j.jar:slf4j-api.jar LegacyLogCheck.java
+java -cp .:log4j-over-slf4j.jar:slf4j-jdk14.jar:slf4j-api.jar LegacyLogCheck
+
 %files
 %license LICENSE.txt
 %doc README.md
@@ -124,6 +161,10 @@ java -cp .:jcl-over-slf4j.jar:slf4j-jdk14.jar:slf4j-api.jar LogBridge
 %files jcl
 %license jcl-over-slf4j/LICENSE.txt
 %{_datadir}/java/jcl-over-slf4j.jar
+
+%files log4j
+%license jcl-over-slf4j/LICENSE.txt
+%{_datadir}/java/log4j-over-slf4j.jar
 
 %changelog
 %autochangelog
