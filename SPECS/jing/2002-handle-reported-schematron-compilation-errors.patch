@@ -1,0 +1,29 @@
+From: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+Subject: [PATCH] Reject schemas when SAX template compilation reports errors
+
+Saxon throws IllegalStateException from getTemplates after reporting
+stylesheet compilation failures. Convert only already reported schema
+errors to IncorrectSchemaException; propagate unrelated state failures.
+
+Signed-off-by: Li Guan <guanli.oerv@isrc.iscas.ac.cn>
+---
+--- a/mod/schematron/src/main/com/thaiopensource/validate/schematron/SchemaReaderImpl.java
++++ b/mod/schematron/src/main/com/thaiopensource/validate/schematron/SchemaReaderImpl.java
+@@ -376,7 +376,16 @@
+       if (ceh.getHadErrorOrFatalError())
+         throw new IncorrectSchemaException();
+       // Getting the templates can cause errors to be generated.
+-      Templates templates = templatesHandler.getTemplates();
++      Templates templates;
++      try {
++        templates = templatesHandler.getTemplates();
++      }
++      catch (IllegalStateException e) {
++        // Saxon reports compilation errors before throwing from getTemplates().
++        if (ceh.getHadErrorOrFatalError())
++          throw new IncorrectSchemaException();
++        throw e;
++      }
+       if (ceh.getHadErrorOrFatalError())
+         throw new IncorrectSchemaException();
+       return new SchemaImpl(templates,

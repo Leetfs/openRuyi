@@ -25,6 +25,9 @@ Patch2000:      2000-use-system-libraries-in-offline-ant-builds.patch
 # Downstream compatibility with the configured net.sf.saxon transformer.
 # https://github.com/relaxng/jing-trang/blob/V20241231/test/saxon.xsl
 Patch2001:      2001-generate-test-fixtures-with-xslt-2.patch
+# Downstream handling of already reported SAX template compilation failures.
+# https://github.com/relaxng/jing-trang/blob/V20241231/mod/schematron/src/main/com/thaiopensource/validate/schematron/SchemaReaderImpl.java
+Patch2002:      2002-handle-reported-schematron-compilation-errors.patch
 BuildArch:      noarch
 
 BuildRequires:  ant
