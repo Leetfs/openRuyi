@@ -52,7 +52,12 @@ schema conformance. This package provides the command-line validator
 used to check document exports, with separately packaged Java libraries.
 
 %prep
-%autosetup -p1
+%autosetup -N
+# Normalize upstream CRLF files before applying the source patches.
+sed -i 's/\r$//' src/org/probatron/officeotron/Driver.java \
+    etc/schema/others/xml.xsd etc/schema/others/XMLSchema.dtd \
+    etc/schema/others/datatypes.dtd
+%autopatch -p1
 find . -type f -name '*.jar' -delete
 cp %{SOURCE1} MPL-1.1.txt
 cp %{SOURCE2} ECMA-Text.pdf
