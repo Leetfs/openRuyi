@@ -8,11 +8,13 @@ Name:           guava
 Version:        33.8.0
 Release:        %autorelease
 Summary:        Core Java collections, caches and concurrency utilities
-License:        Apache-2.0
+License:        Apache-2.0 AND CC0-1.0 AND LicenseRef-openRuyi-Public-Domain
 URL:            https://guava.dev/
 VCS:            git:https://github.com/google/guava.git
 #!RemoteAsset:  sha256:051b81386baa644dab1a88555f74c301f271f8f496a5f6ff9530ca6bb7fe181f
 Source0:        https://github.com/google/guava/archive/refs/tags/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+#!RemoteAsset:  sha256:a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499
+Source1:        https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt#/CC0-1.0.txt
 BuildArch:      noarch
 
 BuildRequires:  error-prone-annotations
@@ -32,6 +34,23 @@ includes its failureaccess module for sharing Future failure information.
 %prep
 %autosetup
 find . -type f -name '*.jar' -delete
+cp %{SOURCE1} CC0-1.0.txt
+# Preserve the original public-domain and CC0 dedications in the shipped sources.
+{
+    echo 'Original notices from Guava source files:'
+    for path in base/SmallCharMatcher.java collect/Hashing.java; do
+        echo "$path"
+        sed -n '/MurmurHash3 was written/,+1p' "guava/src/com/google/common/$path"
+    done
+    echo 'util/concurrent/Striped.java'
+    sed -n '/This method was written by Doug Lea/,+2p' guava/src/com/google/common/util/concurrent/Striped.java
+    for name in AtomicDouble AtomicDoubleArray MoreExecutors; do
+        echo "util/concurrent/$name.java"
+        sed -n '/Written by Doug Lea/,+3p' "guava/src/com/google/common/util/concurrent/$name.java"
+    done
+} > THIRD-PARTY-NOTICES.txt
+grep -F 'Austin Appleby' THIRD-PARTY-NOTICES.txt
+grep -F 'creativecommons.org/publicdomain/zero/1.0/' THIRD-PARTY-NOTICES.txt
 
 %build
 mkdir failure-classes failure-module guava-classes guava-module
@@ -54,6 +73,7 @@ install -Dpm644 guava.jar %{buildroot}%{_datadir}/java/guava.jar
 install -Dpm644 failureaccess.jar %{buildroot}%{_datadir}/java/failureaccess.jar
 
 %check
+# Exercise immutable collections, cache loading and listenable futures.
 cat > CheckGuava.java <<'JAVA'
 import com.google.common.base.Joiner;
 import com.google.common.cache.*;
@@ -99,7 +119,7 @@ jar --describe-module --file guava.jar --release 9 | grep -F com.google.common
 jar --describe-module --file failureaccess.jar --release 9 | grep -F com.google.common.util.concurrent.internal
 
 %files
-%license LICENSE
+%license LICENSE CC0-1.0.txt THIRD-PARTY-NOTICES.txt
 %doc README.md
 %{_datadir}/java/guava.jar
 %{_datadir}/java/failureaccess.jar
