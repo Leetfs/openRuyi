@@ -11,8 +11,8 @@ Summary:        Apache Commons Collections 3.x for Java
 License:        Apache-2.0
 URL:            https://commons.apache.org/proper/commons-collections/
 VCS:            git:https://github.com/apache/commons-collections.git
-#!RemoteAsset:  sha256:070d94fe77969d8949bd129a618e6a7bee6b83b5b5db3ef3f983395a5428b914
-Source0:        https://archive.apache.org/dist/commons/collections/source/commons-collections-%{version}-src.tar.gz
+#!RemoteAsset:  sha256:1f9bcc67e7c07a954813d3027c974db6ff59439a82e2d8839b2670101ecff42e
+Source0:        https://github.com/apache/commons-collections/archive/refs/tags/collections-%{version}.tar.gz#/commons-collections-%{version}.tar.gz
 BuildArch:      noarch
 
 BuildRequires:  java-25-openjdk-devel
@@ -34,7 +34,7 @@ contracts for map, set and collection implementations. BeanUtils uses
 BulkTest and AbstractTestMap to verify its BeanMap implementation.
 
 %prep
-%autosetup -n commons-collections-%{version}-src
+%autosetup -n commons-collections-collections-%{version}
 
 %build
 mkdir classes
