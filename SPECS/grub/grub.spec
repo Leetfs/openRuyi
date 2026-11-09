@@ -5,8 +5,13 @@
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-# GCC 16 crashes during LTO of the freestanding zstd EFI module.
+%bcond lto 1
+%bcond historical_cflags 0
+
+%if %{without lto}
+# Compare the package-wide LTO workaround with the distribution defaults.
 %global _lto_cflags %{nil}
+%endif
 
 # We have to set _libdir to /usr/lib for grub - 251
 %global _libdir %{_exec_prefix}/lib
@@ -38,8 +43,10 @@ BuildSystem:    autotools
 
 # Distribution FORTIFY flags expose warnings outside the upstream build.
 # Keep userspace architecture flags out of the freestanding EFI code.
+%if %{without historical_cflags}
 BuildOption(conf):  CFLAGS=""
 BuildOption(conf):  HOST_CFLAGS="%{optflags}"
+%endif
 BuildOption(conf):  --disable-werror
 BuildOption(conf):  --with-grubdir=grub
 BuildOption(conf):  --with-platform=efi
@@ -48,6 +55,7 @@ BuildOption(conf):  --enable-boot-time
 BuildOption(conf):  --enable-cache-stats
 BuildOption(conf):  --enable-stack-protector=strong
 BuildOption(conf):  --with-sbat-file=$PWD/vendor-sbat.csv
+BuildOption(build):  V=1
 BuildOption(install):  bashcompletiondir=%{bash_completions_dir}
 # Filesystem tests need privileged mounts; firmware tests need QEMU and EFI firmware.
 BuildOption(check):  TESTS='$(check_PROGRAMS_native) grub_script_blanklines grub_script_final_semicolon grub_script_dollar grub_script_no_commands grub_mkconfig_bootnext_test grub_mkconfig_bootnext_self_test'
@@ -98,6 +106,13 @@ autoreconf -fiv
 # Give shim a separate SBAT generation for revoking vulnerable openRuyi
 # GRUB EFI images.
 echo "grub.or,1,openRuyi,%{name},%{version},https://openruyi.cn/" > vendor-sbat.csv
+
+%build -p
+gcc -v
+rpm -qf "$(readlink -f "$(command -v gcc)")"
+rpm -qf "$(readlink -f "$(command -v ld)")"
+uname -a
+printf '%s\n' 'GRUB_LTO_ENABLED=%{with lto}' 'GRUB_HISTORICAL_CFLAGS=%{with historical_cflags}' 'GRUB_OPTFLAGS=%{optflags}'
 
 %build -a
 # Make fonts here
