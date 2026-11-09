@@ -5,9 +5,6 @@
 #
 # SPDX-License-Identifier: MulanPSL-2.0
 
-# GCC 16 crashes during LTO of the freestanding zstd EFI module.
-%global _lto_cflags %{nil}
-
 # We have to set _libdir to /usr/lib for grub - 251
 %global _libdir %{_exec_prefix}/lib
 
@@ -50,7 +47,8 @@ BuildOption(conf):  --enable-stack-protector=strong
 BuildOption(conf):  --with-sbat-file=$PWD/vendor-sbat.csv
 BuildOption(install):  bashcompletiondir=%{bash_completions_dir}
 # Filesystem tests need privileged mounts; firmware tests need QEMU and EFI firmware.
-BuildOption(check):  TESTS='$(check_PROGRAMS_native) grub_script_blanklines grub_script_final_semicolon grub_script_dollar grub_script_no_commands grub_mkconfig_bootnext_test grub_mkconfig_bootnext_self_test'
+# LTO bypasses --wrap=grub_fatal in tpcm_unit_test; omit that test.
+BuildOption(check):  TESTS='$(filter-out tpcm_unit_test,$(check_PROGRAMS_native)) grub_script_blanklines grub_script_final_semicolon grub_script_dollar grub_script_no_commands grub_mkconfig_bootnext_test grub_mkconfig_bootnext_self_test'
 
 BuildRequires:  autoconf
 BuildRequires:  automake
