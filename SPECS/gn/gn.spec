@@ -18,8 +18,6 @@ VCS:            git:https://gn.googlesource.com/gn
 #!CreateArchive
 Source0:        %{name}-%{commit}.tar.gz
 
-# Downstream fix for the Linux build with distribution compiler flags.
-Patch2000:      2000-keep-format-checking-on-linux.patch
 BuildRequires:  gcc-c++
 BuildRequires:  ninja
 BuildRequires:  pkgconfig(python3)
