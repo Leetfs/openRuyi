@@ -33,8 +33,6 @@ BuildRequires:  pkgconfig(zlib)
 %patchlist
 # Downstream patch for missing gmtime and strftime declarations in 2.3.3.4.
 2000-include-time-declarations-in-DateTools.patch
-# Downstream fix for escaped range endpoints covered by testEscaped.
-2001-copy-overlapping-quoted-range-endpoints-safely.patch
 # Submitted by Vitaliy Filippov, CLucene issue 200.
 # https://sourceforge.net/p/clucene/bugs/200/
 2002-install-the-contribs-library-and-public-headers.patch
